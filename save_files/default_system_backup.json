@@ -1,0 +1,46 @@
+{
+  "version": "1.0",
+  "savedAt": "2026-07-22T21:00:00.000Z",
+  "fileName": "default_system_backup.json",
+  "description": "Initial Factory Default Application Backup State",
+  "currentUserRole": "Admin",
+  "activeTab": "dashboard",
+  "tasks": [
+    {
+      "id": "t_seed_m1",
+      "manualTaskId": "m1",
+      "name": "Check structural cracks on exterior walls",
+      "system": "Structural",
+      "frequency": "Daily",
+      "timeSlot": "08:00 AM",
+      "priority": "Critical",
+      "status": "Pending",
+      "notes": "Inspect perimeter east wing facade.",
+      "assignedTo": "John Doe (Lead)",
+      "dateCreated": "2026-07-22"
+    },
+    {
+      "id": "t_seed_m2",
+      "manualTaskId": "m2",
+      "name": "Inspect main electrical switchgear",
+      "system": "Mechanical",
+      "frequency": "Daily",
+      "timeSlot": "09:00 AM",
+      "priority": "Critical",
+      "status": "Completed",
+      "notes": "Voltage and thermography normal.",
+      "assignedTo": "Mike Johnson (Elec)",
+      "dateCreated": "2026-07-22"
+    }
+  ],
+  "registry": [],
+  "complaints": [],
+  "notifications": [
+    {
+      "id": "notif_seed_1",
+      "type": "normal",
+      "message": "System save file backup initialized.",
+      "time": "09:00 PM"
+    }
+  ]
+}

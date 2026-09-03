@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Application for Construction, Renovation, and Repair Works</title>
+    <style>
+        @page {
+            size: A4 portrait;
+            margin: 15mm !important;
+        }
+        html {
+            margin: 0 !important;
+            padding: 0 !important;
+            background: #ffffff !important;
+        }
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            margin: 0 !important;
+            padding: 0 !important;
+            background: #ffffff !important;
+            color: #000000 !important;
+            width: 100% !important;
+            height: auto !important;
+            min-height: 0 !important;
+            overflow: visible !important;
+        }
+        .document-container {
+            width: 210mm;
+            min-height: 297mm;
+            padding: 15mm;
+            box-sizing: border-box;
+            margin: 0 auto;
+            background-color: #ffffff;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+        }
+        @media print {
+            @page {
+                size: A4 portrait;
+                margin: 15mm !important;
+            }
+            html, body {
+                background: #ffffff !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                width: 100% !important;
+                height: auto !important;
+                min-height: 0 !important;
+            }
+            .document-container {
+                box-shadow: none !important;
+                border: none !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                min-height: 0 !important;
+                height: auto !important;
+                background: #ffffff !important;
+                page-break-before: avoid !important;
+            }
+            .governance-badge-container {
+                display: none !important;
+            }
+            table, tr, td, th, .document-header, .form-title, .signature-section {
+                page-break-inside: avoid !important;
+            }
+        }
+
+        
+        html {
+            margin: 0 !important;
+            padding: 0 !important;
+            background: #ffffff !important;
+        }
+        
+        
+        
+
+        
+        html, 
+        
+        
+
+        
+        
+                .header-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 0.5in;
+            font-size: 13px;
+        }
+        .header-table td {
+            vertical-align: middle;
+            padding: 0;
+        }
+        .logo-img {
+            height: 84px;
+            width: auto;
+            display: block;
+        }
+        .doc-control {
+            text-align: right;
+        }
+        .doc-control-table {
+            width: 100%;
+            border: 1px solid #bdc3c7;
+            border-collapse: collapse;
+            height: 84px;
+        }
+        .doc-control-table td {
+            border: 1px solid #bdc3c7;
+            padding: 3px 8px;
+            font-size: 11px;
+            text-align: left;
+            color: #555;
+            height: 25%;
+            box-sizing: border-box;
+        }
+        .doc-control-table td strong {
+            color: #333;
+        }
+        h1 {
+            text-align: center;
+            font-size: 18px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin: 0 0 25px 0;
+            color: #c0392b;
+            line-height: 1.4;
+        }
+        .form-group {
+            display: flex;
+            align-items: flex-end;
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            font-weight: bold;
+            margin-right: 8px;
+            font-size: 13px;
+            white-space: nowrap;
+        }
+        .form-group .line {
+            flex-grow: 1;
+            border-bottom: 1px solid #333;
+            height: 18px;
+        }
+        .paragraph-block {
+            font-size: 13px;
+            line-height: 1.8;
+            margin-bottom: 20px;
+            text-align: justify;
+        }
+        .inline-line {
+            display: inline-block;
+            border-bottom: 1px solid #333;
+            min-width: 150px;
+            height: 16px;
+            margin: 0 4px;
+        }
+        .bullet-list {
+            list-style: none;
+            padding-left: 0;
+            margin-bottom: 30px;
+        }
+        .bullet-list li {
+            position: relative;
+            padding-left: 30px;
+            margin-bottom: 12px;
+            font-size: 12px;
+            line-height: 1.6;
+            text-align: justify;
+        }
+        .bullet-list li::before {
+            content: "➔";
+            position: absolute;
+            left: 5px;
+            top: 0;
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+        .conforme-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin-bottom: 30px;
+        }
+        .sign-line {
+            border-bottom: 1px solid #333;
+            height: 30px;
+            margin-bottom: 5px;
+        }
+        .sign-label {
+            font-weight: bold;
+            font-size: 12px;
+        }
+        .sign-sublabel {
+            font-size: 11px;
+            color: #555;
+        }
+        .section-header {
+            background-color: #7f8c8d;
+            color: #fff;
+            padding: 8px 12px;
+            font-size: 13px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        .req-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px 15px;
+            font-size: 12px;
+            margin-bottom: 20px;
+        }
+        .req-grid label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .checkbox {
+            width: 14px;
+            height: 14px;
+            border: 1px solid #333;
+            display: inline-block;
+            vertical-align: middle;
+        }
+        table.rating-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            border: 1px solid #bdc3c7;
+        }
+        table.rating-table td, table.rating-table th {
+            border: 1px solid #bdc3c7;
+            padding: 8px 12px;
+            font-size: 12px;
+        }
+        .checkbox-group-row {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+        .copies-section {
+            border-top: 2px solid #2c3e50;
+            padding-top: 10px;
+            margin-top: 30px;
+            font-size: 12px;
+        }
+        .copies-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px 20px;
+            margin-top: 8px;
+        }
+        .copies-grid label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        @media print {
+            
+            
+        }
+    
+        /* --- Interactive Fillable Form Styles --- */
+        .fillable-line {
+            flex-grow: 1;
+            border: none;
+            border-bottom: 1px solid #333333;
+            background: transparent;
+            font-family: inherit;
+            font-size: 13px;
+            color: #000000;
+            padding: 0 4px;
+            outline: none;
+            box-sizing: border-box;
+            height: 18px;
+        }
+        .fillable-line:focus {
+            background-color: rgba(52, 152, 219, 0.05);
+            border-bottom: 1px solid #3498db;
+        }
+        .fillable-line.inline-input {
+            display: inline-block;
+            vertical-align: bottom;
+            flex-grow: 0;
+        }
+        .fillable-checkbox {
+            width: 14px;
+            height: 14px;
+            border: 1px solid #333;
+            accent-color: #2c3e50;
+            cursor: pointer;
+            margin-right: 4px;
+            vertical-align: middle;
+        }
+        @media print {
+            /* Force inputs to print cleanly */
+            input[type="text"].fillable-line {
+                border: none !important;
+                border-bottom: 1px solid #000000 !important;
+                background: transparent !important;
+                color: #000000 !important;
+                box-shadow: none !important;
+                padding: 0 !important;
+            }
+            input[type="checkbox"].fillable-checkbox {
+                border: 1px solid #000000 !important;
+                background: transparent !important;
+                accent-color: #000000 !important;
+            }
+            /* Prevent blank pages and container overflow */
+            html, body {
+                background: #ffffff !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                height: auto !important;
+                min-height: 0 !important;
+            }
+            .document-container {
+                box-shadow: none !important;
+                border: none !important;
+                margin: 0 auto !important;
+                padding: 0 !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                min-height: 0 !important;
+                height: auto !important;
+                background: #ffffff !important;
+            }
+        }
+</style>
+</head>
+<body>
+
+<div class="document-container">
+    
+    <!-- Header Section -->
+    <table class="header-table" style="width: 100%; border-collapse: collapse; border: 1px solid #bdc3c7; margin-bottom: 20px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;">
+        <tr>
+            <td rowspan="4" style="width: 25%; text-align: center; padding: 10px; border: 1px solid #bdc3c7; vertical-align: middle; background-color: #ffffff;">
+                <img src="images/logo.png" alt="ONE CORPORATE Logo" class="logo-img" style="height: 55px; width: auto; display: block; margin: 0 auto;" />
+            </td>
+            <td rowspan="4" style="width: 40%; text-align: center; padding: 10px; border: 1px solid #bdc3c7; vertical-align: middle; font-weight: bold; font-size: 15px; color: #2c3e50; text-transform: uppercase; letter-spacing: 0.5px; background-color: #ffffff;">
+                Application for Construction, Renovation, and Repair Works of Individual Units
+            </td>
+            <td style="width: 15%; padding: 4px 8px; border: 1px solid #bdc3c7; font-size: 11px; color: #555; vertical-align: middle; font-weight: bold; box-sizing: border-box; height: 21px; background-color: #ffffff;">Doc code:</td>
+            <td style="width: 20%; padding: 4px 8px; border: 1px solid #bdc3c7; font-size: 11px; color: #333; vertical-align: middle; box-sizing: border-box; height: 21px; background-color: #ffffff;">FM-OCT-PMO-09</td>
+        </tr>
+        <tr>
+            <td style="padding: 4px 8px; border: 1px solid #bdc3c7; font-size: 11px; color: #555; vertical-align: middle; font-weight: bold; box-sizing: border-box; height: 21px; background-color: #ffffff;">Rev. no.:</td>
+            <td style="padding: 4px 8px; border: 1px solid #bdc3c7; font-size: 11px; color: #333; vertical-align: middle; box-sizing: border-box; height: 21px; background-color: #ffffff;">0</td>
+        </tr>
+        <tr>
+            <td style="padding: 4px 8px; border: 1px solid #bdc3c7; font-size: 11px; color: #555; vertical-align: middle; font-weight: bold; box-sizing: border-box; height: 21px; background-color: #ffffff;">Eff. Date:</td>
+            <td style="padding: 4px 8px; border: 1px solid #bdc3c7; font-size: 11px; color: #333; vertical-align: middle; box-sizing: border-box; height: 21px; background-color: #ffffff;">9-Jun-25</td>
+        </tr>
+        <tr>
+            <td style="padding: 4px 8px; border: 1px solid #bdc3c7; font-size: 11px; color: #555; vertical-align: middle; font-weight: bold; box-sizing: border-box; height: 21px; background-color: #ffffff;">Page:</td>
+            <td style="padding: 4px 8px; border: 1px solid #bdc3c7; font-size: 11px; color: #333; vertical-align: middle; box-sizing: border-box; height: 21px; background-color: #ffffff;">1 of 1</td>
+        </tr>
+    </table>
+
+    <div class="form-group" style="width: 250px;">
+        <label>Date:</label>
+        <input type="text" class="fillable-line" />
+    </div>
+
+    <div class="paragraph-block">
+        This is to inform you that I, Unit Owner/Tenant of Bldg. <input type="text" class="fillable-line inline-line inline-input" style="min-width: 200px;" /> and Unit Number <input type="text" class="fillable-line inline-line inline-input" style="min-width: 120px;" /> of One Corporate will be doing construction, renovation and repair work/s inside my unit.
+    </div>
+
+    <div class="paragraph-block">
+        I hereby understand that I shall be fully responsible for the acts or omissions of my contractor , workers and/or representative/s and I agree as follows:
+    </div>
+
+    <ul class="bullet-list">
+        <li>To be accountable for all damages which we may cause directly or indirectly to other unit owners / tenant ; I hold the Property Management Office , Building Maintenance , and the One Corporate free and clear from any liability whatsoever, and/or any claim for damages or otherwise from third parties by reason of acts of omissions of the workers, personnel or construction workers involve in the renovation of my unit.</li>
+        <li>To submit all requirements to the Property Management Office and secure approval before proceeding with renovation work and to faithfully comply with the House Rules and General Construction Guidelines.</li>
+        <li>To submit a bond in the amount of <input type="text" class="fillable-line inline-line inline-input" style="min-width: 180px;" /> for renovation, to ensure faithful compliance of the above mentioned obligations; and in case, may be used to answer for damages which the building may suffer as a result of my renovation works.</li>
+        <li>And to qualify for a construction bond refund, the owner, tenant, or contractor must submit four (4) sets of signed and sealed A3-sized as-built plans within 30 days of project completion and acceptance. Full amount will be refunded provided however, that no violation or damage to property have been committed/realized by the contractor or its workers during the renovation/fit-out period. Net amount of deduction shall thereby be given after all violation penalties had been applied therefrom. ( This policy applies exclusively to construction, renovation, and repair works on units with an active cash bond )</li>
+    </ul>
+
+    <div style="font-weight: bold; font-size: 13px; margin-bottom: 15px;">Conforme By:</div>
+    <div class="conforme-section">
+        <div>
+            <input type="text" class="fillable-line sign-line" />
+            <div class="sign-label">Unit Owner/Tenant</div>
+            <div class="sign-sublabel">Signature over printed name</div>
+        </div>
+        <div>
+            <div class="form-group">
+                <label>Date:</label>
+                <input type="text" class="fillable-line" />
+            </div>
+            <div class="form-group">
+                <label>Time:</label>
+                <input type="text" class="fillable-line" />
+            </div>
+        </div>
+    </div>
+
+    <!-- BM OFFICE SECTION -->
+    <div class="section-header">To be filled out by Building Maintenance Office</div>
+    <div style="font-weight: bold; font-size: 12px; margin-bottom: 10px;">Requirements Submitted:</div>
+
+    <div class="req-grid">
+        <label><input type="checkbox" class="fillable-checkbox" /> Contractor Endorsement</label>
+        <label><input type="checkbox" class="fillable-checkbox" /> Scope of Works</label>
+        <label><input type="checkbox" class="fillable-checkbox" /> Bar Chart Schedule</label>
+        <label><input type="checkbox" class="fillable-checkbox" /> Architectural Plans</label>
+        <label><input type="checkbox" class="fillable-checkbox" /> List of Materials</label>
+        <label><input type="checkbox" class="fillable-checkbox" /> Construction Bond</label>
+        <label><input type="checkbox" class="fillable-checkbox" /> Electrical Plans</label>
+        <label><input type="checkbox" class="fillable-checkbox" /> List of Equipment</label>
+        <div></div>
+        <label><input type="checkbox" class="fillable-checkbox" /> Sanitary and Plumbing Plans</label>
+        <label><input type="checkbox" class="fillable-checkbox" /> List of Workers</label>
+        <div></div>
+        <label><input type="checkbox" class="fillable-checkbox" /> Mechanical Plans</label>
+        <label><input type="checkbox" class="fillable-checkbox" /> Fire protection equipment plan</label>
+        <div></div>
+        <label><input type="checkbox" class="fillable-checkbox" /> Communication plan /telephone lay-out</label>
+        <label><input type="checkbox" class="fillable-checkbox" /> Any other plan/document that may be applicable</label>
+        <div></div>
+    </div>
+
+    <div style="font-weight: bold; font-size: 12px; margin-bottom: 8px;">Remarks:</div>
+    <div style="display: flex; flex-direction: column; gap: 8px; font-size: 12px; margin-bottom: 25px;">
+        <label><input type="checkbox" class="fillable-checkbox" /> For issuance of Working Permit</label>
+        <div style="display: flex; align-items: flex-end; width: 100%;">
+            <label style="white-space: nowrap; margin-right: 8px;"><input type="checkbox" class="fillable-checkbox" /> With comments:</label>
+            <div style="flex-grow: 1; border-bottom: 1px solid #333; height: 16px;"></div>
+        </div>
+    </div>
+
+    <!-- SERVICE RATING -->
+    <div style="background-color: #2c3e50; color: #fff; padding: 6px 12px; font-size: 12px; font-weight: bold;">
+        For us to be able to serve you better, we would like you to rate our service.
+    </div>
+
+    <table class="rating-table">
+        <tr>
+            <td>Were your application properly addressed within the committed date?</td>
+            <td style="width: 260px;">
+                <div class="checkbox-group-row">
+                    <label><input type="checkbox" class="fillable-checkbox" /> Yes</label>
+                    <label><input type="checkbox" class="fillable-checkbox" /> No</label>
+                    <label><input type="checkbox" class="fillable-checkbox" /> Not Satisfied</label>
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <td>Kindly rate the quality of the work/job done.</td>
+            <td>
+                <div class="checkbox-group-row">
+                    <label><input type="checkbox" class="fillable-checkbox" /> Yes</label>
+                    <label><input type="checkbox" class="fillable-checkbox" /> No</label>
+                    <label><input type="checkbox" class="fillable-checkbox" /> Not Satisfied</label>
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2" style="background-color: #7f8c8d; color: #fff; font-weight: bold;">Kindly rate the personnel who attended to your concern/s:</td>
+        </tr>
+        <tr>
+            <td style="padding-left: 25px;">1) Job knowledge</td>
+            <td>
+                <div class="checkbox-group-row">
+                    <label><input type="checkbox" class="fillable-checkbox" /> Satisfied</label>
+                    <label><input type="checkbox" class="fillable-checkbox" /> Fair</label>
+                    <label><input type="checkbox" class="fillable-checkbox" /> Not Satisfied</label>
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <td style="padding-left: 25px;">2) Grooming</td>
+            <td>
+                <div class="checkbox-group-row">
+                    <label><input type="checkbox" class="fillable-checkbox" /> Satisfied</label>
+                    <label><input type="checkbox" class="fillable-checkbox" /> Fair</label>
+                    <label><input type="checkbox" class="fillable-checkbox" /> Not Satisfied</label>
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <td style="padding-left: 25px;">3) Courteousness</td>
+            <td>
+                <div class="checkbox-group-row">
+                    <label><input type="checkbox" class="fillable-checkbox" /> Satisfied</label>
+                    <label><input type="checkbox" class="fillable-checkbox" /> Fair</label>
+                    <label><input type="checkbox" class="fillable-checkbox" /> Not Satisfied</label>
+                </div>
+
+    <!-- Copies Section -->
+    <div class="copies-section">
+        <strong>Copies to:</strong>
+        <div class="copies-grid">
+            <label><input type="checkbox" class="fillable-checkbox" /> Building Maintenance Office</label>
+            <label><input type="checkbox" class="fillable-checkbox" /> FCLaranang Development Corporation - Technical Engineering Services</label>
+            <label><input type="checkbox" class="fillable-checkbox" /> Unit Owner</label>
+            <label><input type="checkbox" class="fillable-checkbox" /> Property Management office</label>
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>

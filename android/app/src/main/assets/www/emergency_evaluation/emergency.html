@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>One Corporate - Emergency Safety Evaluation & Preparedness Manual</title>
+  <link rel="stylesheet" href="style.css">
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body class="dark-theme">
+  <div class="app-container">
+    
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-brand">
+        <div class="brand-logo-wrapper">
+          <img src="../logo.png" onerror="this.onerror=null; this.src='one corporate logo.png';" alt="One Corporate Logo" class="dashboard-brand-logo-img">
+        </div>
+      </div>
+
+      <nav class="sidebar-menu">
+        <a href="#" class="menu-item active" id="nav-wizard" onclick="switchSection('wizard')">
+          <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="menu-icon"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+          <span>Safety Inspection</span>
+        </a>
+        <a href="#" class="menu-item" id="nav-logs" onclick="switchSection('logs')">
+          <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="menu-icon"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+          <span>Inspection Logs</span>
+        </a>
+        <a href="#" class="menu-item" id="nav-reassurance" onclick="switchSection('reassurance')">
+          <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="menu-icon"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+          <span>Reassurance Reports</span>
+        </a>
+        <a href="#" class="menu-item" id="nav-guidelines" onclick="switchSection('guidelines')">
+          <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="menu-icon"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+          <span>Preparedness Plan (ERP)</span>
+        </a>
+        <div class="sidebar-divider" style="margin: 16px 0; border-top: 1px dashed var(--border-color);"></div>
+        <button type="button" class="menu-item exit-item" onclick="exitToMainDashboard(event)" style="background: none; border: none; width: 100%; text-align: left; cursor: pointer; font-family: inherit; font-size: inherit; color: inherit; display: flex; align-items: center; gap: 10px; padding: 10px 14px;">
+          <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="menu-icon"><polyline points="9 10 4 15 9 20"></polyline><path d="M20 4v7a4 4 0 0 1-4 4H4"></path></svg>
+          <span>Back to Dashboard</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="user-profile">
+          <div class="avatar" id="current-user-avatar">AD</div>
+          <div class="profile-info">
+            <span class="user-name" id="current-user-name">Admin User</span>
+            <span class="user-role" id="current-user-role">Administrator</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- SIDEBAR TOGGLE BUTTON (<< / >>) -->
+      <button type="button" id="sidebar-toggle-btn" class="sidebar-toggle-btn" onclick="toggleSidebar()" title="Hide Sidebar (<<)" aria-label="Toggle Sidebar">
+        <span id="sidebar-toggle-text">&laquo;</span>
+      </button>
+    </aside>
+
+    <!-- MAIN WINDOW -->
+    <main class="main-content">
+      
+      <!-- HEADER -->
+      <header class="top-header">
+        <div class="header-left">
+          <h2 class="page-title" id="page-title-text">Post-Earthquake Building Inspection Wizard</h2>
+          <span class="current-date" id="header-date">Monday, July 20, 2026</span>
+        </div>
+        <div class="header-right">
+          <!-- Theme Mode Switcher -->
+          <button type="button" class="theme-toggle-btn" id="theme-toggle-btn" onclick="toggleTheme()" title="Toggle Dark / Light Mode">
+            <span class="theme-icon" id="theme-toggle-icon">☀️</span>
+            <span id="theme-toggle-label">Light Mode</span>
+          </button>
+
+          <!-- Manager Presence Selector -->
+          <div class="role-selector-container">
+            <label style="font-size: 11px; font-weight: 600; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; gap: 8px; user-select: none;">
+              <input type="checkbox" id="manager-absence-toggle" onchange="toggleManagerAbsence(this.checked)" style="cursor: pointer;">
+              Manager is Absent (Delegate to Assistant)
+            </label>
+          </div>
+        </div>
+      </header>
+
+      <!-- MANAGER ABSENCE BANNER -->
+      <div id="manager-absence-banner" class="alert-banner" style="display: none; background-color: rgba(245, 158, 11, 0.15); border: 1px solid var(--major-orange); color: #fde047; margin: 16px 32px 0 32px; padding: 12px 24px; border-radius: 8px; align-items: center; gap: 12px;">
+        <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+        <span style="font-size: 12px; font-weight: 600;">Notice: Building Maintenance Manager is ABSENT. Assistant Building Maintenance will verify and sign all reassure reports.</span>
+      </div>
+
+      <!-- MAIN SCROLLABLE WRAPPER -->
+      <div class="tabs-container">
+        
+        <!-- ==================== WIZARD MODULE PANEL ==================== -->
+        <section id="panel-wizard" class="tab-panel active">
+          <div class="wizard-layout">
+            <div class="safety-wizard-card">
+              <!-- Wizard Steps Menu -->
+              <div class="wizard-steps-nav" id="wizard-nav-list">
+                <button class="step-nav-btn active" onclick="switchWizardStep(1)" id="wizard-nav-1">1. Metadata</button>
+                <button class="step-nav-btn" onclick="switchWizardStep(2)" id="wizard-nav-2">2. Exterior</button>
+                <button class="step-nav-btn" onclick="switchWizardStep(3)" id="wizard-nav-3">3. Structural Interior</button>
+                <button class="step-nav-btn" onclick="switchWizardStep(4)" id="wizard-nav-4">4. Non-Structural</button>
+                <button class="step-nav-btn" onclick="switchWizardStep(5)" id="wizard-nav-5">5. Utilities</button>
+                <button class="step-nav-btn" onclick="switchWizardStep(6)" id="wizard-nav-6">6. Fire Safety</button>
+                <button class="step-nav-btn" onclick="switchWizardStep(7)" id="wizard-nav-7">7. Elevators</button>
+                <button class="step-nav-btn" onclick="switchWizardStep(8)" id="wizard-nav-8">8. Decision & Signs</button>
+              </div>
+
+              <!-- Wizard Contents -->
+              <div class="wizard-content">
+                
+                <!-- STEP 1: Details -->
+                <div class="wizard-pane active" id="wizard-pane-1">
+                  <h3>Step 1: Evaluation Meta Information</h3>
+                  <div class="form-grid">
+                    <div class="form-group">
+                      <label for="eq-event-type">Emergency Event Type</label>
+                      <select id="eq-event-type" style="background: rgba(15, 23, 42, 0.8); color: #fff; border: 1px solid var(--border-color); padding: 10px; border-radius: 6px; width: 100%; font-weight: 600;" onchange="onEventTypeChange(this.value)">
+                        <option value="Earthquake">Earthquake (ATC-20 Rapid Assessment)</option>
+                        <option value="Typhoon">Typhoon / Severe Weather / Wind Hazard</option>
+                        <option value="Flood">Severe Rain & Basement Flood Assessment</option>
+                        <option value="UtilityFailure">Post-Utility Failure (Power / Gas / Water Outage)</option>
+                      </select>
+                    </div>
+                    <div class="form-group">
+                      <label for="eq-building-name">Building Name</label>
+                      <input type="text" id="eq-building-name" value="One Corporate Building">
+                    </div>
+                    <div class="form-group">
+                      <label for="eq-building-address">Property Address</label>
+                      <input type="text" id="eq-building-address" value="101 Financial District, Metro Manila">
+                    </div>
+                    <div class="form-group">
+                      <label for="eq-date-time">Earthquake Date / Time</label>
+                      <input type="datetime-local" id="eq-date-time" value="2026-07-20T13:00">
+                    </div>
+                    <div class="form-group">
+                      <label for="eq-intensity">Magnitude / Reported Intensity</label>
+                      <input type="text" id="eq-intensity" placeholder="e.g. Magnitude 6.2 / Intensity VI">
+                    </div>
+                    <div class="form-group font-group-large">
+                      <label for="eq-inspection-team">Inspection Team Members</label>
+                      <input type="text" id="eq-inspection-team" placeholder="Names of inspectors e.g. John Doe, Mike Johnson">
+                    </div>
+                  </div>
+                  <div class="wizard-footer">
+                    <button class="btn btn-primary ml-auto" onclick="switchWizardStep(2)">Next: Exterior Checks &rarr;</button>
+                  </div>
+                </div>
+
+                <!-- STEP 2: Exterior -->
+                <div class="wizard-pane" id="wizard-pane-2">
+                  <div class="pane-header">
+                    <h3>Step 2: Exterior Rapid Assessment</h3>
+                    <p>Walk the full perimeter scans. Focus on parapets, glazing, roof items, and ground issues. You can edit checklist items or attach photos.</p>
+                  </div>
+                  <div class="checklist-table-wrapper">
+                    <table class="checklist-table" id="eq-table-exterior">
+                      <thead>
+                        <tr>
+                          <th style="width:36px; text-align:center;">#</th>
+                          <th style="min-width:240px;">Visual Inspection Item (Click text to edit)</th>
+                          <th style="width:160px;">Condition Status</th>
+                          <th style="min-width:180px;">Location notes / Observations</th>
+                          <th style="width:130px; text-align:center;">Photo Evidence</th>
+                          <th style="width:45px; text-align:center;">Action</th>
+                        </tr>
+                      </thead>
+                      <tbody></tbody>
+                    </table>
+                  </div>
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px;">
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="addCustomChecklistItem('exterior')" style="font-size:11px; padding:6px 12px; border-color:rgba(56,189,248,0.4); color:#38bdf8;">
+                      ➕ Add Inspection Item
+                    </button>
+                    <div style="display:flex; gap:10px;">
+                      <button class="btn btn-secondary" onclick="switchWizardStep(1)">&larr; Back</button>
+                      <button class="btn btn-primary" onclick="switchWizardStep(3)">Next: Structural Interior &rarr;</button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- STEP 3: Structural Interior -->
+                <div class="wizard-pane" id="wizard-pane-3">
+                  <div class="pane-header">
+                    <h3>Step 3: Structural Interior Assessment</h3>
+                    <p>Focus on structural load paths: columns, beams, load-bearing concrete walls, and connections.</p>
+                  </div>
+                  <div class="checklist-table-wrapper">
+                    <table class="checklist-table" id="eq-table-structural">
+                      <thead>
+                        <tr>
+                          <th style="width:36px; text-align:center;">#</th>
+                          <th style="min-width:240px;">Visual Inspection Item (Click text to edit)</th>
+                          <th style="width:160px;">Condition Status</th>
+                          <th style="min-width:180px;">Location notes / Observations</th>
+                          <th style="width:130px; text-align:center;">Photo Evidence</th>
+                          <th style="width:45px; text-align:center;">Action</th>
+                        </tr>
+                      </thead>
+                      <tbody></tbody>
+                    </table>
+                  </div>
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px;">
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="addCustomChecklistItem('structural')" style="font-size:11px; padding:6px 12px; border-color:rgba(56,189,248,0.4); color:#38bdf8;">
+                      ➕ Add Inspection Item
+                    </button>
+                    <div style="display:flex; gap:10px;">
+                      <button class="btn btn-secondary" onclick="switchWizardStep(2)">&larr; Back</button>
+                      <button class="btn btn-primary" onclick="switchWizardStep(4)">Next: Non-Structural &rarr;</button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- STEP 4: Non-Structural -->
+                <div class="wizard-pane" id="wizard-pane-4">
+                  <div class="pane-header">
+                    <h3>Step 4: Non-Structural Elements</h3>
+                    <p>Identify suspended ceilings, fixtures, glass panes, cabinetry, partitions.</p>
+                  </div>
+                  <div class="checklist-table-wrapper">
+                    <table class="checklist-table" id="eq-table-nonstructural">
+                      <thead>
+                        <tr>
+                          <th style="width:36px; text-align:center;">#</th>
+                          <th style="min-width:240px;">Visual Inspection Item (Click text to edit)</th>
+                          <th style="width:160px;">Condition Status</th>
+                          <th style="min-width:180px;">Location notes / Observations</th>
+                          <th style="width:130px; text-align:center;">Photo Evidence</th>
+                          <th style="width:45px; text-align:center;">Action</th>
+                        </tr>
+                      </thead>
+                      <tbody></tbody>
+                    </table>
+                  </div>
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px;">
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="addCustomChecklistItem('nonstructural')" style="font-size:11px; padding:6px 12px; border-color:rgba(56,189,248,0.4); color:#38bdf8;">
+                      ➕ Add Inspection Item
+                    </button>
+                    <div style="display:flex; gap:10px;">
+                      <button class="btn btn-secondary" onclick="switchWizardStep(3)">&larr; Back</button>
+                      <button class="btn btn-primary" onclick="switchWizardStep(5)">Next: Utilities &rarr;</button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- STEP 5: Utilities -->
+                <div class="wizard-pane" id="wizard-pane-5">
+                  <div class="pane-header">
+                    <h3>Step 5: Utilities & Building Systems</h3>
+                    <p>Inspect panels, gas valves, plumbing ruptures, HVAC, generator operations, water tanks.</p>
+                  </div>
+                  <div class="checklist-table-wrapper">
+                    <table class="checklist-table" id="eq-table-utilities">
+                      <thead>
+                        <tr>
+                          <th style="width:36px; text-align:center;">#</th>
+                          <th style="min-width:240px;">Visual Inspection Item (Click text to edit)</th>
+                          <th style="width:160px;">Condition Status</th>
+                          <th style="min-width:180px;">Location notes / Observations</th>
+                          <th style="width:130px; text-align:center;">Photo Evidence</th>
+                          <th style="width:45px; text-align:center;">Action</th>
+                        </tr>
+                      </thead>
+                      <tbody></tbody>
+                    </table>
+                  </div>
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px;">
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="addCustomChecklistItem('utilities')" style="font-size:11px; padding:6px 12px; border-color:rgba(56,189,248,0.4); color:#38bdf8;">
+                      ➕ Add Inspection Item
+                    </button>
+                    <div style="display:flex; gap:10px;">
+                      <button class="btn btn-secondary" onclick="switchWizardStep(4)">&larr; Back</button>
+                      <button class="btn btn-primary" onclick="switchWizardStep(6)">Next: Fire Safety &rarr;</button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- STEP 6: Fire Safety -->
+                <div class="wizard-pane" id="wizard-pane-6">
+                  <div class="pane-header">
+                    <h3>Step 6: Fire & Life Safety Systems</h3>
+                    <p>Verify fire alarm panel status, sprinkler pressure, exits, lights, extinguishers, and egress hallways.</p>
+                  </div>
+                  <div class="checklist-table-wrapper">
+                    <table class="checklist-table" id="eq-table-firesafety">
+                      <thead>
+                        <tr>
+                          <th style="width:36px; text-align:center;">#</th>
+                          <th style="min-width:240px;">Visual Inspection Item (Click text to edit)</th>
+                          <th style="width:160px;">Condition Status</th>
+                          <th style="min-width:180px;">Location notes / Observations</th>
+                          <th style="width:130px; text-align:center;">Photo Evidence</th>
+                          <th style="width:45px; text-align:center;">Action</th>
+                        </tr>
+                      </thead>
+                      <tbody></tbody>
+                    </table>
+                  </div>
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px;">
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="addCustomChecklistItem('firesafety')" style="font-size:11px; padding:6px 12px; border-color:rgba(56,189,248,0.4); color:#38bdf8;">
+                      ➕ Add Inspection Item
+                    </button>
+                    <div style="display:flex; gap:10px;">
+                      <button class="btn btn-secondary" onclick="switchWizardStep(5)">&larr; Back</button>
+                      <button class="btn btn-primary" onclick="switchWizardStep(7)">Next: Elevators &rarr;</button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- STEP 7: Elevators -->
+                <div class="wizard-pane" id="wizard-pane-7">
+                  <div class="pane-header">
+                    <h3>Step 7: Elevators & Vertical Transport</h3>
+                    <p>Ensure vertical transit is locked and out of service until technician clearance is signed.</p>
+                  </div>
+                  <div class="checklist-table-wrapper">
+                    <table class="checklist-table" id="eq-table-elevators">
+                      <thead>
+                        <tr>
+                          <th style="width:36px; text-align:center;">#</th>
+                          <th style="min-width:240px;">Visual Inspection Item (Click text to edit)</th>
+                          <th style="width:160px;">Condition Status</th>
+                          <th style="min-width:180px;">Location notes / Observations</th>
+                          <th style="width:130px; text-align:center;">Photo Evidence</th>
+                          <th style="width:45px; text-align:center;">Action</th>
+                        </tr>
+                      </thead>
+                      <tbody></tbody>
+                    </table>
+                  </div>
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px;">
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="addCustomChecklistItem('elevators')" style="font-size:11px; padding:6px 12px; border-color:rgba(56,189,248,0.4); color:#38bdf8;">
+                      ➕ Add Inspection Item
+                    </button>
+                    <div style="display:flex; gap:10px;">
+                      <button class="btn btn-secondary" onclick="switchWizardStep(6)">&larr; Back</button>
+                      <button class="btn btn-primary" onclick="switchWizardStep(8)">Next: Placard Decision &rarr;</button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- STEP 8: Decision & Signs -->
+                <div class="wizard-pane" id="wizard-pane-8">
+                  <div class="pane-header">
+                    <h3>Step 8: Official Placard Decision & Sign-Off</h3>
+                    <p>Set final placard rating, inspector signatures, and preview the safety notices.</p>
+                  </div>
+
+                  <!-- Edit Mode Banner -->
+                  <div id="editing-log-banner" style="display: none; background: rgba(56, 189, 248, 0.15); border: 1px solid #38bdf8; border-radius: 8px; padding: 12px 16px; margin-bottom: 20px; align-items: center; justify-content: space-between;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                      <svg viewBox="0 0 24 24" width="20" height="20" stroke="#38bdf8" stroke-width="2" fill="none"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                      <span style="font-size: 12px; font-weight: 700; color: #e0f2fe;" id="editing-log-badge-text">
+                        Editing Saved Safety Evaluation Record
+                      </span>
+                    </div>
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="cancelEditSafetyEvaluation()" style="font-size: 11px;">
+                      Cancel Edit Mode
+                    </button>
+                  </div>
+
+                  <div class="placard-eval-split">
+                    <div class="placard-calculator-panel">
+                      <h4>Auto-Suggested Placard</h4>
+                      <div class="suggested-placard-glow" id="suggested-placard-box">
+                        <span class="placard-title" id="suggested-placard-title">GREEN</span>
+                        <span class="placard-desc" id="suggested-placard-desc">No apparent hazards. Safe to occupy.</span>
+                      </div>
+                      <div class="form-group mt-15">
+                        <label for="eq-override-placard">Official Assigned Placard (Override if needed)</label>
+                        <select id="eq-override-placard" onchange="updateOfficialPlacardDisplay(this.value)">
+                          <option value="GREEN">GREEN - Inspected & Safe</option>
+                          <option value="YELLOW">YELLOW - Restricted Entry</option>
+                          <option value="RED">RED - Unsafe (DO NOT ENTER)</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div class="placard-signoff-panel">
+                      <h4>Inspector Signature Block</h4>
+                      <div class="form-grid-condensed">
+                        <div class="form-group">
+                          <label for="eq-sign-inspector">Lead Inspector Name</label>
+                          <input type="text" id="eq-sign-inspector" placeholder="e.g. John Doe, Lead Engineer">
+                        </div>
+                        <div class="form-group">
+                          <label for="eq-sign-manager">Approver (Maintenance Manager)</label>
+                          <input type="text" id="eq-sign-manager" placeholder="e.g. Robert Smith, Building Maintenance Manager">
+                        </div>
+                        <div class="form-group">
+                          <label for="eq-sign-structural">Structural Engineer Name (If applicable)</label>
+                          <input type="text" id="eq-sign-structural" placeholder="e.g. Engr. Mark Cruz, PE">
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="safety-notices-preview mt-20">
+                    <div class="preview-tabs">
+                      <button class="preview-tab-btn active" onclick="switchNoticePreview('tenant-notice')">Printable Safety Placard</button>
+                    </div>
+
+                    <!-- Printable Safety Notice -->
+                    <div class="notice-preview-pane active" id="notice-pane-tenant-notice">
+                      <div class="printable-notice-box" id="print-safety-notice-element">
+                        <div class="notice-header">
+                          <h2>BUILDING SAFETY STATUS NOTICE</h2>
+                          <h1 id="notice-building-header">ONE CORPORATE BUILDING</h1>
+                        </div>
+                        <div class="notice-placard-banner" id="notice-placard-color-band">
+                          <h2 id="notice-placard-badge">GREEN — SAFE TO OCCUPY</h2>
+                        </div>
+                        <p class="notice-p">
+                          Following the earthquake that occurred on <strong id="notice-eq-date">[Date]</strong> at approximately <strong id="notice-eq-time">[Time]</strong> (Reported Intensity: <strong id="notice-eq-intensity">[Intensity]</strong>), our Building Maintenance team carried out a full safety inspection of this property, covering the structural frame, non-structural elements, elevators, utilities, and fire/life-safety systems.
+                        </p>
+                        <div class="notice-details-block">
+                          <p><strong>Inspected Areas & Dynamic Status Notes:</strong></p>
+                          <p id="notice-placard-details-text">All systems functioning normally. No structural hazards observed.</p>
+                        </div>
+                        <div class="notice-signoff-block">
+                          <div>
+                            <span class="sign-title">Inspected By:</span>
+                            <span class="sign-name" id="notice-sign-inspector">[Inspector Name]</span>
+                          </div>
+                          <div>
+                            <span class="sign-title" id="notice-manager-title-label">Reviewed By: Building Maintenance Manager</span>
+                            <span class="sign-name" id="notice-sign-manager">[Manager Name]</span>
+                          </div>
+                          <div>
+                            <span class="sign-title">Structural Engineer Sign-Off:</span>
+                            <span class="sign-name" id="notice-sign-structural">[Structural Engineer]</span>
+                          </div>
+                        </div>
+                        <div class="notice-footer">
+                          <p>If you notice any new cracks, leaks, unusual sounds, or other concerns, please report them immediately to Building Management.</p>
+                        </div>
+                      </div>
+                      <button class="btn btn-secondary mt-10 print-no-show" onclick="printElement('print-safety-notice-element')">Print Safety Notice</button>
+                    </div>
+                  </div>
+
+                  <div class="wizard-footer mt-20">
+                    <button class="btn btn-secondary" onclick="switchWizardStep(7)">&larr; Back</button>
+                    <button class="btn btn-secondary" id="btn-cancel-edit-eval" style="display: none;" onclick="cancelEditSafetyEvaluation()">Cancel Edit</button>
+                    <button class="btn btn-success ml-auto" id="btn-submit-eq" onclick="submitSafetyEvaluation()">Save Inspection & Generate Report</button>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== LOGS MODULE PANEL ==================== -->
+        <section id="panel-logs" class="tab-panel">
+          <div class="section-card">
+            <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+              <div>
+                <h2>Historical Emergency & Typhoon Safety Inspection Records</h2>
+                <span class="header-badge">ATC-20 & Severe Weather Database</span>
+              </div>
+              <button class="btn btn-primary" onclick="startNewSafetyEvaluation(); switchSection('wizard');" style="font-size:12px; padding:6px 14px;">
+                ➕ New Safety Inspection
+              </button>
+            </div>
+            <div class="checklist-table-wrapper mt-15">
+              <table class="data-table" id="eq-history-table">
+                <thead>
+                  <tr>
+                    <th>Date Inspected</th>
+                    <th>Time</th>
+                    <th>Event Category</th>
+                    <th>Event Date/Time</th>
+                    <th>Magnitude / Signal / Rainfall</th>
+                    <th>Safety Status</th>
+                    <th>Lead Inspector</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="eq-history-tbody">
+                  <!-- Dynamically populated -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== REASSURANCE REPORTS PANEL ==================== -->
+        <section id="panel-reassurance" class="tab-panel">
+          <div class="reports-control-card">
+            <h2>Earthquake Safety Reassurance Reports Desk</h2>
+            <p>Generate a comprehensive building condition audit log along with an official reassuring letter directed to the building tenants.</p>
+            <div class="report-filters-form">
+              <div class="form-group" style="min-width:320px;">
+                <label for="reassurance-select-log">Select Safety Inspection Log</label>
+                <select id="reassurance-select-log" onchange="loadReportPreviewForSelection(this.value)">
+                  <!-- Dynamically populated options -->
+                </select>
+              </div>
+              <button class="btn btn-primary" onclick="generateComprehensiveReport()">Generate Reassurance Report</button>
+            </div>
+          </div>
+
+          <!-- Report Preview Screen -->
+          <div class="section-card report-preview-card" id="reassurance-preview-section" style="display: none;">
+            <div class="report-preview-header">
+              <h2>Reassurance Report Preview</h2>
+              <div class="control-group" style="display: flex; gap: 8px; flex-wrap: wrap;">
+                <button class="btn btn-secondary" onclick="editCurrentSelectedReportLog()" id="btn-edit-report-log">✏️ Edit This Evaluation</button>
+                <button class="btn btn-secondary" onclick="copyReassuranceLetter()">Copy Reassurance Letter</button>
+                <button class="btn btn-primary" onclick="printElement('reassurance-printable-area')">Print Report & Letter</button>
+              </div>
+            </div>
+            <div class="report-canvas" id="reassurance-printable-area">
+              <!-- Dynamically populated comprehensive report + letter -->
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== EMERGENCY PREPAREDNESS PLAN & GUIDELINES PANEL ==================== -->
+        <section id="panel-guidelines" class="tab-panel">
+          
+          <!-- Sub-navigation Pills -->
+          <div class="guideline-subnav-wrapper">
+            <div class="guideline-subnav">
+              <button class="guideline-pill active" id="pill-org-structure" onclick="switchGuidelineSubTab('org-structure')">
+                <span>🏢</span> Committee Org Chart
+              </button>
+              <button class="guideline-pill" id="pill-golden-rules" onclick="switchGuidelineSubTab('golden-rules')">
+                <span>⚡</span> 3-Min Rule & 6-Step Flow
+              </button>
+              <button class="guideline-pill" id="pill-hazard-protocols" onclick="switchGuidelineSubTab('hazard-protocols')">
+                <span>🚨</span> 10 Hazard Action Protocols
+              </button>
+              <button class="guideline-pill" id="pill-evac-plans" onclick="switchGuidelineSubTab('evac-plans')">
+                <span>🗺️</span> Evacuation Plans
+              </button>
+              <button class="guideline-pill" id="pill-heavy-machinery" onclick="switchGuidelineSubTab('heavy-machinery')">
+                <span>⚙️</span> Machinery & Equipment
+              </button>
+              <button class="guideline-pill" id="pill-evac-comms" onclick="switchGuidelineSubTab('evac-comms')">
+                <span>📢</span> Evac, Refuge & Comms
+              </button>
+              <button class="guideline-pill" id="pill-drills-hotlines" onclick="switchGuidelineSubTab('drills-hotlines')">
+                <span>📋</span> Drills & Emergency Hotlines
+              </button>
+            </div>
+          </div>
+
+          <!-- SUB-TAB 1: ORG STRUCTURE -->
+          <div class="guideline-pane active" id="pane-org-structure">
+            <div class="section-card">
+              <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+                <div>
+                  <h2 style="font-family: var(--font-display); font-size: 20px; font-weight: 800; color: #fff;">Emergency Response Committee / Team (BERT)</h2>
+                  <p style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">
+                    Hierarchical organizational command flow & interactive draggable committee roster. Click any member to edit info.
+                  </p>
+                </div>
+                <div class="org-action-bar">
+                  <button type="button" class="btn btn-secondary btn-sm" onclick="openAddOrgMemberModal()">➕ Add Member</button>
+                  <button type="button" class="btn btn-secondary btn-sm" onclick="resetEmergencyOrgStructure()">🔄 Reset Default</button>
+                  <button type="button" class="btn btn-primary btn-sm" onclick="printElement('org-structure-printable-area')">🖨️ Print Org Chart</button>
+                </div>
+              </div>
+
+              <!-- Org Chart View Selector -->
+              <div class="org-view-toggle-bar print-no-show">
+                <button type="button" class="org-view-btn active" id="btn-view-tree" onclick="switchOrgView('tree')">
+                  <span>🌳</span> Hierarchical Org Chart
+                </button>
+                <button type="button" class="org-view-btn" id="btn-view-cards" onclick="switchOrgView('cards')">
+                  <span>🃏</span> Draggable Tier Cards & Editor
+                </button>
+              </div>
+
+              <!-- Main Printable Container for Org Structure -->
+              <div id="org-structure-printable-area">
+                <!-- VIEW 1: HIERARCHICAL TREE VIEW -->
+                <div id="org-tree-view-container" class="org-tree-scroll-wrapper">
+                  <!-- Dynamically populated hierarchical flowchart tree -->
+                </div>
+
+                <!-- VIEW 2: DRAGGABLE TIER CARDS VIEW -->
+                <div id="org-cards-view-container" class="org-structure-main-container" style="display: none;">
+                  <!-- Dynamically populated draggable tier cards -->
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- SUB-TAB 2: GOLDEN 3-MINUTE RULE & 6-STEP FLOW -->
+          <div class="guideline-pane" id="pane-golden-rules">
+            <div class="section-card">
+              <div class="golden-rule-hero">
+                <div class="golden-badge">CORE OPERATIONAL SAFEGUARD</div>
+                <h2>The Golden 3-Minute Rule: Why Defined Roles Matter</h2>
+                <p>
+                  Statistical emergency data demonstrates that the <strong>first three (3) minutes</strong> of an incident are the most critical. Having an active, role-designated Building Emergency Response Team (BERT) prevents incident escalation, eliminates confusion, and minimizes life safety risks.
+                </p>
+                <div class="golden-stats-grid">
+                  <div class="stat-box">
+                    <span class="stat-number">3 Min</span>
+                    <span class="stat-label">Initial Golden Action Window</span>
+                  </div>
+                  <div class="stat-box">
+                    <span class="stat-number">100%</span>
+                    <span class="stat-label">OSHA / DOLE Legal Duty of Care</span>
+                  </div>
+                  <div class="stat-box">
+                    <span class="stat-number">4x</span>
+                    <span class="stat-label">Faster Workplace Recovery Rate</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="flow-section-header">
+                <h3>Universal 6-Step Emergency Response Sequence</h3>
+                <p>Every commercial building emergency follows this structured 6-step lifecycle regardless of hazard type:</p>
+              </div>
+
+              <div class="response-steps-flow">
+                <div class="flow-card">
+                  <div class="flow-step-num">1</div>
+                  <h4>Alert</h4>
+                  <p>Discover emergency, sound alarms, pull pull-station, dial 911 immediately without waiting.</p>
+                </div>
+                <div class="flow-arrow">&rarr;</div>
+                <div class="flow-card">
+                  <div class="flow-step-num">2</div>
+                  <h4>Assess</h4>
+                  <p>Building Emergency Coordinator (BEC) & Controllers evaluate hazard scope and structural risk.</p>
+                </div>
+                <div class="flow-arrow">&rarr;</div>
+                <div class="flow-card">
+                  <div class="flow-step-num">3</div>
+                  <h4>Notify</h4>
+                  <p>Broadcast PA voice announcement, mass text/email, and activate internal emergency phone tree.</p>
+                </div>
+                <div class="flow-arrow">&rarr;</div>
+                <div class="flow-card">
+                  <div class="flow-step-num">4</div>
+                  <h4>Respond</h4>
+                  <p>Execute Evacuation / Shelter-in-Place / Area of Refuge and deploy First Aid Triage.</p>
+                </div>
+                <div class="flow-arrow">&rarr;</div>
+                <div class="flow-card">
+                  <div class="flow-step-num">5</div>
+                  <h4>Account</h4>
+                  <p>Floor Wardens sweep zones and report headcount roll calls to Assembly Area Marshal.</p>
+                </div>
+                <div class="flow-arrow">&rarr;</div>
+                <div class="flow-card">
+                  <div class="flow-step-num">6</div>
+                  <h4>Recover</h4>
+                  <p>Conduct physical ATC-20 audit, issue official All-Clear, and file After-Action Report (AAR).</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- SUB-TAB 3: HAZARD-SPECIFIC ACTION PROTOCOLS -->
+          <div class="guideline-pane" id="pane-hazard-protocols">
+            <div class="section-card">
+              <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+                <div>
+                  <h2>Emergency-Specific Action Protocols (10 Comprehensive Hazard Types)</h2>
+                  <p style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">
+                    Standard operating procedures covering Immediate Life-Safety Actions, Floor Warden Duties, and Critical DO-NOTs.
+                  </p>
+                </div>
+                <div style="display: flex; gap: 8px;">
+                  <button type="button" class="btn btn-primary btn-sm" onclick="printHazardProtocolsReport()">🖨️ Print Protocols Guide</button>
+                </div>
+              </div>
+
+              <!-- Hazard Category Filter Pills -->
+              <div class="hazard-filter-bar" style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; padding: 12px; background: rgba(0,0,0,0.2); border-radius: 8px; border: 1px solid var(--border-color);">
+                <button type="button" class="filter-pill-btn active" onclick="filterHazardProtocols('all', this)">All (11)</button>
+                <button type="button" class="filter-pill-btn" onclick="filterHazardProtocols('fire', this)">🔥 Fire</button>
+                <button type="button" class="filter-pill-btn" onclick="filterHazardProtocols('seismic', this)">🌐 Earthquake</button>
+                <button type="button" class="filter-pill-btn" onclick="filterHazardProtocols('wind', this)">🌀 High Wind / Storm</button>
+                <button type="button" class="filter-pill-btn" onclick="filterHazardProtocols('flood', this)">🌊 Heavy Rain / Flood</button>
+                <button type="button" class="filter-pill-btn" onclick="filterHazardProtocols('utility', this)">⚡ Utility Outage</button>
+                <button type="button" class="filter-pill-btn" onclick="filterHazardProtocols('medical', this)">🩺 Medical Emergency</button>
+                <button type="button" class="filter-pill-btn" onclick="filterHazardProtocols('threat', this)">🛡️ Active Threat</button>
+                <button type="button" class="filter-pill-btn" onclick="filterHazardProtocols('bomb', this)">📦 Bomb Threat</button>
+                <button type="button" class="filter-pill-btn" onclick="filterHazardProtocols('hazmat', this)">☣️ HazMat & Gas</button>
+                <button type="button" class="filter-pill-btn" onclick="filterHazardProtocols('elevator', this)">🛗 Elevator</button>
+                <button type="button" class="filter-pill-btn" onclick="filterHazardProtocols('assessment', this)">🏢 Building Assessment</button>
+              </div>
+
+              <div class="hazard-protocols-grid" id="hazard-protocols-accordion">
+                <!-- Dynamically rendered comprehensive hazard cards -->
+              </div>
+            </div>
+          </div>
+
+          <!-- SUB-TAB 4: EMERGENCY EVACUATION PLANS -->
+          <div class="guideline-pane" id="pane-evac-plans">
+            <div class="section-card">
+              <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 20px;">
+                <div>
+                  <h2 style="font-family: var(--font-display); font-size: 20px; font-weight: 800; color: #fff; text-transform: uppercase;">Emergency Evacuation Plans per Floor</h2>
+                  <p style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">
+                    Official FCLGC architectural egress diagrams, primary & secondary exit routes, pull stations, fire hose cabinets, and assembly muster paths.
+                  </p>
+                </div>
+                <div style="display: flex; gap: 8px;">
+                  <button type="button" class="btn btn-primary btn-sm" onclick="printEvacPlansReport()">🖨️ Print Evacuation Plans</button>
+                </div>
+              </div>
+
+              <!-- Building Selector Tabs -->
+              <div class="evac-building-nav-bar" style="display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 14px; flex-wrap: wrap;">
+                <button type="button" class="building-evac-tab active" id="btn-evac-bldg-oc" onclick="selectEvacBuilding('one-corporate', this)">
+                  <span style="font-size: 16px;">🏢</span> One Corporate Building
+                  <span class="badge-count" style="margin-left: 6px; background: rgba(56,189,248,0.2); color: #38bdf8; font-size: 10px; font-weight: 800; padding: 2px 8px; border-radius: 10px;">12 Plans</span>
+                </button>
+                <button type="button" class="building-evac-tab" id="btn-evac-bldg-center" onclick="selectEvacBuilding('one-center', this)">
+                  <span style="font-size: 16px;">🏢</span> One Center
+                  <span class="badge-count" style="margin-left: 6px; background: rgba(239,68,68,0.15); color: #f87171; font-size: 10px; font-weight: 800; padding: 2px 8px; border-radius: 10px;">Pending</span>
+                </button>
+                <button type="button" class="building-evac-tab" id="btn-evac-bldg-lefern" onclick="selectEvacBuilding('lefern-hotel', this)">
+                  <span style="font-size: 16px;">🏨</span> LeFern Hotel
+                  <span class="badge-count" style="margin-left: 6px; background: rgba(239,68,68,0.15); color: #f87171; font-size: 10px; font-weight: 800; padding: 2px 8px; border-radius: 10px;">Pending</span>
+                </button>
+              </div>
+
+              <!-- Evacuation Plan Content Display Container -->
+              <div id="evac-building-content-display">
+                <!-- Dynamically populated evacuation floor plan cards or notice remark -->
+              </div>
+            </div>
+          </div>
+
+          <!-- SUB-TAB 5: CRITICAL MACHINERY & HEAVY EQUIPMENT CONTINGENCY -->
+          <div class="guideline-pane" id="pane-heavy-machinery">
+            <div class="section-card">
+              <div class="card-header">
+                <h2>Critical Building Machinery & Equipment Contingency</h2>
+                <span class="header-badge">Troubleshooting, Shutdowns & In-House Engineers</span>
+              </div>
+              <div class="machinery-contingency-grid" id="machinery-contingency-container">
+                <!-- Dynamically populated machinery protocols -->
+              </div>
+            </div>
+          </div>
+
+          <!-- SUB-TAB 6: EVACUATION, REFUGE & COMMS -->
+          <div class="guideline-pane" id="pane-evac-comms">
+            <div class="section-card">
+              <div class="card-header">
+                <h2>Evacuation Routes, Areas of Refuge & Communication Tree</h2>
+                <span class="header-badge">Life Safety Procedures</span>
+              </div>
+              <div class="evac-comms-content-grid" id="evac-comms-container">
+                <!-- Dynamically populated evacuation guidelines -->
+              </div>
+            </div>
+          </div>
+
+          <!-- SUB-TAB 7: DRILLS & EMERGENCY HOTLINES -->
+          <div class="guideline-pane" id="pane-drills-hotlines">
+            <div class="section-card">
+              <div class="card-header">
+                <h2>Drills Schedule, Plan Review & Emergency Hotlines Directory</h2>
+                <span class="header-badge">Official Directory</span>
+              </div>
+              <div class="drills-hotlines-grid" id="drills-hotlines-container">
+                <!-- Dynamically populated hotlines & drill schedule -->
+              </div>
+            </div>
+          </div>
+
+        </section>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- ==================== EDIT ORG MEMBER MODAL ==================== -->
+  <div class="org-modal-backdrop" id="org-member-edit-modal" style="display: none;" onclick="closeOrgMemberModal(event)">
+    <div class="org-modal-box" onclick="event.stopPropagation()">
+      <div class="org-modal-header">
+        <h3 id="org-modal-title">Edit Committee Member</h3>
+        <button type="button" class="org-modal-close" onclick="closeOrgMemberModal()">&times;</button>
+      </div>
+      <div class="org-modal-body">
+        <input type="hidden" id="edit-member-id">
+        <div class="org-modal-photo-row">
+          <div class="org-modal-photo-preview" id="edit-member-photo-preview">
+            <img id="edit-member-photo-img" src="" alt="Member Photo" style="display: none; width:100%; height:100%; object-fit:cover;">
+            <span class="org-card-photo-placeholder" id="edit-member-photo-placeholder" style="font-size:18px; font-weight:800; color:#38bdf8;">EC</span>
+          </div>
+          <div style="flex: 1;">
+            <label style="font-size: 12px; font-weight: 700; color: #fff;">Profile Photo</label>
+            <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 8px;">Upload JPG or PNG photo (auto-compressed).</p>
+            <input type="file" id="edit-member-photo-input" accept="image/*" style="display: none;" onchange="handleOrgModalPhotoUpload(event)">
+            <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('edit-member-photo-input').click()">📷 Upload Photo</button>
+          </div>
+        </div>
+        <div class="form-grid" style="margin-top: 16px;">
+          <div class="form-group">
+            <label for="edit-member-name">Full Name</label>
+            <input type="text" id="edit-member-name" placeholder="e.g. Engr. John Doe">
+          </div>
+          <div class="form-group">
+            <label for="edit-member-role">Committee Role / Title</label>
+            <input type="text" id="edit-member-role" placeholder="e.g. Building Emergency Coordinator">
+          </div>
+          <div class="form-group">
+            <label for="edit-member-tier">Command Tier / Hierarchy</label>
+            <select id="edit-member-tier" style="background: var(--bg-dark); color:#fff; border:1px solid var(--border-color); padding:10px; border-radius:6px;">
+              <option value="Executive Leadership">Executive Leadership & Governance</option>
+              <option value="Incident Command">Incident Command & Lead Coordinators</option>
+              <option value="Floor Operations">Floor Wardens & Evacuation Sweepers</option>
+              <option value="Specialized Rescue">Mobility Assistance & Area of Refuge</option>
+              <option value="Technical Support">In-House Engineers & Support Team</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="edit-member-phone">Contact Phone / Mobile</label>
+            <input type="text" id="edit-member-phone" placeholder="e.g. 0917 123 4567">
+          </div>
+          <div class="form-group font-group-large">
+            <label for="edit-member-duties">Key Responsibilities / Duties</label>
+            <input type="text" id="edit-member-duties" placeholder="e.g. Overall command, liaise with Fire/Police, authorize evacuation">
+          </div>
+        </div>
+      </div>
+      <div class="org-modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeOrgMemberModal()">Cancel</button>
+        <button type="button" class="btn btn-primary" onclick="saveOrgMemberModal()">Save Member Details</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== EMERGENCY IMAGE LIGHTBOX MODAL ==================== -->
+  <div class="lightbox-modal" id="emergency-image-lightbox" onclick="closeEmergencyLightbox(event)" style="display: none;">
+    <div class="lightbox-content" onclick="event.stopPropagation()">
+      <button type="button" class="lightbox-close" onclick="closeEmergencyLightbox()">&times;</button>
+      <img id="emergency-lightbox-img" src="" alt="Assessment photo full preview">
+      <div id="emergency-lightbox-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

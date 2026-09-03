@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>General Construction Guidelines - One Corporate Maintenance Pro</title>
+  <link rel="stylesheet" href="style.css">
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <div class="app-container">
+    
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+      
+      <!-- TOP HEADER -->
+      <header class="top-header">
+        <div class="header-left">
+          <h2 class="page-title">General Construction Guidelines & Fit-Out Portal</h2>
+          <span class="current-date">45 North Drive, Engineers Hill, Baguio City | PMO 2nd Floor</span>
+        </div>
+        <div class="header-actions">
+          <!-- Theme Mode Switcher -->
+          <button type="button" class="theme-toggle-btn" id="theme-toggle-btn" onclick="toggleTheme()" title="Toggle Dark / Light Mode">
+            <span class="theme-icon" id="theme-toggle-icon">☀️</span>
+            <span id="theme-toggle-label">Light Mode</span>
+          </button>
+
+          <button class="btn-action" onclick="switchTab('interactive')">
+            <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+            Interactive Tools
+          </button>
+          <button class="btn-action btn-primary" onclick="openWorkPermitModal()">
+            <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="12" y1="18" x2="12" y2="12"></line><line x1="9" y1="15" x2="15" y2="15"></line></svg>
+            Draft Work Permit
+          </button>
+        </div>
+      </header>
+
+      <div class="content-wrapper">
+
+        <!-- HERO BANNER -->
+        <div class="hero-banner">
+          <div class="hero-content">
+            <span class="badge-tag">Official Governance Standard - 2024 Edition</span>
+            <h1 class="hero-title">General Construction Guidelines & Work Permit Rules</h1>
+            <p class="hero-desc">
+              Adopted by the Board of Trustees of the Condominium Corporation pursuant to the Master Deed with Declaration of Restrictions. 
+              These guidelines govern unit repairs, alterations, and fit-out construction to ensure safety, structural soundness, aesthetic uniformity, and peaceful occupancy.
+            </p>
+            <div class="hero-meta">
+              <div class="hero-meta-item">
+                <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                <span>PMO Office Hours: Mon - Fri, 9:00 AM - 3:00 PM</span>
+              </div>
+              <div class="hero-meta-item">
+                <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                <span>Technical Reviewer: FCLaranang Development Corp (Engineering & Technical Services)</span>
+              </div>
+              <div class="hero-meta-item">
+                <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                <span>Updated: March 05, 2024</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- QUICK METRICS GRID -->
+        <div class="metrics-grid">
+          <div class="metric-card">
+            <div class="metric-icon bg-soft-blue">
+              <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
+            </div>
+            <div class="metric-data">
+              <span class="metric-title">Plans Review Fee</span>
+              <h3 class="metric-value">₱20,000</h3>
+              <span class="metric-sub">Per unit (Non-refundable)</span>
+            </div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-icon bg-soft-amber">
+              <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+            </div>
+            <div class="metric-data">
+              <span class="metric-title">Construction Cash Bond</span>
+              <h3 class="metric-value">₱50,000</h3>
+              <span class="metric-sub">Or 20% total cost (Refundable)</span>
+            </div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-icon bg-soft-purple">
+              <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+            </div>
+            <div class="metric-data">
+              <span class="metric-title">Review SLA</span>
+              <h3 class="metric-value">10 - 15 Days</h3>
+              <span class="metric-sub">10d Small / 15d Complicated</span>
+            </div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-icon bg-soft-emerald">
+              <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none"><path d="M1 3h15v13H1z"></path><path d="M16 8h4l3 3v5h-7V8z"></path><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
+            </div>
+            <div class="metric-data">
+              <span class="metric-title">Delivery Schedule</span>
+              <h3 class="metric-value">6 PM - 12 MN</h3>
+              <span class="metric-sub">Mon - Sat (No Sun/Holidays)</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- NAVIGATION TABS -->
+        <div class="nav-tabs-container">
+          <button class="tab-btn active" id="tab-btn-overview" onclick="switchTab('overview')">
+            <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
+            1. Overview & Provisions
+          </button>
+          <button class="tab-btn" id="tab-btn-precon" onclick="switchTab('precon')">
+            <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path></svg>
+            2. Pre-Construction
+          </button>
+          <button class="tab-btn" id="tab-btn-tech" onclick="switchTab('tech')">
+            <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
+            3. Technical Specs
+          </button>
+          <button class="tab-btn" id="tab-btn-construction" onclick="switchTab('construction')">
+            <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+            4. Construction Phase
+          </button>
+          <button class="tab-btn" id="tab-btn-postcon" onclick="switchTab('postcon')">
+            <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            5. Post-Con & Refund
+          </button>
+          <button class="tab-btn" id="tab-btn-penalties" onclick="switchTab('penalties')">
+            <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path></svg>
+            6. Penalties & Fines
+          </button>
+          <button class="tab-btn active-interactive" id="tab-btn-interactive" onclick="switchTab('interactive')">
+            <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+            ⚡ Dynamic Interactive Workspace
+          </button>
+          <button class="tab-btn" id="tab-btn-forms" onclick="switchTab('forms')">
+            <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+            📋 BM Construction Forms (A4)
+          </button>
+        </div>
+
+        <!-- ==================== TAB 1: OVERVIEW & PROVISIONS ==================== -->
+        <section id="panel-overview" class="tab-panel active">
+          <div class="section-card">
+            <div class="section-header">
+              <h2>1. General Provisions & Objectives</h2>
+              <span class="section-tag">Governance Standard</span>
+            </div>
+            
+            <div class="guideline-block">
+              <p>
+                The Rules and Regulations relating to repairs, improvements, and other construction (hereafter referred to as the <strong>“GENERAL CONSTRUCTION GUIDELINES”</strong>), adopted by the Board of Trustees of the Condominium Corporation pursuant to the Master Deed with Declaration of Restrictions, govern and regulate the use and occupancy of individual units and common areas.
+              </p>
+              <ul class="bullet-list">
+                <li><strong>Ensure efficient and orderly management:</strong> Promote the health, safety, and welfare of all unit owners and occupants.</li>
+                <li><strong>Peaceful & Quiet Enjoyment:</strong> Protect the right of all unit owners to quiet enjoyment of their respective units and common spaces.</li>
+                <li><strong>Structural Soundness & Aesthetics:</strong> Maintain the structural integrity, building safety, and visual appearance of the property.</li>
+                <li><strong>Property Value Enhancement:</strong> Preserve and enhance long-term asset value.</li>
+                <li><strong>Technical Standardization:</strong> Provide a clear technical baseline for design, material quality, and installation standards.</li>
+              </ul>
+            </div>
+
+            <div class="callout-box">
+              <div class="callout-title">Authority & Delegation</div>
+              <p>
+                The Board of Trustees has full authority to enforce these guidelines. Authority is delegated to the <strong>Property Management Office (PMO)</strong> and the <strong>Building Maintenance Office (BMO)</strong>, with technical plan review conducted by <strong>FCLaranang Development Corporation Engineering & Technical Services Division</strong>.
+              </p>
+            </div>
+
+            <div class="kv-grid">
+              <div class="kv-item">
+                <div class="kv-label">Property Management Address</div>
+                <div class="kv-value">45 North Drive, Engineers Hill, Baguio City</div>
+              </div>
+              <div class="kv-item">
+                <div class="kv-label">PMO Accounting Location</div>
+                <div class="kv-value">2nd Floor, One Corporate (Mon-Fri 9am-3pm)</div>
+              </div>
+              <div class="kv-item">
+                <div class="kv-label">Plan Review SLA</div>
+                <div class="kv-value">10 Working Days (Small) / 15 Working Days (Complicated)</div>
+              </div>
+              <div class="kv-item">
+                <div class="kv-label">Technical Review Agency</div>
+                <div class="kv-value">FCLaranang Development Corp (Engineering & Technical Services)</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="section-card">
+            <div class="section-header">
+              <h2>2. Synopsis of Key Pre-Requisites</h2>
+              <span class="section-tag">Essential Requirements</span>
+            </div>
+            <div class="guideline-block">
+              <p>Before any fit-out, renovation, or repair work can commence, contractors and unit owners must satisfy four essential prerequisites:</p>
+              <ol class="bullet-list" style="list-style-type: decimal; padding-left: 20px;">
+                <li><strong>Construction Cash Bond & Insurance:</strong> Deposit monetary bond (₱50,000 or 20% of project cost) and submit CGL insurance policy (if available).</li>
+                <li><strong>Contractor Authorization & Forms:</strong> Submit Appointment Letter of Contractor, Authorized Signatories Sheet, Specimen Signatures, Worker ID List, and Gate Pass.</li>
+                <li><strong>Renovation Application & Drawing Submission:</strong> Submit formal renovation application along with 4 sets of A3 signed & sealed drawings.</li>
+                <li><strong>Fee Payments:</strong> Settle Plans Review Fee (₱20,000) and Monthly Monitoring Fee (₱5,000/month) at the PMO Accounting Office.</li>
+              </ol>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== TAB 2: PRE-CONSTRUCTION PHASE ==================== -->
+        <section id="panel-precon" class="tab-panel">
+          <div class="section-card">
+            <div class="section-header">
+              <h2>3. Pre-Construction Phase Requirements</h2>
+              <span class="section-tag">Plan Review & Submissions</span>
+            </div>
+
+            <div class="guideline-block">
+              <h3>3.1 Notice & Authorization</h3>
+              <p>Unit Owners must inform PMO via formal letter/email. Leased unit concessionaires must present an approved Lease Contract or written owner authorization before submitting renovation plans.</p>
+              
+              <h3>3.2 Required Document Submissions</h3>
+              <p>The owner/tenant/contractor must submit:</p>
+              <ul class="bullet-list">
+                <li>Project Scope of Works and Schedule Chart (Gantt chart/all disciplines).</li>
+                <li>Detailed Bill of Materials and Cost Estimate.</li>
+                <li><strong>Four (4) complete A3 sets</strong> of signed and sealed construction drawings for Engineering & Technical Service Division review.</li>
+                <li>Design Contract Agreement (if availing FCLaranang Development Corp design services).</li>
+              </ul>
+            </div>
+
+            <div class="guideline-block">
+              <h3>3.3 Standard Engineering Disciplines Required</h3>
+              <div class="kv-grid">
+                <div class="kv-item"><div class="kv-label">Architectural</div><div class="kv-value">Unit layout, partitions, elevations, furniture layout, door/window schedule</div></div>
+                <div class="kv-item"><div class="kv-label">Electrical</div><div class="kv-value">Single-line diagram, load computations (PEE Signed & Sealed)</div></div>
+                <div class="kv-item"><div class="kv-label">Mechanical</div><div class="kv-value">A/C layout, exhaust systems, equipment specs (PME Signed & Sealed)</div></div>
+                <div class="kv-item"><div class="kv-label">Sanitary & Plumbing</div><div class="kv-value">Water supply, waste, vents, pipe sizing, fixture specs</div></div>
+                <div class="kv-item"><div class="kv-label">Fire Protection</div><div class="kv-value">Sprinkler layout, addressable smoke detector positions</div></div>
+                <div class="kv-item"><div class="kv-label">Structural Analysis</div><div class="kv-value">Design analysis signed & sealed by Licensed Structural Engineer</div></div>
+              </div>
+            </div>
+
+            <div class="guideline-block">
+              <h3>3.4 Plan Processing Schedule & Cut-Offs</h3>
+              <div class="callout-box callout-warning">
+                <div class="callout-title">Cut-off Time Notice</div>
+                <p>Plans received <strong>after 3:00 PM</strong> will be considered received on the following business day. Processing takes <strong>10 working days</strong> for small works and <strong>15 working days</strong> for complicated works.</p>
+              </div>
+            </div>
+
+            <div class="guideline-block">
+              <h3>3.5 Schedule of Fees & Cash Bond Table</h3>
+              <div class="custom-table-wrapper">
+                <table class="custom-table">
+                  <thead>
+                    <tr>
+                      <th>Fee Item</th>
+                      <th>Amount</th>
+                      <th>Payable To</th>
+                      <th>Terms / Condition</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><strong>Plans Review Fee</strong></td>
+                      <td>₱20,000.00 / unit</td>
+                      <td>One Corporate</td>
+                      <td>Non-refundable. Covers technical evaluation by Engineering Division.</td>
+                    </tr>
+                    <tr>
+                      <td><strong>Monitoring & Supervision Fee</strong></td>
+                      <td>₱5,000.00 / month</td>
+                      <td>One Corporate</td>
+                      <td>Payable monthly prior to review. Renews every 30 days if work extends.</td>
+                    </tr>
+                    <tr>
+                      <td><strong>Construction Cash Bond</strong></td>
+                      <td>₱50,000.00 or 20% of scope cost</td>
+                      <td>One Corporate</td>
+                      <td>Higher amount applies. Refundable 2 months post-completion after submittal of As-Built plans.</td>
+                    </tr>
+                    <tr>
+                      <td><strong>Fire Impairment Fee</strong></td>
+                      <td>₱3,000.00 / day</td>
+                      <td>One Corporate</td>
+                      <td>For draining & refilling fire protection system during sprinkler alterations (Max 1 day).</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="guideline-block">
+              <h3>3.6 Enclosure & Signage Standards</h3>
+              <ul class="bullet-list">
+                <li><strong>Enclosure Material:</strong> Heavy-duty fire-retardant Manila Paper (Yellow Brown - Standard Color).</li>
+                <li><strong>Perimeter Sealing:</strong> Secure all edges with masking tape; completely cover unit frontage.</li>
+                <li><strong>Signage Display:</strong> The official approved <strong>Work Permit must be displayed on the main door</strong> of the unit at all times.</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== TAB 3: TECHNICAL SPECS ==================== -->
+        <section id="panel-tech" class="tab-panel">
+          <div class="section-card">
+            <div class="section-header">
+              <h2>4. Technical Specifications & Guidelines</h2>
+              <span class="section-tag">Engineering Standards</span>
+            </div>
+
+            <!-- Structural -->
+            <div class="guideline-block">
+              <h3>4.1 Structural & Architectural Restrictions</h3>
+              <ul class="bullet-list">
+                <li><strong>Chipping & Coring:</strong> All structural chipping works are subject to BM approval. No welding on structural reinforcement (columns/shear walls). Coring floor slabs or structural members is strictly prohibited without written authorization.</li>
+                <li><strong>Fire Resistance Rating:</strong> All interior construction materials must possess at least a <strong>1-Hour Fire Resistance Rating</strong>. Fire Retardant certificates must be submitted to PMO.</li>
+                <li><strong>Mezzanine Prohibition:</strong> Installation of any mezzanine structure is <strong>strictly prohibited</strong> for all units (sold or leased), including file storage.</li>
+                <li><strong>Unit Inclusions:</strong> Pre-installed tiles, toilet fixtures, glass partitions, and switches cannot be removed/altered without prior written consent and an undertaking to restore upon lease termination.</li>
+              </ul>
+            </div>
+
+            <!-- Drywalls & Ceiling -->
+            <div class="guideline-block">
+              <h3>4.2 Drywalls & Ceiling Standards</h3>
+              <div class="custom-table-wrapper">
+                <table class="custom-table">
+                  <thead>
+                    <tr>
+                      <th>Component</th>
+                      <th>Allowed Materials & Rules</th>
+                      <th>Prohibited Materials</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><strong>Drywall Partitions</strong></td>
+                      <td>Non-combustible studs & boards. Must terminate at finished ceiling level. Wall insulation must be non-combustible.</td>
+                      <td>Plywood partitioning with wood nailers (combustible). Concrete nails on walls.</td>
+                    </tr>
+                    <tr>
+                      <td><strong>Ceilings</strong></td>
+                      <td>Non-combustible, sound absorbent, lightweight, non-toxic, non-asbestos gypsum on metal frame.</td>
+                      <td>Wood nailers, wood framing, asbestos materials. Ceiling supports attached to sprinkler pipes or light fixtures.</td>
+                    </tr>
+                    <tr>
+                      <td><strong>Floor Tiles</strong></td>
+                      <td>Must conform to building design standards and be level with existing elevator lobbies.</td>
+                      <td>Unapproved slab chipping, boring, or deep chasing without structural clearance.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Electrical -->
+            <div class="guideline-block">
+              <h3>4.3 Electrical Requirements & Specs</h3>
+              <ul class="bullet-list">
+                <li><strong>Power Supply:</strong> Provided via pull box for 1-phase 230V or 3-phase 400V (refer to single line diagram). Branch circuits must be balanced across 3 phases.</li>
+                <li><strong>Wires & Conduits:</strong> Minimum wire size is <strong>3.5 mm² THHN</strong> (Phelps Dodge or equivalent rated 600V). EMT conduit for exposed works; PVC Series 1000 for embedded works. Flexible metallic conduit for ceiling light fixtures.</li>
+                <li><strong>Circuit Protection:</strong> Bolt-on type circuit breakers manufactured by <strong>ABB, GE</strong>, or approved equivalent, fully coordinated with base building protection.</li>
+                <li><strong>Illumination Levels:</strong> Standard office desk work requires <strong>500 - 1,000 lux</strong> illumination in compliance with OSH Standards.</li>
+                <li><strong>Water Heater Limit:</strong> Maximum allowable design load for water heaters is <strong>30 Amperes</strong> per unit.</li>
+                <li><strong>Sign & Seal:</strong> All electrical plans and load calculations must be signed and sealed by a <strong>Professional Electrical Engineer (PEE)</strong>.</li>
+              </ul>
+            </div>
+
+            <!-- Mechanical & Fire -->
+            <div class="guideline-block">
+              <h3>4.4 Mechanical & Fire Protection Systems</h3>
+              <div class="callout-box callout-success">
+                <div class="callout-title">Fire Protection Engineering Baseline</div>
+                <p>
+                  Sprinklers are standard 1/2" orifice chrome-plated recessed heads rated at <strong>155°F (68°C)</strong>. Maximum coverage is <strong>130 sq. ft. per sprinkler head</strong> (and at least 1 head per enclosed room). Minimum clearance between lighting/A-C diffusers and sprinkler heads is <strong>1.0 foot (12 inches)</strong>.
+                </p>
+              </div>
+              <ul class="bullet-list">
+                <li><strong>Air Conditioning:</strong> Split or Multi-split units allowed only on designated refrigerant pipe provisions to maintain building exterior uniformity.</li>
+                <li><strong>Fire Alarm System:</strong> Addressable smoke detectors (100 sqm coverage area per head) wired in EMT conduit fastened directly to slab. Wiring & devices must be 100% compatible with base building FADS.</li>
+                <li><strong>Sprinkler Alterations:</strong> Relocations must be performed only by PMO-accredited certified fire protection contractors. Sprinkler pipes must never be used to support wood cabinets or light fixtures.</li>
+              </ul>
+            </div>
+
+            <!-- Plumbing -->
+            <div class="guideline-block">
+              <h3>4.5 Sanitary & Plumbing Specifications</h3>
+              <ul class="bullet-list">
+                <li><strong>Water Lines (Cold & Hot):</strong> Polypropylene Pipe <strong>PPR PN-20</strong> (Brands: Unitec, Belden, or white-colored equivalent).</li>
+                <li><strong>Waste & Vent Pipes:</strong> Polyvinyl Chloride <strong>PVC Series 1000</strong> (Brands: Atlanta or equivalent).</li>
+                <li><strong>Comfort Room Location:</strong> Comfort room / toilet locations are fixed and <strong>cannot be relocated</strong> from their base building provision.</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== TAB 4: CONSTRUCTION PHASE ==================== -->
+        <section id="panel-construction" class="tab-panel">
+          <div class="section-card">
+            <div class="section-header">
+              <h2>5. Construction Phase Rules & Restrictions</h2>
+              <span class="section-tag">Active Site Protocol</span>
+            </div>
+
+            <div class="guideline-block">
+              <h3>5.1 Entry, Delivery & Access Control</h3>
+              <div class="kv-grid">
+                <div class="kv-item">
+                  <div class="kv-label">Ingress / Egress Point</div>
+                  <div class="kv-value">Security Control Post (Ground Level Vehicle Entrance)</div>
+                </div>
+                <div class="kv-item">
+                  <div class="kv-label">Delivery Schedule</div>
+                  <div class="kv-value">Mon - Sat: 6:00 PM to 12:00 MN (No Sun / Holidays)</div>
+                </div>
+                <div class="kv-item">
+                  <div class="kv-label">Gate Pass Requirement</div>
+                  <div class="kv-value">Must be submitted 3 days prior to delivery or pull-out</div>
+                </div>
+                <div class="kv-item">
+                  <div class="kv-label">Material Delivery Format</div>
+                  <div class="kv-value">Sand, gravel, cement, etc. MUST be delivered in sacks</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="guideline-block">
+              <h3>5.2 Worker Dress Code & Badging</h3>
+              <p>All contractor personnel must surrender valid company ID at Security for an ACCESS PASS (pinned to upper left shirt). Personnel must wear company uniform, safety shoes/boots, and PPE.</p>
+              <div class="callout-box callout-danger">
+                <div class="callout-title">Ejection Warning</div>
+                <p>Workers wearing slippers, sleeveless shirts, muscle shirts, or shorts will be <strong>refused entry or immediately ejected</strong> from the building.</p>
+              </div>
+            </div>
+
+            <div class="guideline-block">
+              <h3>5.3 Strict Working Hour Restrictions & Noisy Works</h3>
+              <ul class="bullet-list">
+                <li><strong>Noisy Works Window:</strong> Noisy works (chipping, heavy drilling) must be scheduled <strong>AFTER 5:00 PM to 6:00 AM</strong> only.</li>
+                <li><strong>Noisy Works Exception:</strong> If noisy work is critical to schedule completion, owner/contractor must submit an Engineering Control Plan (noise barriers, quieter equipment) to PMO/BM for approval prior to work.</li>
+                <li><strong>Stay-ins Prohibited:</strong> Construction sites must NOT be used as sleeping quarters or stay-ins. Overtime must be pre-arranged with the Building Manager.</li>
+              </ul>
+            </div>
+
+            <div class="guideline-block">
+              <h3>5.4 Fire Safety, Hot Works & PPE</h3>
+              <ul class="bullet-list">
+                <li><strong>Portable Extinguishers:</strong> Contractor must provide <strong>1 unit 10 lbs HCFC 236 FA portable fire extinguisher (green tank)</strong> for every 11.4 feet (4 meters) radius of work space.</li>
+                <li><strong>Hot Works & Welding:</strong> Requires a daily Hot Works Permit from BMO, Lockout Tagout (LOTO) compliance, and a dedicated <strong>FIREWATCH</strong> person present during welding.</li>
+                <li><strong>Prohibited Activities:</strong> Smoking, cooking, drinking alcohol, gambling, horseplay, drug use, weapons, and pets are strictly prohibited inside the building.</li>
+                <li><strong>Debris Management:</strong> Construction debris must be hauled out of the building nightly during the 6:00 PM - 12:00 MN delivery window. Debris left overnight results in bond penalty deductions.</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== TAB 5: POST-CONSTRUCTION & REFUND ==================== -->
+        <section id="panel-postcon" class="tab-panel">
+          <div class="section-card">
+            <div class="section-header">
+              <h2>6. Post-Construction & Construction Bond Refund</h2>
+              <span class="section-tag">Project Sign-Off & Closeout</span>
+            </div>
+
+            <div class="guideline-block">
+              <h3>6.1 Final Inspection & Deficiencies Sign-Off</h3>
+              <p>Upon completion of fit-out work, the Unit Owner/Tenant must formally request a <strong>Final Inspection</strong> in writing from the Building Manager. Any deficiencies noted during inspection must be rectified immediately by the contractor.</p>
+            </div>
+
+            <div class="guideline-block">
+              <h3>6.2 As-Built Plans Submission Requirement</h3>
+              <div class="callout-box callout-warning">
+                <div class="callout-title">30-Day As-Built Deadline</div>
+                <p>
+                  To qualify for a Construction Bond refund, the unit owner/tenant/contractor must submit <strong>Four (4) complete A3 sets of signed and sealed As-Built Plans</strong> within <strong>30 calendar days</strong> of project completion and acceptance.
+                </p>
+              </div>
+            </div>
+
+            <div class="guideline-block">
+              <h3>6.3 Construction Bond Refund Workflow</h3>
+              <ul class="bullet-list">
+                <li><strong>Refund Timeline:</strong> Construction cash bond is refunded <strong>two (2) months</strong> after project completion and final acceptance.</li>
+                <li><strong>Deduction Criteria:</strong> Full bond is refunded provided no violations were committed, no property damage occurred in common areas or adjacent units, and all penalty fees are settled. Net refund is released after applying all valid deductions.</li>
+              </ul>
+            </div>
+
+            <div class="guideline-block">
+              <h3>6.4 Business Pre-Operations Clearance Checklist</h3>
+              <p>For commercial units, lessees must present copies of the following permits prior to opening business operations:</p>
+              <div class="kv-grid">
+                <div class="kv-item"><div class="kv-label">1. Business Permit</div><div class="kv-value">City Government of Baguio</div></div>
+                <div class="kv-item"><div class="kv-label">2. BIR Registration</div><div class="kv-value">Form 2303 Certificate</div></div>
+                <div class="kv-item"><div class="kv-label">3. Health & Sanitary Permit</div><div class="kv-value">Sanitary Inspection Clearance</div></div>
+                <div class="kv-item"><div class="kv-label">4. Fire Safety Inspection (FSIC)</div><div class="kv-value">BFP Certificate of Inspection</div></div>
+                <div class="kv-item"><div class="kv-label">5. Electrical Inspection (CFEI)</div><div class="kv-value">Certificate of Final Electrical Inspection</div></div>
+                <div class="kv-item"><div class="kv-label">6. Fire Insurance & CGL</div><div class="kv-value">Comprehensive General Liability (Food units)</div></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== TAB 6: PENALTIES & FINES ==================== -->
+        <section id="panel-penalties" class="tab-panel">
+          <div class="section-card">
+            <div class="section-header">
+              <h2>7. Violations, Penalties & Liquidated Damages</h2>
+              <span class="section-tag">Enforcement Schedule</span>
+            </div>
+
+            <div class="guideline-block">
+              <p>Violations of the General Construction Guidelines trigger automatic deductions from the Construction Cash Bond, work stoppages, or legal action.</p>
+            </div>
+
+            <div class="custom-table-wrapper">
+              <table class="custom-table">
+                <thead>
+                  <tr>
+                    <th>Violation Category</th>
+                    <th>Standard Fine / Rate</th>
+                    <th>Enforcement & Consequence</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><strong>Fire Protection Impairment</strong></td>
+                    <td><strong class="text-danger">₱20,000.00 / day</strong></td>
+                    <td>Applied when sprinkler/alarm impairment exceeds the 1-day allowable window without PMO extension.</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Unauthorized Personnel / No Pass</strong></td>
+                    <td><strong class="text-danger">₱15,000.00 / incident</strong></td>
+                    <td>Workers found without valid company ID, missing access pass, or not on approved worker list. Ejection from site.</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Liquidated Damages (Work Delay)</strong></td>
+                    <td><strong class="text-danger">₱5,000.00 / day</strong></td>
+                    <td>Charged for unapproved extensions beyond agreed completion date, including punch list delays.</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Unscheduled Delivery / Overnight Debris</strong></td>
+                    <td><strong class="text-danger">₱3,000.00 / day</strong></td>
+                    <td>Delivering outside 6PM-12MN window or leaving construction materials/garbage in hallways or site overnight.</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Fire Protection Draining Fee</strong></td>
+                    <td><strong>₱3,000.00 / day</strong></td>
+                    <td>Standard daily fee for approved fire protection system draining and refilling during pipe alterations.</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Legal Action Attorney Fee</strong></td>
+                    <td><strong class="text-danger">Min. ₱10,000.00</strong></td>
+                    <td>Charged to violator in case of persistent violations requiring legal action by Condominium Corporation.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="guideline-block" style="margin-top: 24px;">
+              <h3>7.1 Notice of Violation (NOV) Protocol</h3>
+              <ol class="bullet-list" style="list-style-type: decimal; padding-left: 20px;">
+                <li><strong>Inspection & Discovery:</strong> Building Maintenance conducts daily site audits and documents deviations.</li>
+                <li><strong>Formal NOV Communication:</strong> Written Notice of Violation issued immediately to Unit Owner and Contractor.</li>
+                <li><strong>Immediate Work Stoppage:</strong> PMO and BMO reserve the right to <strong>HALT ALL CONSTRUCTION IMMEDIATELY</strong> until non-compliance is resolved.</li>
+                <li><strong>Financial Deduction:</strong> Penalty fees are deducted directly from the ₱50,000 cash bond.</li>
+              </ol>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== TAB 7: DYNAMIC INTERACTIVE SUITE ==================== -->
+        <section id="panel-interactive" class="tab-panel">
+          
+          <div class="interactive-section">
+
+            <!-- WIZARD: WORK PERMIT FLOWCHART TRACKER -->
+            <div class="wizard-container">
+              <div class="section-header">
+                <h2>Work Permit Flowchart Wizard</h2>
+                <span class="section-tag">Interactive 7-Step Process</span>
+              </div>
+
+              <div class="wizard-steps-track">
+                <div class="wizard-progress-bar" id="wizard-progress-bar"></div>
+                
+                <div class="step-node active" id="step-node-1" onclick="jumpToWizardStep(1)">
+                  <div class="step-circle">1</div>
+                  <span class="step-label">Letter of Intent</span>
+                </div>
+                <div class="step-node" id="step-node-2" onclick="jumpToWizardStep(2)">
+                  <div class="step-circle">2</div>
+                  <span class="step-label">Document Submission</span>
+                </div>
+                <div class="step-node" id="step-node-3" onclick="jumpToWizardStep(3)">
+                  <div class="step-circle">3</div>
+                  <span class="step-label">Initial BM Review</span>
+                </div>
+                <div class="step-node" id="step-node-4" onclick="jumpToWizardStep(4)">
+                  <div class="step-circle">4</div>
+                  <span class="step-label">Technical Review</span>
+                </div>
+                <div class="step-node" id="step-node-5" onclick="jumpToWizardStep(5)">
+                  <div class="step-circle">5</div>
+                  <span class="step-label">Fee Assessment</span>
+                </div>
+                <div class="step-node" id="step-node-6" onclick="jumpToWizardStep(6)">
+                  <div class="step-circle">6</div>
+                  <span class="step-label">Payment & Release</span>
+                </div>
+                <div class="step-node" id="step-node-7" onclick="jumpToWizardStep(7)">
+                  <div class="step-circle">7</div>
+                  <span class="step-label">Permit Issuance</span>
+                </div>
+              </div>
+
+              <div class="wizard-card-body" id="wizard-step-body">
+                <!-- Dynamically populated by JS -->
+              </div>
+
+              <div class="wizard-nav-btns">
+                <button class="btn-action" id="wizard-prev-btn" onclick="moveWizardStep(-1)">Previous Step</button>
+                <button class="btn-action btn-primary" id="wizard-next-btn" onclick="moveWizardStep(1)">Next Step</button>
+              </div>
+            </div>
+
+            <!-- GRID: CALCULATOR & COMPLIANCE TOOL -->
+            <div class="tool-grid">
+              
+              <!-- CONSTRUCTION FEE & BOND CALCULATOR -->
+              <div class="calc-card">
+                <div class="calc-title">
+                  <span>Construction Fee & Bond Calculator</span>
+                  <svg viewBox="0 0 24 24" width="20" height="20" stroke="var(--accent-cyan)" stroke-width="2" fill="none"><rect x="4" y="2" width="16" height="20" rx="2"></rect><line x1="8" y1="6" x2="16" y2="6"></line><line x1="16" y1="14" x2="16" y2="18"></line><path d="M16 10h.01"></path><path d="M12 10h.01"></path><path d="M8 10h.01"></path><path d="M12 14h.01"></path><path d="M8 14h.01"></path><path d="M12 18h.01"></path><path d="M8 18h.01"></path></svg>
+                </div>
+                
+                <div class="form-group">
+                  <label class="form-label">Scope of Work Total Cost (₱)</label>
+                  <input type="number" id="calc-scope-cost" class="form-input" value="250000" min="0" oninput="calculateConstructionFees()">
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Estimated Fit-Out Duration (Months)</label>
+                  <input type="number" id="calc-duration-months" class="form-input" value="1" min="1" oninput="calculateConstructionFees()">
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Number of Units Involved</label>
+                  <input type="number" id="calc-units-count" class="form-input" value="1" min="1" oninput="calculateConstructionFees()">
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Fire Protection Impairment Days (₱3,000/day)</label>
+                  <input type="number" id="calc-impairment-days" class="form-input" value="1" min="0" oninput="calculateConstructionFees()">
+                </div>
+
+                <div class="calc-results">
+                  <div class="calc-row">
+                    <span>Plans Review Fee (Fixed):</span>
+                    <strong id="res-review-fee">₱20,000.00</strong>
+                  </div>
+                  <div class="calc-row">
+                    <span>Monitoring Fee (₱5k/mo):</span>
+                    <strong id="res-monitoring-fee">₱5,000.00</strong>
+                  </div>
+                  <div class="calc-row">
+                    <span>Fire Impairment Fee:</span>
+                    <strong id="res-impairment-fee">₱3,000.00</strong>
+                  </div>
+                  <div class="calc-row">
+                    <span>Construction Cash Bond (Higher of ₱50k or 20%):</span>
+                    <strong id="res-bond-fee" style="color: var(--accent-amber);">₱50,000.00</strong>
+                  </div>
+                  <div class="calc-row total-row">
+                    <span>Total Upfront Payment Required:</span>
+                    <strong id="res-total-payment">₱78,000.00</strong>
+                  </div>
+                  <div class="calc-row refund-row">
+                    <span>Expected Refund (Cash Bond):</span>
+                    <strong id="res-refundable-amount">₱50,000.00</strong>
+                  </div>
+                </div>
+              </div>
+
+              <!-- GUIDELINES INSTANT SEARCH & FILTER -->
+              <div class="search-filter-box">
+                <div class="section-header" style="margin-bottom: 0; border: none; padding: 0;">
+                  <h2>Instant Guidelines Lookup</h2>
+                  <span class="section-tag" id="search-match-count">Showing All Rules</span>
+                </div>
+                
+                <div class="search-input-wrapper">
+                  <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                  <input type="text" id="guidelines-search-input" class="form-input" placeholder="Search keywords (e.g. PPR pipe, 3.5mm wire, noise, Manila paper, bond refund)..." oninput="filterGuidelinesSearch()">
+                </div>
+
+                <div class="filter-pills">
+                  <button class="pill-btn active" onclick="setCategoryFilter('all', this)">All Disciplines</button>
+                  <button class="pill-btn" onclick="setCategoryFilter('structural', this)">Structural</button>
+                  <button class="pill-btn" onclick="setCategoryFilter('electrical', this)">Electrical</button>
+                  <button class="pill-btn" onclick="setCategoryFilter('mechanical', this)">Mechanical/HVAC</button>
+                  <button class="pill-btn" onclick="setCategoryFilter('plumbing', this)">Plumbing</button>
+                  <button class="pill-btn" onclick="setCategoryFilter('fire', this)">Fire Safety</button>
+                  <button class="pill-btn" onclick="setCategoryFilter('fitout', this)">Fit-Out Rules</button>
+                  <button class="pill-btn" onclick="setCategoryFilter('penalties', this)">Penalties & Fees</button>
+                </div>
+
+                <div id="search-results-list" style="display: flex; flex-direction: column; gap: 10px; max-height: 280px; overflow-y: auto; padding-right: 4px;">
+                  <!-- Dynamically populated by JS -->
+                </div>
+              </div>
+
+            </div>
+
+            <!-- INTERACTIVE FIT-OUT COMPLIANCE CHECKLIST -->
+            <div class="section-card">
+              <div class="section-header">
+                <h2>Interactive Fit-Out Compliance Checklist</h2>
+                <button class="btn-action" onclick="resetComplianceChecklist()">Reset Checklist</button>
+              </div>
+
+              <div>
+                <div style="display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 600; color: var(--text-muted);">
+                  <span>Compliance Progress</span>
+                  <span id="checklist-progress-text">0 / 12 (0%)</span>
+                </div>
+                <div class="progress-bar-container">
+                  <div class="progress-bar-fill" id="checklist-progress-bar"></div>
+                </div>
+              </div>
+
+              <div class="checklist-container" id="checklist-items-wrapper" style="margin-top: 16px;">
+                <!-- Dynamically populated -->
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== TAB 8: BM CONSTRUCTION FORMS (A4) ==================== -->
+        <section id="panel-forms" class="tab-panel">
+          <div class="form-selector-bar">
+            <div class="form-select-group">
+              <label style="font-size: 0.85rem; font-weight: 700; color: var(--accent-cyan); white-space: nowrap;">Select Official Form File:</label>
+              <select id="bm-form-selector" class="form-select" onchange="selectA4FormFile(this.value)" style="max-width: 520px; font-weight: 600;">
+                <option value="fit_out_forms.html">FM-OCT-PMO-09: Application for Construction, Renovation & Repair Works</option>
+                <option value="Appointment_Letter_of_Contractor.html">FM-OCT-PMO-10: Appointment Letter of Contractor</option>
+                <option value="specimen_signature.html">FM-OCT-PMO: Specimen Signature Sheet</option>
+                <option value="work_permit.html">FM-OCT-CON-05: Fit-Out Work Permit (Major Works)</option>
+                <option value="work_permit_small.html">FM-OCT-CON-06: Work Permit (Minor / Small Works)</option>
+                <option value="gate_pass.html">FM-OCT-PMO-05: Gate Pass Form</option>
+                <option value="punchlist.html">FM-OCT-PMO-13: Punch List Form</option>
+                <option value="concerns_slip.html">FM-OCT-CON-02: Concern Assessment, Resolution & Close-Out Form</option>
+                <option value="clearance_certificate.html">FM-OCT-BM-08: Clearance Certificate</option>
+                <option value="notice_of_violation.html">Notice of Violation (NOV Form)</option>
+              </select>
+            </div>
+
+            <div style="display: flex; gap: 10px; align-items: center;">
+              <button class="btn-action btn-primary" onclick="printActiveA4FormIframe()">
+                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+                Print Official Form (A4)
+              </button>
+              <button class="btn-action" onclick="autofillFormIframeData()">
+                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                Autofill Sample Data
+              </button>
+            </div>
+          </div>
+
+          <div class="a4-page-wrapper">
+            <iframe id="active-a4-form-iframe" src="forms/fit_out_forms.html" title="Official Construction Form" class="a4-form-iframe" scrolling="no"></iframe>
+          </div>
+        </section>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- WORK PERMIT MODAL -->
+  <div class="modal-overlay" id="work-permit-modal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3>Draft Fit-Out Work Permit Application</h3>
+        <button class="modal-close" onclick="closeWorkPermitModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="permit-draft-form">
+          <div class="form-group">
+            <label class="form-label">Unit Number & Location</label>
+            <input type="text" id="permit-unit-no" class="form-input" value="Unit 402 - 4th Floor" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Unit Owner / Tenant Name</label>
+            <input type="text" id="permit-owner-name" class="form-input" value="John Doe / Corporate Partner" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Appointed Contractor Name</label>
+            <input type="text" id="permit-contractor-name" class="form-input" value="Apex Builders & Fit-Out Corp" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Proposed Scope of Works</label>
+            <textarea id="permit-scope" class="form-textarea" rows="3">Interior drywall partitioning, LED lighting layout upgrade, PPR pipe plumbing connection, split A/C installation.</textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Target Fit-Out Schedule</label>
+            <input type="text" id="permit-dates" class="form-input" value="August 01, 2026 to August 30, 2026">
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-action" onclick="closeWorkPermitModal()">Cancel</button>
+        <button class="btn-action btn-primary" onclick="generatePermitPrintView()">Generate & Print Permit Draft</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>One Corporate - Maintenance Procedures & Compliance Portal</title>
+  <link rel="stylesheet" href="style.css">
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body class="dark-theme">
+  
+  <!-- APP VIEWPORT -->
+  <div class="app-container">
+    
+    <!-- SIDEBAR NAV -->
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <div class="brand-logo">
+          <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
+        </div>
+        <div class="brand-text">
+          <h1>One Corporate</h1>
+          <span class="brand-sub">Procedures Portal</span>
+        </div>
+      </div>
+
+      <nav class="sidebar-menu">
+        <div class="menu-section">
+          <span class="menu-section-title">Select System Procedure</span>
+          <a class="menu-item active" onclick="switchProcedure('genset')">
+            <span class="bullet bullet-mech"></span>
+            <span>Genset Maintenance (PM-08)</span>
+          </a>
+          <a class="menu-item" onclick="switchProcedure('firepump')">
+            <span class="bullet bullet-fire"></span>
+            <span>Fire & Jockey Pumps (PM-09)</span>
+          </a>
+          <a class="menu-item" onclick="switchProcedure('stp')">
+            <span class="bullet bullet-stp"></span>
+            <span>Sewage Treatment (PM-10)</span>
+          </a>
+          <a class="menu-item" onclick="switchProcedure('domestic_water')">
+            <span class="bullet bullet-plumb"></span>
+            <span>Domestic Water System (PM-11)</span>
+          </a>
+          <a class="menu-item" onclick="switchProcedure('submersible_pump')">
+            <span class="bullet bullet-plumb"></span>
+            <span>Submersible Pump System (PM-12)</span>
+          </a>
+          <a class="menu-item" onclick="switchProcedure('housekeeping')">
+            <span class="bullet bullet-house"></span>
+            <span>Housekeeping & Janitorial</span>
+          </a>
+        </div>
+
+        <button type="button" class="menu-item exit-item" onclick="exitToMainDashboard(event)" style="background: none; border: none; width: 100%; text-align: left; cursor: pointer; font-family: inherit; font-size: inherit; color: inherit; display: flex; align-items: center; gap: 10px; padding: 10px 14px;">
+          <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+          <span>Back to main dashboard</span>
+        </button>
+      </nav>
+    </aside>
+
+    <!-- MAIN APP CANVAS -->
+    <main class="main-content">
+      
+      <!-- TOP NAVIGATION BAR -->
+      <header class="top-header">
+        <div class="header-left">
+          <h2 id="active-procedure-title">Generator Set Maintenance Procedure</h2>
+          <span class="current-date" id="current-date-text">Tuesday, July 21, 2026</span>
+        </div>
+        <div class="header-right">
+          <!-- Theme Mode Switcher -->
+          <button type="button" class="theme-toggle-btn" id="theme-toggle-btn" onclick="toggleTheme()" title="Toggle Dark / Light Mode">
+            <span class="theme-icon" id="theme-toggle-icon">☀️</span>
+            <span id="theme-toggle-label">Light Mode</span>
+          </button>
+
+          <!-- Back to Dashboard -->
+          <button type="button" class="btn btn-secondary" onclick="exitToMainDashboard(event)" title="Return to Main Facilities Dashboard">
+            <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><rect x="3" y="3" width="7" height="9"></rect><rect x="14" y="3" width="7" height="5"></rect><rect x="14" y="12" width="7" height="9"></rect><rect x="3" y="16" width="7" height="5"></rect></svg>
+            <span>Exit Portal</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- TAB SELECTIONS -->
+      <div class="tab-bar">
+        <button class="tab-btn active" id="btn-tab-manual" onclick="switchSubTab('manual')">SOP Manual</button>
+        <button class="tab-btn" id="btn-tab-checklist" onclick="switchSubTab('checklist')">Compliance Checklist</button>
+        <button class="tab-btn" id="btn-tab-runhours" onclick="switchSubTab('runhours')">⏱️ Run Hours & Fuel Tracking</button>
+        <button class="tab-btn" id="btn-tab-procurement" onclick="switchSubTab('procurement')">📦 Parts & Procurement Log</button>
+        <button class="tab-btn" id="btn-tab-logs" onclick="switchSubTab('logs')">History Logs</button>
+      </div>
+
+      <!-- SCROLLABLE CONTENT BODY -->
+      <div class="content-body">
+        
+        <!-- ==================== TAB PANEL: MANUAL ==================== -->
+        <section class="tab-panel active" id="panel-manual">
+          
+          <!-- General Overview Card -->
+          <div class="card">
+            <div class="card-title">
+              <span>1.0 Purpose & Scope</span>
+              <span class="system-tag" id="manual-code-tag" style="background-color:rgba(59,130,246,0.1); color:var(--accent-primary); border:1px solid var(--accent-primary);">PM-OCT-08</span>
+            </div>
+            <p id="manual-purpose" style="font-size: 13px; line-height: 1.6; color: var(--text-muted);">
+              Loading...
+            </p>
+          </div>
+
+          <!-- Specifications Section (conditional display for mechanical/engines) -->
+          <div class="card" id="manual-specs-card">
+            <div class="card-title">2.0 Technical Specifications / Operational Limits</div>
+            <table class="spec-table" id="manual-specs-table">
+              <!-- Dynamically populated spec rows -->
+            </table>
+          </div>
+
+          <!-- Definitions and Abbreviations -->
+          <div class="card">
+            <div class="card-title">3.0 Key Definitions & Abbreviations</div>
+            <div style="font-size: 13px; line-height: 1.6; color: var(--text-muted);" id="manual-definitions">
+              <!-- Dynamically populated lists -->
+            </div>
+          </div>
+
+          <!-- Detailed instructions accordion -->
+          <div class="card">
+            <div class="card-title">4.0 Operational Guidelines & Detailed Instructions</div>
+            <div class="accordion" id="manual-instructions-accordion">
+              <!-- Dynamically populated accordion panels -->
+            </div>
+          </div>
+
+        </section>
+
+        <!-- ==================== TAB PANEL: CHECKLIST ==================== -->
+        <section class="tab-panel" id="panel-checklist">
+          
+          <div class="card">
+            
+            <div class="checklist-filters">
+              <div class="select-wrapper">
+                <label for="checklist-selector-field" id="checklist-selector-label" style="font-size:12px; font-weight:700; text-transform:uppercase; color:var(--text-muted);">Select Interval:</label>
+                <select id="checklist-selector-field" class="select-control" onchange="loadChecklistFormItems()">
+                  <!-- Dynamically populated options (Frequencies or Floors) -->
+                </select>
+              </div>
+              <div id="checklist-score-preview" style="font-size:13px; font-weight:600; color:var(--text-muted);">
+                Completion Rate: <span id="score-percentage" style="color:#fff;">0%</span>
+              </div>
+            </div>
+
+            <!-- Danger warnings conditional -->
+            <div class="warning-box" id="checklist-warning-box" style="display: none;">
+              <!-- Warnings injected here -->
+            </div>
+
+            <form id="checklist-form" onsubmit="handleChecklistSubmit(event)">
+              
+              <div style="overflow-x: auto; margin-bottom: 24px;">
+                <table class="form-table">
+                  <thead>
+                    <tr>
+                      <th class="col-num">#</th>
+                      <th class="col-desc">Task Description</th>
+                      <th class="col-choices">Status</th>
+                      <th class="col-remarks">Observations / Remarks</th>
+                      <th class="col-initials">Initials</th>
+                    </tr>
+                  </thead>
+                  <tbody id="checklist-form-tbody">
+                    <!-- Dynamically populated checklist item rows -->
+                  </tbody>
+                </table>
+              </div>
+
+              <!-- Operational Readings (Run Hours / Fuel / Parts) Strip -->
+              <div style="background: rgba(15, 23, 42, 0.6); padding: 16px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 20px;">
+                <div style="font-size: 11px; font-weight: 700; color: #38bdf8; text-transform: uppercase; margin-bottom: 12px; letter-spacing: 0.5px;">
+                  Operational Meter Reading & Spare Parts Used (Optional Inspection Data)
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px;">
+                  <div class="form-group">
+                    <label for="form-chk-runhours">Current Engine / Motor Run Hours</label>
+                    <input type="number" step="0.1" id="form-chk-runhours" placeholder="e.g. 1248.5 Hrs">
+                  </div>
+                  <div class="form-group">
+                    <label for="form-chk-fuel">Current Fuel Tank Level (L / %)</label>
+                    <input type="number" step="0.1" id="form-chk-fuel" placeholder="e.g. 425 Liters (85%)">
+                  </div>
+                  <div class="form-group">
+                    <label for="form-chk-part">Spare Parts Used / Replaced</label>
+                    <input type="text" id="form-chk-part" placeholder="e.g. Cummins Oil Filter LF9009">
+                  </div>
+                </div>
+              </div>
+
+              <!-- Photographic Evidence & Insert Images Card -->
+              <div style="background: rgba(15, 23, 42, 0.6); padding: 18px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 20px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+                  <div>
+                    <div style="font-size: 11px; font-weight: 700; color: #38bdf8; text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; gap: 6px;">
+                      <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                      <span>Inspection Photographic Evidence & Attached Images</span>
+                      <span class="system-tag" id="chk-images-count-badge" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); font-size: 9.5px; margin-left: 4px;">0 Attached</span>
+                    </div>
+                    <p style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">
+                      Attach photos of equipment conditions, meter readings, defects, or completed maintenance actions. Images will be stored with this record and included in compliance reports.
+                    </p>
+                  </div>
+                  <div style="display: flex; gap: 8px; align-items: center;" id="chk-image-btn-group">
+                    <input type="file" id="form-chk-images-input" accept="image/*" multiple style="display: none;" onchange="handleChecklistImageUpload(event)">
+                    <input type="file" id="form-chk-images-camera" accept="image/*" capture="environment" style="display: none;" onchange="handleChecklistImageUpload(event)">
+                    <button type="button" class="btn btn-primary" style="font-size: 12px; padding: 6px 12px; display: inline-flex; align-items: center; gap: 6px;" onclick="document.getElementById('form-chk-images-camera').click()">
+                      <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+                      <span>📸 Snap Photo</span>
+                    </button>
+                    <button type="button" class="btn btn-secondary" style="font-size: 12px; padding: 6px 12px; border-color: rgba(56, 189, 248, 0.4); color: #38bdf8;" onclick="document.getElementById('form-chk-images-input').click()" id="btn-insert-images">
+                      <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                      <span>📁 Gallery</span>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Drag-and-drop / Upload Dropzone -->
+                <div id="checklist-dropzone" class="image-dropzone" onclick="document.getElementById('form-chk-images-input').click()" ondragover="handleImageDragOver(event)" ondragleave="handleImageDragLeave(event)" ondrop="handleImageDrop(event)">
+                  <svg viewBox="0 0 24 24" width="32" height="32" stroke="currentColor" stroke-width="1.5" fill="none" style="color: var(--accent-primary); margin-bottom: 6px;"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                  <span style="font-size: 12px; font-weight: 600; color: #cbd5e1;">Click or drag &amp; drop inspection photos here</span>
+                  <span style="font-size: 10.5px; color: var(--text-muted);">Supports PNG, JPG, JPEG, WEBP (Multiple files supported)</span>
+                </div>
+
+                <!-- Image Previews Container (Grid of cards) -->
+                <div id="checklist-images-preview-container" class="images-preview-grid" style="display: none; margin-top: 14px;">
+                  <!-- Dynamically rendered image cards -->
+                </div>
+              </div>
+
+              <!-- Footer inputs -->
+              <div class="checklist-footer">
+                <div class="form-group">
+                  <label for="form-date">Date of Inspection</label>
+                  <input type="date" id="form-date" required>
+                </div>
+                <div class="form-group">
+                  <label for="form-prepared">Prepared By (Technician)</label>
+                  <input type="text" id="form-prepared" placeholder="e.g. Martin Naimes" required>
+                </div>
+                <div class="form-group">
+                  <label for="form-inspected">Verified By (BM Manager)</label>
+                  <input type="text" id="form-inspected" placeholder="e.g. Engr. Roan Paul B. Gallegos" required>
+                </div>
+              </div>
+
+              <div class="form-actions">
+                <button type="button" class="btn btn-secondary" onclick="resetChecklistForm()">Reset Form</button>
+                <button type="submit" class="btn btn-primary" id="btn-submit-checklist">Submit Inspection Checklist</button>
+              </div>
+
+            </form>
+
+          </div>
+
+        </section>
+
+        <!-- ==================== TAB PANEL: RUN HOURS & FUEL TRACKING ==================== -->
+        <section class="tab-panel" id="panel-runhours">
+          
+          <!-- Equipment Live Meter Summary Strip -->
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-bottom: 24px;" id="runhours-summary-cards">
+            <!-- Populated dynamically per active procedure (Genset, Fire Pump, STP) -->
+          </div>
+
+          <!-- Run Hours & Fuel Logging Form Card -->
+          <div class="card">
+            <div class="card-title">
+              <span>Log Engine / Motor Run Hours & Fuel Reading</span>
+              <span class="system-tag" style="background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4);">Operational Meter Log</span>
+            </div>
+
+            <form id="runhours-form" onsubmit="handleRunHoursSubmit(event)">
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 16px;">
+                <div class="form-group">
+                  <label for="rh-equipment-select">Target Equipment / Engine / Motor</label>
+                  <select id="rh-equipment-select" class="select-control" style="width: 100%; padding: 10px;" onchange="updateRunHoursFormDefaults()" required>
+                    <!-- Dynamically populated options -->
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="rh-date">Reading Date & Time</label>
+                  <input type="datetime-local" id="rh-date" required>
+                </div>
+                <div class="form-group">
+                  <label for="rh-technician">Technician / Operator</label>
+                  <input type="text" id="rh-technician" placeholder="e.g. Martin Naimes" required>
+                </div>
+              </div>
+
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 16px; background: rgba(0,0,0,0.2); padding: 16px; border-radius: 8px; border: 1px solid var(--border-color);">
+                <div class="form-group">
+                  <label for="rh-meter-start">Start Hour Meter Reading (Hrs)</label>
+                  <input type="number" step="0.1" id="rh-meter-start" placeholder="e.g. 1245.0" oninput="calculateRunHoursDiff()" required>
+                </div>
+                <div class="form-group">
+                  <label for="rh-meter-end">End Hour Meter Reading (Hrs)</label>
+                  <input type="number" step="0.1" id="rh-meter-end" placeholder="e.g. 1248.5" oninput="calculateRunHoursDiff()" required>
+                </div>
+                <div class="form-group">
+                  <label for="rh-hours-diff">Run Duration (Calculated)</label>
+                  <input type="text" id="rh-hours-diff" readonly placeholder="0.0 Hrs" style="background: rgba(59, 130, 246, 0.1); color: #60a5fa; font-weight: 700;">
+                </div>
+              </div>
+
+              <div id="rh-fuel-section" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 16px; background: rgba(245, 158, 11, 0.05); padding: 16px; border-radius: 8px; border: 1px solid rgba(245, 158, 11, 0.25);">
+                <div class="form-group">
+                  <label for="rh-fuel-before">Fuel Level Before Run (L / %)</label>
+                  <input type="number" step="0.1" id="rh-fuel-before" placeholder="e.g. 450 L" oninput="calculateFuelConsumed()">
+                </div>
+                <div class="form-group">
+                  <label for="rh-fuel-added">Fuel Refueled / Added (L)</label>
+                  <input type="number" step="0.1" id="rh-fuel-added" placeholder="e.g. 0 L" value="0" oninput="calculateFuelConsumed()">
+                </div>
+                <div class="form-group">
+                  <label for="rh-fuel-after">Fuel Level After Run (L / %)</label>
+                  <input type="number" step="0.1" id="rh-fuel-after" placeholder="e.g. 415 L" oninput="calculateFuelConsumed()">
+                </div>
+                <div class="form-group">
+                  <label for="rh-fuel-consumed">Fuel Consumed (Calculated)</label>
+                  <input type="text" id="rh-fuel-consumed" readonly placeholder="0.0 L" style="background: rgba(245, 158, 11, 0.15); color: #fbbf24; font-weight: 700;">
+                </div>
+                <div class="form-group">
+                  <label for="rh-burn-rate">Burn Rate (L/Hr)</label>
+                  <input type="text" id="rh-burn-rate" readonly placeholder="0.0 L/Hr" style="background: rgba(245, 158, 11, 0.15); color: #fbbf24; font-weight: 700;">
+                </div>
+              </div>
+
+              <div class="form-group" style="margin-bottom: 16px;">
+                <label for="rh-notes">Operational Notes & Observations</label>
+                <input type="text" id="rh-notes" placeholder="e.g. Regular weekly load test run. Oil pressure 60 PSI, coolant temp 82°C.">
+              </div>
+
+              <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                <button type="button" class="btn btn-secondary" onclick="resetRunHoursForm()">Clear Form</button>
+                <button type="submit" class="btn btn-primary">Save Run Hour & Fuel Reading</button>
+              </div>
+            </form>
+          </div>
+
+          <!-- Run Hours & Fuel Logs Register Card -->
+          <div class="card">
+            <div class="card-title">
+              <span>Run Hour & Fuel Log History Register</span>
+              <button class="btn btn-secondary" style="font-size: 11px; padding: 4px 8px; color: #ef4444; border-color: rgba(239, 68, 68, 0.4);" onclick="clearRunHoursLogs()">Clear Register</button>
+            </div>
+
+            <div style="overflow-x: auto;">
+              <table class="logs-table" id="runhours-table">
+                <thead>
+                  <tr>
+                    <th>Date / Time</th>
+                    <th>Equipment / Motor</th>
+                    <th>Start Meter</th>
+                    <th>End Meter</th>
+                    <th>Run Hours</th>
+                    <th>Fuel Added</th>
+                    <th>Fuel Consumed</th>
+                    <th>Burn Rate</th>
+                    <th>Technician</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="runhours-table-tbody">
+                  <!-- Populated dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </section>
+
+        <!-- ==================== TAB PANEL: PARTS & PROCUREMENT LOG ==================== -->
+        <section class="tab-panel" id="panel-procurement">
+          
+          <!-- Procurement KPI Summary Strip -->
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px;">
+            <div style="background: rgba(15, 23, 42, 0.6); padding: 16px; border-radius: 10px; border: 1px solid var(--border-color);">
+              <div style="font-size: 11px; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Total Procurement Spend</div>
+              <div style="font-size: 22px; color: #38bdf8; font-weight: 800; margin-top: 4px;" id="proc-metric-total-cost">₱0.00</div>
+            </div>
+            <div style="background: rgba(15, 23, 42, 0.6); padding: 16px; border-radius: 10px; border: 1px solid rgba(16, 185, 129, 0.3);">
+              <div style="font-size: 11px; color: #34d399; font-weight: 700; text-transform: uppercase;">Parts In Stock</div>
+              <div style="font-size: 22px; color: #34d399; font-weight: 800; margin-top: 4px;" id="proc-metric-in-stock">0 Items</div>
+            </div>
+            <div style="background: rgba(15, 23, 42, 0.6); padding: 16px; border-radius: 10px; border: 1px solid rgba(59, 130, 246, 0.3);">
+              <div style="font-size: 11px; color: #60a5fa; font-weight: 700; text-transform: uppercase;">Installed / Replaced</div>
+              <div style="font-size: 22px; color: #60a5fa; font-weight: 800; margin-top: 4px;" id="proc-metric-installed">0 Items</div>
+            </div>
+            <div style="background: rgba(15, 23, 42, 0.6); padding: 16px; border-radius: 10px; border: 1px solid rgba(245, 158, 11, 0.3);">
+              <div style="font-size: 11px; color: #fbbf24; font-weight: 700; text-transform: uppercase;">Pending PM Install</div>
+              <div style="font-size: 22px; color: #fbbf24; font-weight: 800; margin-top: 4px;" id="proc-metric-pending">0 Items</div>
+            </div>
+          </div>
+
+          <!-- Record Procurement Form Card -->
+          <div class="card">
+            <div class="card-title">
+              <span>Record Procurement of Spare Parts & Items</span>
+              <span class="system-tag" style="background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.4);">Inventory & Materials</span>
+            </div>
+
+            <form id="procurement-form" onsubmit="handleProcurementSubmit(event)">
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 16px;">
+                <div class="form-group">
+                  <label for="proc-item-name">Part / Item Name & Model</label>
+                  <input type="text" id="proc-item-name" placeholder="e.g. Cummins Oil Filter LF9009" required>
+                             <div class="form-group">
+                  <label for="proc-system">Assigned System / Category</label>
+                  <select id="proc-system" class="select-control" style="width: 100%; padding: 10px;" required>
+                    <option value="Genset">Generator Set (PM-08)</option>
+                    <option value="FirePump">Fire & Jockey Pumps (PM-09)</option>
+                    <option value="STP">Sewage Treatment Plant (PM-10)</option>
+                    <option value="DomesticWater">Domestic Water System (PM-11)</option>
+                    <option value="SubmersiblePump">Submersible Sump Pump (PM-12)</option>
+                    <option value="Housekeeping">Housekeeping & Janitorial</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label for="proc-part-no">Part / Serial Number</label>
+                  <input type="text" id="proc-part-no" placeholder="e.g. PN-3318853">
+                </div>
+              </div>
+
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 16px;">
+                <div class="form-group">
+                  <label for="proc-quantity">Quantity & Unit</label>
+                  <div style="display: flex; gap: 8px;">
+                    <input type="number" step="1" min="1" id="proc-quantity" placeholder="Qty" value="1" oninput="calculateProcurementTotal()" required style="width: 80px;">
+                    <input type="text" id="proc-unit" placeholder="Unit (Pcs, L, Set)" value="Pcs" required style="flex: 1;">
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label for="proc-unit-cost">Unit Cost (₱)</label>
+                  <input type="number" step="0.01" id="proc-unit-cost" placeholder="e.g. 2450.00" oninput="calculateProcurementTotal()" required>
+                </div>
+                <div class="form-group">
+                  <label for="proc-total-cost">Total Cost (Calculated)</label>
+                  <input type="text" id="proc-total-cost" readonly placeholder="₱0.00" style="background: rgba(56, 189, 248, 0.1); color: #38bdf8; font-weight: 700;">
+                </div>
+                <div class="form-group">
+                  <label for="proc-date">Procurement Date</label>
+                  <input type="date" id="proc-date" required>
+                </div>
+              </div>
+
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 16px;">
+                <div class="form-group">
+                  <label for="proc-supplier">Supplier / Vendor Name</label>
+                  <input type="text" id="proc-supplier" placeholder="e.g. Cummins Sales & Service Phils.">
+                </div>
+                <div class="form-group">
+                  <label for="proc-po">PO / Invoice Ref. No.</label>
+                  <input type="text" id="proc-po" placeholder="e.g. PO-2026-0891">
+                </div>
+                <div class="form-group">
+                  <label for="proc-status">Installation Status</label>
+                  <select id="proc-status" class="select-control" style="width: 100%; padding: 10px;" required>
+                    <option value="In Stock">In Stock (Available)</option>
+                    <option value="Installed">Installed / Replaced</option>
+                    <option value="Scheduled">Scheduled for PM</option>
+                  </select>
+                </div>
+              </div>
+
+              <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                <button type="button" class="btn btn-secondary" onclick="resetProcurementForm()">Clear Form</button>
+                <button type="submit" class="btn btn-primary">Record Procurement Item</button>
+              </div>
+            </form>
+          </div>
+
+          <!-- Procurement Register Table Card -->
+          <div class="card">
+            <div class="card-title" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 16px;">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <span>Procurement Parts & Items Register</span>
+                <span class="system-tag" style="background: rgba(56, 189, 248, 0.12); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3);" id="proc-filtered-count-badge">All Systems</span>
+              </div>
+
+              <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <label for="proc-system-filter" style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Filter System:</label>
+                  <select id="proc-system-filter" class="select-control" onchange="renderProcurementTab()" style="padding: 6px 12px; font-size: 12px; border-color: rgba(56, 189, 248, 0.4);">
+                    <option value="All">All Systems</option>
+                    <option value="Genset">Generator Set (Genset)</option>
+                    <option value="FirePump">Fire & Jockey Pumps</option>
+                    <option value="STP">Sewage Treatment Plant (STP)</option>
+                    <option value="DomesticWater">Domestic Water System</option>
+                    <option value="SubmersiblePump">Submersible Sump Pump</option>
+                    <option value="Housekeeping">Housekeeping & Janitorial</option>
+                  </select>
+                </div>
+
+                <button class="btn btn-secondary" style="font-size: 11px; padding: 6px 10px; color: #ef4444; border-color: rgba(239, 68, 68, 0.4);" onclick="clearProcurementLogs()">Clear Register</button>
+              </div>
+            </div>
+
+            <!-- Filter Pills Strip -->
+            <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.06);">
+              <button class="proc-filter-pill active" data-system="All" onclick="setProcurementSystemFilter('All')">All Systems</button>
+              <button class="proc-filter-pill" data-system="Genset" onclick="setProcurementSystemFilter('Genset')">⚙️ Genset (PM-08)</button>
+              <button class="proc-filter-pill" data-system="FirePump" onclick="setProcurementSystemFilter('FirePump')">🔥 Fire & Jockey (PM-09)</button>
+              <button class="proc-filter-pill" data-system="STP" onclick="setProcurementSystemFilter('STP')">💧 STP (PM-10)</button>
+              <button class="proc-filter-pill" data-system="DomesticWater" onclick="setProcurementSystemFilter('DomesticWater')">🚰 Domestic Water (PM-11)</button>
+              <button class="proc-filter-pill" data-system="SubmersiblePump" onclick="setProcurementSystemFilter('SubmersiblePump')">⚓ Submersible Sump (PM-12)</button>
+              <button class="proc-filter-pill" data-system="Housekeeping" onclick="setProcurementSystemFilter('Housekeeping')">🧹 Housekeeping</button>
+            </div>/button>
+            </div>
+
+            <div style="overflow-x: auto;">
+              <table class="logs-table" id="procurement-table">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Item & Spec</th>
+                    <th>System</th>
+                    <th>Qty / Unit</th>
+                    <th>Unit Cost</th>
+                    <th>Total Cost</th>
+                    <th>Supplier</th>
+                    <th>PO / Invoice #</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="procurement-table-tbody">
+                  <!-- Populated dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </section>
+
+        <!-- ==================== TAB PANEL: LOGS ==================== -->
+        <section class="tab-panel" id="panel-logs">
+          
+          <div class="card">
+            <div class="card-title">
+              <span>Compliance Inspection Logs History</span>
+              <button class="btn btn-secondary" onclick="clearLogsHistory()" id="btn-clear-logs" style="font-size:11px; padding:6px 12px; border:1px solid #ef4444; color:#ef4444; background:none;">Clear History</button>
+            </div>
+            
+            <div style="overflow-x: auto;">
+              <table class="logs-table">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Procedure Name</th>
+                    <th>Subcategory (Interval/Floor)</th>
+                    <th>Compliance Score</th>
+                    <th>Technician</th>
+                    <th>Verifier</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="logs-table-tbody">
+                  <!-- Dynamically populated runs history -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </section>
+
+      </div>
+    </main>
+
+  </div>
+
+  <!-- ==================== PRINTABLE CONTAINER ==================== -->
+  <div class="print-only-container" id="printable-compliance-report">
+    <!-- Clean, borderless compliance sheet that dynamically populates on print -->
+  </div>
+
+  <!-- ==================== IMAGE LIGHTBOX MODAL ==================== -->
+  <div class="lightbox-modal" id="image-lightbox-modal" onclick="closeImageLightbox(event)" style="display: none;">
+    <div class="lightbox-content" onclick="event.stopPropagation()">
+      <button type="button" class="lightbox-close" onclick="closeImageLightbox()">&times;</button>
+      <img id="lightbox-img" src="" alt="Inspection photo full preview">
+      <div id="lightbox-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

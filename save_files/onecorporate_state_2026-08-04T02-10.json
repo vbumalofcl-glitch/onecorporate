@@ -1,0 +1,1501 @@
+{
+  "version": "1.0",
+  "savedAt": "2026-08-04T02:10:49.134Z",
+  "fileName": "onecorporate_state_2026-08-04T02-10.json",
+  "description": "Saved Maintenance State",
+  "appState": {
+    "tasks": [
+      {
+        "id": "t_multiday_active_1784768942408",
+        "manualTaskId": "m_multiday_active",
+        "name": "Chiller Plant Multi-Day Major Overhaul",
+        "system": "Mechanical",
+        "frequency": "Daily",
+        "timeSlot": "08:00 AM",
+        "priority": "Critical",
+        "status": "In Progress",
+        "isMultiDay": true,
+        "startDate": "2026-07-23",
+        "finishDate": "2026-07-26",
+        "notes": "3-day multi-day chiller overhaul.",
+        "assignedTo": "Jane Smith (Mech)",
+        "dateCreated": "2026-07-23",
+        "photo": ""
+      },
+      {
+        "id": "t_seed_m1_1784697513988",
+        "manualTaskId": "m1",
+        "name": "Inspect lobbies, corridors, restrooms",
+        "system": "Architectural",
+        "frequency": "Daily",
+        "timeSlot": "09:00 AM",
+        "priority": "Minor",
+        "status": "Pending",
+        "notes": "",
+        "photo": "",
+        "assignedTo": "John Doe (Lead)",
+        "dateCreated": "2026-07-22",
+        "subChecklist": [
+          {
+            "item": "Surface finishes & paint integrity",
+            "status": "OK",
+            "notes": ""
+          },
+          {
+            "item": "Glazing, glass panes & seals check",
+            "status": "OK",
+            "notes": ""
+          },
+          {
+            "item": "Doors, hinges & door closer alignment",
+            "status": "OK",
+            "notes": ""
+          },
+          {
+            "item": "Ceiling tiles alignment & dampness checks",
+            "status": "OK",
+            "notes": ""
+          },
+          {
+            "item": "Floor conditions — slip hazards & cleanliness",
+            "status": "OK",
+            "notes": ""
+          }
+        ]
+      },
+      {
+        "id": "t_seed_m2_1784697513988",
+        "manualTaskId": "m2",
+        "name": "Check storefront glass and seals",
+        "system": "Architectural",
+        "frequency": "Daily",
+        "timeSlot": "10:00 AM",
+        "priority": "Minor",
+        "status": "Pending",
+        "notes": "",
+        "photo": "",
+        "assignedTo": "John Doe (Lead)",
+        "dateCreated": "2026-07-22"
+      },
+      {
+        "id": "t_seed_m3_1784697513988",
+        "manualTaskId": "m3",
+        "name": "Monitor floor conditions (cracks, slipperiness)",
+        "system": "Architectural",
+        "frequency": "Daily",
+        "timeSlot": "05:00 PM",
+        "priority": "Major",
+        "status": "Pending",
+        "notes": "",
+        "photo": "",
+        "assignedTo": "John Doe (Lead)",
+        "dateCreated": "2026-07-22"
+      },
+      {
+        "id": "t_seed_m4_1784697513988",
+        "manualTaskId": "m4",
+        "name": "Verify cleanliness of common areas",
+        "system": "Architectural",
+        "frequency": "Daily",
+        "timeSlot": "05:00 PM",
+        "priority": "Minor",
+        "status": "Pending",
+        "notes": "",
+        "photo": "",
+        "assignedTo": "John Doe (Lead)",
+        "dateCreated": "2026-07-22"
+      },
+      {
+        "id": "t_seed_m5_1784697513988",
+        "manualTaskId": "m5",
+        "name": "Observe unusual cracks or movement in common areas",
+        "system": "Structural",
+        "frequency": "Daily",
+        "timeSlot": "12:00 PM",
+        "priority": "Critical",
+        "status": "Pending",
+        "notes": "",
+        "photo": "",
+        "assignedTo": "John Doe (Lead)",
+        "dateCreated": "2026-07-22"
+      },
+      {
+        "id": "t_seed_m6_1784697513988",
+        "manualTaskId": "m6",
+        "name": "Check basement for water seepage",
+        "system": "Structural",
+        "frequency": "Daily",
+        "timeSlot": "08:00 AM",
+        "priority": "Major",
+        "status": "Pending",
+        "notes": "",
+        "photo": "",
+        "assignedTo": "John Doe (Lead)",
+        "dateCreated": "2026-07-22"
+      },
+      {
+        "id": "t_seed_m7_1784697513988",
+        "manualTaskId": "m7",
+        "name": "Check AHU/FCU operation",
+        "system": "Mechanical",
+        "frequency": "Daily",
+        "timeSlot": "09:00 AM",
+        "priority": "Major",
+        "status": "Pending",
+        "notes": "",
+        "photo": "",
+        "assignedTo": "Jane Smith (Mech)",
+        "dateCreated": "2026-07-22"
+      },
+      {
+        "id": "t_seed_m8_1784697513988",
+        "manualTaskId": "m8",
+        "name": "Monitor chiller parameters (pressure, temp)",
+        "system": "Mechanical",
+        "frequency": "Daily",
+        "timeSlot": "10:00 AM",
+        "priority": "Critical",
+        "status": "Pending",
+        "notes": "",
+        "photo": "",
+        "assignedTo": "Jane Smith (Mech)",
+        "dateCreated": "2026-07-22"
+      },
+      {
+        "id": "t_seed_m9_1784697513988",
+        "manualTaskId": "m9",
+        "name": "Inspect pumps for noise/vibration",
+        "system": "Mechanical",
+        "frequency": "Daily",
+        "timeSlot": "10:00 AM",
+        "priority": "Major",
+        "status": "Pending",
+        "notes": "",
+        "photo": "",
+        "assignedTo": "Jane Smith (Mech)",
+        "dateCreated": "2026-07-22"
+      },
+      {
+        "id": "t_seed_m10_1784697513988",
+        "manualTaskId": "m10",
+        "name": "Check generator fuel and battery",
+        "system": "Mechanical",
+        "frequency": "Daily",
+        "timeSlot": "01:00 PM",
+        "priority": "Critical",
+        "status": "Pending",
+        "notes": "",
+        "photo": "",
+        "assignedTo": "Jane Smith (Mech)",
+        "dateCreated": "2026-07-22"
+      },
+      {
+        "id": "t_seed_m11_1784697513988",
+        "manualTaskId": "m11",
+        "name": "Inspect cooling tower basin",
+        "system": "Mechanical",
+        "frequency": "Daily",
+        "timeSlot": "01:00 PM",
+        "priority": "Major",
+        "status": "Pending",
+        "notes": "",
+        "photo": "",
+        "assignedTo": "Jane Smith (Mech)",
+        "dateCreated": "2026-07-22"
+      },
+      {
+        "id": "t_seed_m12_1784697513988",
+        "manualTaskId": "m12",
+        "name": "Check fire extinguishers (pressure, accessibility)",
+        "system": "Fire Protection",
+        "frequency": "Daily",
+        "timeSlot": "11:00 AM",
+        "priority": "Major",
+        "status": "Pending",
+        "notes": "",
+        "photo": "",
+        "assignedTo": "Mike Johnson (Elec)",
+        "dateCreated": "2026-07-22"
+      },
+      {
+        "id": "t_seed_m13_1784697513988",
+        "manualTaskId": "m13",
+        "name": "Inspect emergency lights and exit signs",
+        "system": "Fire Protection",
+        "frequency": "Daily",
+        "timeSlot": "10:00 AM",
+        "priority": "Major",
+        "status": "Pending",
+        "notes": "",
+        "photo": "",
+        "assignedTo": "Mike Johnson (Elec)",
+        "dateCreated": "2026-07-22"
+      },
+      {
+        "id": "t_seed_m14_1784697513988",
+        "manualTaskId": "m14",
+        "name": "Verify fire alarm panel status",
+        "system": "Fire Protection",
+        "frequency": "Daily",
+        "timeSlot": "10:00 AM",
+        "priority": "Critical",
+        "status": "Pending",
+        "notes": "",
+        "photo": "",
+        "assignedTo": "Mike Johnson (Elec)",
+        "dateCreated": "2026-07-22"
+      },
+      {
+        "id": "t_seed_m15_1784697513988",
+        "manualTaskId": "m15",
+        "name": "Check water pressure and supply",
+        "system": "Plumbing",
+        "frequency": "Daily",
+        "timeSlot": "12:00 PM",
+        "priority": "Critical",
+        "status": "Pending",
+        "notes": "",
+        "photo": "",
+        "assignedTo": "David Lee (Plumb)",
+        "dateCreated": "2026-07-22"
+      },
+      {
+        "id": "t_seed_m16_1784697513988",
+        "manualTaskId": "m16",
+        "name": "Inspect restrooms for leaks",
+        "system": "Plumbing",
+        "frequency": "Daily",
+        "timeSlot": "12:00 PM",
+        "priority": "Major",
+        "status": "Pending",
+        "notes": "",
+        "photo": "",
+        "assignedTo": "David Lee (Plumb)",
+        "dateCreated": "2026-07-22"
+      },
+      {
+        "id": "t_seed_m17_1784697513988",
+        "manualTaskId": "m17",
+        "name": "Monitor drainage issues",
+        "system": "Plumbing",
+        "frequency": "Daily",
+        "timeSlot": "04:00 PM",
+        "priority": "Major",
+        "status": "Pending",
+        "notes": "",
+        "photo": "",
+        "assignedTo": "David Lee (Plumb)",
+        "dateCreated": "2026-07-22"
+      },
+      {
+        "id": "t_seed_m18_1784697513988",
+        "manualTaskId": "m18",
+        "name": "Check aeration system",
+        "system": "STP",
+        "frequency": "Daily",
+        "timeSlot": "02:00 PM",
+        "priority": "Critical",
+        "status": "Pending",
+        "notes": "",
+        "photo": "",
+        "assignedTo": "Sarah Connor (STP)",
+        "dateCreated": "2026-07-22"
+      },
+      {
+        "id": "t_seed_m19_1784697513988",
+        "manualTaskId": "m19",
+        "name": "Monitor MLSS levels",
+        "system": "STP",
+        "frequency": "Daily",
+        "timeSlot": "02:00 PM",
+        "priority": "Major",
+        "status": "Pending",
+        "notes": "",
+        "photo": "",
+        "assignedTo": "Sarah Connor (STP)",
+        "dateCreated": "2026-07-22"
+      },
+      {
+        "id": "t_seed_m20_1784697513988",
+        "manualTaskId": "m20",
+        "name": "Inspect blowers and pumps",
+        "system": "STP",
+        "frequency": "Daily",
+        "timeSlot": "02:00 PM",
+        "priority": "Major",
+        "status": "Pending",
+        "notes": "",
+        "photo": "",
+        "assignedTo": "Sarah Connor (STP)",
+        "dateCreated": "2026-07-22"
+      },
+      {
+        "id": "t_seed_m21_1784697513988",
+        "manualTaskId": "m21",
+        "name": "Check elevator operation",
+        "system": "Elevator",
+        "frequency": "Daily",
+        "timeSlot": "03:00 PM",
+        "priority": "Critical",
+        "status": "Pending",
+        "notes": "",
+        "photo": "",
+        "assignedTo": "John Doe (Lead)",
+        "dateCreated": "2026-07-22"
+      },
+      {
+        "id": "t_seed_m22_1784697513988",
+        "manualTaskId": "m22",
+        "name": "Inspect cabin lights and ventilation",
+        "system": "Elevator",
+        "frequency": "Daily",
+        "timeSlot": "03:00 PM",
+        "priority": "Minor",
+        "status": "Pending",
+        "notes": "",
+        "photo": "",
+        "assignedTo": "John Doe (Lead)",
+        "dateCreated": "2026-07-22"
+      },
+      {
+        "id": "t_seed_m23_1784697513988",
+        "manualTaskId": "m23",
+        "name": "Verify leveling accuracy",
+        "system": "Elevator",
+        "frequency": "Daily",
+        "timeSlot": "03:00 PM",
+        "priority": "Major",
+        "status": "Pending",
+        "notes": "",
+        "photo": "",
+        "assignedTo": "John Doe (Lead)",
+        "dateCreated": "2026-07-22"
+      },
+      {
+        "id": "t_tnt_ticket_1784773192355",
+        "name": "[Tenant ewewewe] ewew",
+        "system": "Architectural",
+        "frequency": "Daily",
+        "timeSlot": "",
+        "priority": "Major",
+        "status": "Pending",
+        "notes": "ewewewew",
+        "photo": "",
+        "assignedTo": "John Doe (Lead)",
+        "dateCreated": "2026-07-23"
+      }
+    ],
+    "registry": [
+      {
+        "id": "m1",
+        "name": "Inspect lobbies, corridors, restrooms",
+        "system": "Architectural",
+        "frequency": "Daily",
+        "timeSlot": "08:00 AM",
+        "priority": "Minor"
+      },
+      {
+        "id": "m2",
+        "name": "Check storefront glass and seals",
+        "system": "Architectural",
+        "frequency": "Daily",
+        "timeSlot": "08:00 AM",
+        "priority": "Minor"
+      },
+      {
+        "id": "m3",
+        "name": "Monitor floor conditions (cracks, slipperiness)",
+        "system": "Architectural",
+        "frequency": "Daily",
+        "timeSlot": "05:00 PM",
+        "priority": "Major"
+      },
+      {
+        "id": "m4",
+        "name": "Verify cleanliness of common areas",
+        "system": "Architectural",
+        "frequency": "Daily",
+        "timeSlot": "05:00 PM",
+        "priority": "Minor"
+      },
+      {
+        "id": "m5",
+        "name": "Observe unusual cracks or movement in common areas",
+        "system": "Structural",
+        "frequency": "Daily",
+        "timeSlot": "09:00 AM",
+        "priority": "Critical"
+      },
+      {
+        "id": "m6",
+        "name": "Check basement for water seepage",
+        "system": "Structural",
+        "frequency": "Daily",
+        "timeSlot": "09:00 AM",
+        "priority": "Major"
+      },
+      {
+        "id": "m7",
+        "name": "Check AHU/FCU operation",
+        "system": "Mechanical",
+        "frequency": "Daily",
+        "timeSlot": "10:00 AM",
+        "priority": "Major"
+      },
+      {
+        "id": "m8",
+        "name": "Monitor chiller parameters (pressure, temp)",
+        "system": "Mechanical",
+        "frequency": "Daily",
+        "timeSlot": "10:00 AM",
+        "priority": "Critical"
+      },
+      {
+        "id": "m9",
+        "name": "Inspect pumps for noise/vibration",
+        "system": "Mechanical",
+        "frequency": "Daily",
+        "timeSlot": "10:00 AM",
+        "priority": "Major"
+      },
+      {
+        "id": "m10",
+        "name": "Check generator fuel and battery",
+        "system": "Mechanical",
+        "frequency": "Daily",
+        "timeSlot": "01:00 PM",
+        "priority": "Critical"
+      },
+      {
+        "id": "m11",
+        "name": "Inspect cooling tower basin",
+        "system": "Mechanical",
+        "frequency": "Daily",
+        "timeSlot": "01:00 PM",
+        "priority": "Major"
+      },
+      {
+        "id": "m12",
+        "name": "Check fire extinguishers (pressure, accessibility)",
+        "system": "Fire Protection",
+        "frequency": "Daily",
+        "timeSlot": "11:00 AM",
+        "priority": "Major"
+      },
+      {
+        "id": "m13",
+        "name": "Inspect emergency lights and exit signs",
+        "system": "Fire Protection",
+        "frequency": "Daily",
+        "timeSlot": "11:00 AM",
+        "priority": "Major"
+      },
+      {
+        "id": "m14",
+        "name": "Verify fire alarm panel status",
+        "system": "Fire Protection",
+        "frequency": "Daily",
+        "timeSlot": "11:00 AM",
+        "priority": "Critical"
+      },
+      {
+        "id": "m15",
+        "name": "Check water pressure and supply",
+        "system": "Plumbing",
+        "frequency": "Daily",
+        "timeSlot": "12:00 PM",
+        "priority": "Critical"
+      },
+      {
+        "id": "m16",
+        "name": "Inspect restrooms for leaks",
+        "system": "Plumbing",
+        "frequency": "Daily",
+        "timeSlot": "12:00 PM",
+        "priority": "Major"
+      },
+      {
+        "id": "m17",
+        "name": "Monitor drainage issues",
+        "system": "Plumbing",
+        "frequency": "Daily",
+        "timeSlot": "04:00 PM",
+        "priority": "Major"
+      },
+      {
+        "id": "m18",
+        "name": "Check aeration system",
+        "system": "STP",
+        "frequency": "Daily",
+        "timeSlot": "02:00 PM",
+        "priority": "Critical"
+      },
+      {
+        "id": "m19",
+        "name": "Monitor MLSS levels",
+        "system": "STP",
+        "frequency": "Daily",
+        "timeSlot": "02:00 PM",
+        "priority": "Major"
+      },
+      {
+        "id": "m20",
+        "name": "Inspect blowers and pumps",
+        "system": "STP",
+        "frequency": "Daily",
+        "timeSlot": "02:00 PM",
+        "priority": "Major"
+      },
+      {
+        "id": "m21",
+        "name": "Check elevator operation",
+        "system": "Elevator",
+        "frequency": "Daily",
+        "timeSlot": "03:00 PM",
+        "priority": "Critical"
+      },
+      {
+        "id": "m22",
+        "name": "Inspect cabin lights and ventilation",
+        "system": "Elevator",
+        "frequency": "Daily",
+        "timeSlot": "03:00 PM",
+        "priority": "Minor"
+      },
+      {
+        "id": "m23",
+        "name": "Verify leveling accuracy",
+        "system": "Elevator",
+        "frequency": "Daily",
+        "timeSlot": "03:00 PM",
+        "priority": "Major"
+      },
+      {
+        "id": "m24",
+        "name": "Inspect ceilings for leaks or stains",
+        "system": "Architectural",
+        "frequency": "Weekly",
+        "timeSlot": "",
+        "priority": "Major"
+      },
+      {
+        "id": "m25",
+        "name": "Check wall conditions (cracks, dents)",
+        "system": "Architectural",
+        "frequency": "Weekly",
+        "timeSlot": "",
+        "priority": "Minor"
+      },
+      {
+        "id": "m26",
+        "name": "Inspect accessibility features (ramps, handrails)",
+        "system": "Architectural",
+        "frequency": "Weekly",
+        "timeSlot": "",
+        "priority": "Minor"
+      },
+      {
+        "id": "m27",
+        "name": "Inspect parking slabs for cracks or deflection",
+        "system": "Structural",
+        "frequency": "Weekly",
+        "timeSlot": "",
+        "priority": "Major"
+      },
+      {
+        "id": "m28",
+        "name": "Clean AHU/FCU filters",
+        "system": "Mechanical",
+        "frequency": "Weekly",
+        "timeSlot": "",
+        "priority": "Major"
+      },
+      {
+        "id": "m29",
+        "name": "Inspect belts and bearings",
+        "system": "Mechanical",
+        "frequency": "Weekly",
+        "timeSlot": "",
+        "priority": "Minor"
+      },
+      {
+        "id": "m30",
+        "name": "Check condensate drains",
+        "system": "Mechanical",
+        "frequency": "Weekly",
+        "timeSlot": "",
+        "priority": "Minor"
+      },
+      {
+        "id": "m31",
+        "name": "Inspect fire pumps (jockey pump operation)",
+        "system": "Fire Protection",
+        "frequency": "Weekly",
+        "timeSlot": "",
+        "priority": "Critical"
+      },
+      {
+        "id": "m32",
+        "name": "Check sprinkler heads for obstruction",
+        "system": "Fire Protection",
+        "frequency": "Weekly",
+        "timeSlot": "",
+        "priority": "Major"
+      },
+      {
+        "id": "m33",
+        "name": "Clean grease traps (food tenants)",
+        "system": "Plumbing",
+        "frequency": "Weekly",
+        "timeSlot": "",
+        "priority": "Major"
+      },
+      {
+        "id": "m34",
+        "name": "Inspect manholes",
+        "system": "Plumbing",
+        "frequency": "Weekly",
+        "timeSlot": "",
+        "priority": "Minor"
+      },
+      {
+        "id": "m35",
+        "name": "Check sludge levels",
+        "system": "STP",
+        "frequency": "Weekly",
+        "timeSlot": "",
+        "priority": "Major"
+      },
+      {
+        "id": "m36",
+        "name": "Inspect diffusers",
+        "system": "STP",
+        "frequency": "Weekly",
+        "timeSlot": "",
+        "priority": "Major"
+      },
+      {
+        "id": "m37",
+        "name": "Inspect door sensors",
+        "system": "Elevator",
+        "frequency": "Weekly",
+        "timeSlot": "",
+        "priority": "Critical"
+      },
+      {
+        "id": "m38",
+        "name": "Check door operation",
+        "system": "Elevator",
+        "frequency": "Weekly",
+        "timeSlot": "",
+        "priority": "Major"
+      },
+      {
+        "id": "m39",
+        "name": "Inspect façade for cracks, spalling",
+        "system": "Architectural",
+        "frequency": "Monthly",
+        "timeSlot": "",
+        "priority": "Major"
+      },
+      {
+        "id": "m40",
+        "name": "Check roofing membrane, gutters, downspouts",
+        "system": "Architectural",
+        "frequency": "Monthly",
+        "timeSlot": "",
+        "priority": "Major"
+      },
+      {
+        "id": "m41",
+        "name": "Inspect exterior lighting and signage",
+        "system": "Architectural",
+        "frequency": "Monthly",
+        "timeSlot": "",
+        "priority": "Minor"
+      },
+      {
+        "id": "m42",
+        "name": "Inspect exposed beams, columns, trusses",
+        "system": "Structural",
+        "frequency": "Monthly",
+        "timeSlot": "",
+        "priority": "Critical"
+      },
+      {
+        "id": "m43",
+        "name": "Check steel elements for corrosion",
+        "system": "Structural",
+        "frequency": "Monthly",
+        "timeSlot": "",
+        "priority": "Major"
+      },
+      {
+        "id": "m44",
+        "name": "Inspect motors and electrical connections",
+        "system": "Mechanical",
+        "frequency": "Monthly",
+        "timeSlot": "",
+        "priority": "Major"
+      },
+      {
+        "id": "m45",
+        "name": "Check ductwork for leaks",
+        "system": "Mechanical",
+        "frequency": "Monthly",
+        "timeSlot": "",
+        "priority": "Minor"
+      },
+      {
+        "id": "m46",
+        "name": "Inspect cooling tower fans",
+        "system": "Mechanical",
+        "frequency": "Monthly",
+        "timeSlot": "",
+        "priority": "Major"
+      },
+      {
+        "id": "m47",
+        "name": "Test smoke/heat detectors",
+        "system": "Fire Protection",
+        "frequency": "Monthly",
+        "timeSlot": "",
+        "priority": "Critical"
+      },
+      {
+        "id": "m48",
+        "name": "Inspect hose cabinets",
+        "system": "Fire Protection",
+        "frequency": "Monthly",
+        "timeSlot": "",
+        "priority": "Major"
+      },
+      {
+        "id": "m49",
+        "name": "Inspect water tanks",
+        "system": "Plumbing",
+        "frequency": "Monthly",
+        "timeSlot": "",
+        "priority": "Major"
+      },
+      {
+        "id": "m50",
+        "name": "Check sewer lines for blockages",
+        "system": "Plumbing",
+        "frequency": "Monthly",
+        "timeSlot": "",
+        "priority": "Major"
+      },
+      {
+        "id": "m51",
+        "name": "Effluent quality testing (pH, TSS, COD/BOD)",
+        "system": "STP",
+        "frequency": "Monthly",
+        "timeSlot": "",
+        "priority": "Critical"
+      },
+      {
+        "id": "m52",
+        "name": "Inspect control panels",
+        "system": "STP",
+        "frequency": "Monthly",
+        "timeSlot": "",
+        "priority": "Major"
+      },
+      {
+        "id": "m53",
+        "name": "Inspect control panel",
+        "system": "Elevator",
+        "frequency": "Monthly",
+        "timeSlot": "",
+        "priority": "Critical"
+      },
+      {
+        "id": "m54",
+        "name": "Check machine room cleanliness",
+        "system": "Elevator",
+        "frequency": "Monthly",
+        "timeSlot": "",
+        "priority": "Minor"
+      },
+      {
+        "id": "m55",
+        "name": "Cooling tower deep cleaning",
+        "system": "Mechanical",
+        "frequency": "Quarterly",
+        "timeSlot": "",
+        "priority": "Major"
+      },
+      {
+        "id": "m56",
+        "name": "Pump alignment check",
+        "system": "Mechanical",
+        "frequency": "Quarterly",
+        "timeSlot": "",
+        "priority": "Major"
+      },
+      {
+        "id": "m57",
+        "name": "Duct cleaning",
+        "system": "Mechanical",
+        "frequency": "Quarterly",
+        "timeSlot": "",
+        "priority": "Minor"
+      },
+      {
+        "id": "m58",
+        "name": "Sewer line jetting",
+        "system": "Plumbing",
+        "frequency": "Quarterly",
+        "timeSlot": "",
+        "priority": "Major"
+      },
+      {
+        "id": "m59",
+        "name": "Blower lubrication",
+        "system": "STP",
+        "frequency": "Quarterly",
+        "timeSlot": "",
+        "priority": "Minor"
+      },
+      {
+        "id": "m60",
+        "name": "Diffuser cleaning",
+        "system": "STP",
+        "frequency": "Quarterly",
+        "timeSlot": "",
+        "priority": "Major"
+      },
+      {
+        "id": "m61",
+        "name": "Pump servicing",
+        "system": "STP",
+        "frequency": "Quarterly",
+        "timeSlot": "",
+        "priority": "Major"
+      },
+      {
+        "id": "m62",
+        "name": "Full mechanical inspection",
+        "system": "Elevator",
+        "frequency": "Quarterly",
+        "timeSlot": "",
+        "priority": "Critical"
+      },
+      {
+        "id": "m63",
+        "name": "Rail lubrication",
+        "system": "Elevator",
+        "frequency": "Quarterly",
+        "timeSlot": "",
+        "priority": "Minor"
+      },
+      {
+        "id": "m64",
+        "name": "Full architectural audit",
+        "system": "Architectural",
+        "frequency": "Annual",
+        "timeSlot": "",
+        "priority": "Major"
+      },
+      {
+        "id": "m65",
+        "name": "Repainting assessment",
+        "system": "Architectural",
+        "frequency": "Annual",
+        "timeSlot": "",
+        "priority": "Minor"
+      },
+      {
+        "id": "m66",
+        "name": "Waterproofing integrity test",
+        "system": "Architectural",
+        "frequency": "Annual",
+        "timeSlot": "",
+        "priority": "Major"
+      },
+      {
+        "id": "m67",
+        "name": "Structural engineer assessment",
+        "system": "Structural",
+        "frequency": "Annual",
+        "timeSlot": "",
+        "priority": "Critical"
+      },
+      {
+        "id": "m68",
+        "name": "Settlement monitoring and documentation",
+        "system": "Structural",
+        "frequency": "Annual",
+        "timeSlot": "",
+        "priority": "Major"
+      },
+      {
+        "id": "m69",
+        "name": "Full mechanical audit",
+        "system": "Mechanical",
+        "frequency": "Annual",
+        "timeSlot": "",
+        "priority": "Critical"
+      },
+      {
+        "id": "m70",
+        "name": "Generator load testing",
+        "system": "Mechanical",
+        "frequency": "Annual",
+        "timeSlot": "",
+        "priority": "Critical"
+      },
+      {
+        "id": "m71",
+        "name": "Chiller performance evaluation",
+        "system": "Mechanical",
+        "frequency": "Annual",
+        "timeSlot": "",
+        "priority": "Major"
+      },
+      {
+        "id": "m72",
+        "name": "Hydrostatic testing of extinguishers",
+        "system": "Fire Protection",
+        "frequency": "Annual",
+        "timeSlot": "",
+        "priority": "Critical"
+      },
+      {
+        "id": "m73",
+        "name": "Full fire system audit",
+        "system": "Fire Protection",
+        "frequency": "Annual",
+        "timeSlot": "",
+        "priority": "Critical"
+      },
+      {
+        "id": "m74",
+        "name": "Fire pump flow test",
+        "system": "Fire Protection",
+        "frequency": "Annual",
+        "timeSlot": "",
+        "priority": "Critical"
+      },
+      {
+        "id": "m75",
+        "name": "Full plumbing audit",
+        "system": "Plumbing",
+        "frequency": "Annual",
+        "timeSlot": "",
+        "priority": "Major"
+      },
+      {
+        "id": "m76",
+        "name": "Water tank cleaning",
+        "system": "Plumbing",
+        "frequency": "Annual",
+        "timeSlot": "",
+        "priority": "Major"
+      },
+      {
+        "id": "m77",
+        "name": "LLDA/DOH compliance testing",
+        "system": "STP",
+        "frequency": "Annual",
+        "timeSlot": "",
+        "priority": "Critical"
+      },
+      {
+        "id": "m78",
+        "name": "Full STP audit",
+        "system": "STP",
+        "frequency": "Annual",
+        "timeSlot": "",
+        "priority": "Critical"
+      },
+      {
+        "id": "m79",
+        "name": "Government inspection",
+        "system": "Elevator",
+        "frequency": "Annual",
+        "timeSlot": "",
+        "priority": "Critical"
+      },
+      {
+        "id": "m80",
+        "name": "Load testing",
+        "system": "Elevator",
+        "frequency": "Annual",
+        "timeSlot": "",
+        "priority": "Critical"
+      }
+    ],
+    "complaints": [
+      {
+        "id": "ticket_1784773192355",
+        "unit": "ewewewe",
+        "system": "Architectural",
+        "title": "ewew",
+        "details": "ewewewew",
+        "photo": "",
+        "status": "Pending",
+        "dateCreated": "2026-07-23",
+        "actionDate": "2026-07-23",
+        "estFinishDate": "2026-07-25",
+        "managerName": "Engr. Roan Paul B. Gallegos",
+        "adminName": "Mr. Robert J. Cruz",
+        "issueReported": "ewewewew",
+        "immediateAction": "wewewewew",
+        "correctiveAction": "ewewew",
+        "preventiveAction": "ererererer",
+        "materialsList": [
+          {
+            "material": "dsds",
+            "unit": "pc",
+            "qty": 1,
+            "price": 23
+          }
+        ],
+        "manpowerList": [
+          {
+            "skill": "dgfg",
+            "dailyRate": 750,
+            "days": 1,
+            "count": 12
+          },
+          {
+            "skill": "fgfgfgf",
+            "dailyRate": 67,
+            "days": 6,
+            "count": 6
+          }
+        ]
+      }
+    ],
+    "notifications": [
+      {
+        "id": "tenant_notif_ticket_1784773192355",
+        "type": "normal",
+        "message": "NEW TENANT TICKET: Suite ewewewe logged a complaint: \"ewew\"",
+        "time": "10:19 AM"
+      },
+      {
+        "id": "eq_report_eq_eval_1784772984229",
+        "type": "normal",
+        "message": "COMPREHENSIVE SAFETY AUDIT: Placard [GREEN] filed for One Corporate Building.",
+        "time": "10:17 AM"
+      },
+      {
+        "id": "overdue_t_multiday_active_1784768942408",
+        "type": "critical",
+        "message": "OVERDUE ALERT: Daily task \"Chiller Plant Multi-Day Major Overhaul\" scheduled at 08:00 AM is incomplete!",
+        "time": "09:09 AM"
+      },
+      {
+        "id": "overdue_t_seed_m16_1784697513988",
+        "type": "critical",
+        "message": "OVERDUE ALERT: Daily task \"Inspect restrooms for leaks\" scheduled at 12:00 PM is incomplete!",
+        "time": "01:18 PM"
+      },
+      {
+        "id": "overdue_t_seed_m15_1784697513988",
+        "type": "critical",
+        "message": "OVERDUE ALERT: Daily task \"Check water pressure and supply\" scheduled at 12:00 PM is incomplete!",
+        "time": "01:18 PM"
+      },
+      {
+        "id": "overdue_t_seed_m14_1784697513988",
+        "type": "critical",
+        "message": "OVERDUE ALERT: Daily task \"Verify fire alarm panel status\" scheduled at 11:00 AM is incomplete!",
+        "time": "01:18 PM"
+      },
+      {
+        "id": "overdue_t_seed_m13_1784697513988",
+        "type": "critical",
+        "message": "OVERDUE ALERT: Daily task \"Inspect emergency lights and exit signs\" scheduled at 11:00 AM is incomplete!",
+        "time": "01:18 PM"
+      },
+      {
+        "id": "overdue_t_seed_m12_1784697513988",
+        "type": "critical",
+        "message": "OVERDUE ALERT: Daily task \"Check fire extinguishers (pressure, accessibility)\" scheduled at 11:00 AM is incomplete!",
+        "time": "01:18 PM"
+      },
+      {
+        "id": "overdue_t_seed_m9_1784697513988",
+        "type": "critical",
+        "message": "OVERDUE ALERT: Daily task \"Inspect pumps for noise/vibration\" scheduled at 10:00 AM is incomplete!",
+        "time": "01:18 PM"
+      },
+      {
+        "id": "overdue_t_seed_m8_1784697513988",
+        "type": "critical",
+        "message": "OVERDUE ALERT: Daily task \"Monitor chiller parameters (pressure, temp)\" scheduled at 10:00 AM is incomplete!",
+        "time": "01:18 PM"
+      },
+      {
+        "id": "overdue_t_seed_m7_1784697513988",
+        "type": "critical",
+        "message": "OVERDUE ALERT: Daily task \"Check AHU/FCU operation\" scheduled at 10:00 AM is incomplete!",
+        "time": "01:18 PM"
+      },
+      {
+        "id": "overdue_t_seed_m6_1784697513988",
+        "type": "critical",
+        "message": "OVERDUE ALERT: Daily task \"Check basement for water seepage\" scheduled at 09:00 AM is incomplete!",
+        "time": "01:18 PM"
+      },
+      {
+        "id": "overdue_t_seed_m5_1784697513988",
+        "type": "critical",
+        "message": "OVERDUE ALERT: Daily task \"Observe unusual cracks or movement in common areas\" scheduled at 09:00 AM is incomplete!",
+        "time": "01:18 PM"
+      },
+      {
+        "id": "overdue_t_seed_m2_1784697513988",
+        "type": "critical",
+        "message": "OVERDUE ALERT: Daily task \"Check storefront glass and seals\" scheduled at 08:00 AM is incomplete!",
+        "time": "01:18 PM"
+      },
+      {
+        "id": "overdue_t_seed_m1_1784697513988",
+        "type": "critical",
+        "message": "OVERDUE ALERT: Daily task \"Inspect lobbies, corridors, restrooms\" scheduled at 08:00 AM is incomplete!",
+        "time": "01:18 PM"
+      }
+    ],
+    "currentUserRole": "Admin",
+    "activeTab": "dashboard",
+    "currentSafetyEvaluation": null,
+    "pastSafetyEvaluations": [
+      {
+        "id": "eq_eval_1784772984229",
+        "dateCreated": "2026-07-23",
+        "timeCreated": "10:16 AM",
+        "buildingName": "One Corporerrate Building",
+        "address": "101 Financial District, rrtrtrt",
+        "eqDate": "2026-07-20T13:00",
+        "intensity": "1212",
+        "team": "jan doe",
+        "checklist": {
+          "eq_ext_1": {
+            "status": "OK",
+            "notes": "rererer"
+          },
+          "eq_ext_2": {
+            "status": "Issue",
+            "notes": "rerererere"
+          },
+          "eq_ext_3": {
+            "status": "OK",
+            "notes": ""
+          },
+          "eq_ext_4": {
+            "status": "OK",
+            "notes": ""
+          },
+          "eq_ext_5": {
+            "status": "OK",
+            "notes": ""
+          },
+          "eq_ext_6": {
+            "status": "OK",
+            "notes": ""
+          },
+          "eq_ext_7": {
+            "status": "OK",
+            "notes": ""
+          },
+          "eq_ext_8": {
+            "status": "OK",
+            "notes": ""
+          },
+          "eq_ext_9": {
+            "status": "OK",
+            "notes": ""
+          },
+          "eq_ext_10": {
+            "status": "OK",
+            "notes": ""
+          },
+          "eq_str_1": {
+            "status": "OK",
+            "notes": "erer"
+          },
+          "eq_str_2": {
+            "status": "OK",
+            "notes": ""
+          },
+          "eq_str_3": {
+            "status": "OK",
+            "notes": ""
+          },
+          "eq_str_4": {
+            "status": "OK",
+            "notes": ""
+          },
+          "eq_str_5": {
+            "status": "OK",
+            "notes": ""
+          },
+          "eq_str_6": {
+            "status": "OK",
+            "notes": ""
+          },
+          "eq_str_7": {
+            "status": "OK",
+            "notes": ""
+          },
+          "eq_non_1": {
+            "status": "OK",
+            "notes": ""
+          },
+          "eq_non_2": {
+            "status": "OK",
+            "notes": ""
+          },
+          "eq_non_3": {
+            "status": "OK",
+            "notes": ""
+          },
+          "eq_non_4": {
+            "status": "OK",
+            "notes": ""
+          },
+          "eq_non_5": {
+            "status": "OK",
+            "notes": ""
+          },
+          "eq_non_6": {
+            "status": "OK",
+            "notes": ""
+          },
+          "eq_ut_1": {
+            "status": "OK",
+            "notes": "erere"
+          },
+          "eq_ut_2": {
+            "status": "OK",
+            "notes": ""
+          },
+          "eq_ut_3": {
+            "status": "OK",
+            "notes": ""
+          },
+          "eq_ut_4": {
+            "status": "OK",
+            "notes": ""
+          },
+          "eq_ut_5": {
+            "status": "OK",
+            "notes": ""
+          },
+          "eq_ut_6": {
+            "status": "OK",
+            "notes": ""
+          },
+          "eq_fs_1": {
+            "status": "OK",
+            "notes": "erer"
+          },
+          "eq_fs_2": {
+            "status": "OK",
+            "notes": ""
+          },
+          "eq_fs_3": {
+            "status": "OK",
+            "notes": ""
+          },
+          "eq_fs_4": {
+            "status": "OK",
+            "notes": ""
+          },
+          "eq_fs_5": {
+            "status": "OK",
+            "notes": ""
+          },
+          "eq_fs_6": {
+            "status": "OK",
+            "notes": ""
+          },
+          "eq_fs_7": {
+            "status": "OK",
+            "notes": ""
+          },
+          "eq_fs_8": {
+            "status": "OK",
+            "notes": ""
+          },
+          "eq_fs_9": {
+            "status": "OK",
+            "notes": ""
+          },
+          "eq_el_1": {
+            "status": "OK",
+            "notes": "erer"
+          },
+          "eq_el_2": {
+            "status": "OK",
+            "notes": ""
+          },
+          "eq_el_3": {
+            "status": "OK",
+            "notes": ""
+          },
+          "eq_el_4": {
+            "status": "OK",
+            "notes": ""
+          }
+        },
+        "officialPlacard": "GREEN",
+        "signInspector": "rere",
+        "signManager": "rere",
+        "signStructural": "rerer"
+      }
+    ],
+    "currentTaskPhotoBase64": "",
+    "currentTenantPhotoBase64": "",
+    "isManagerAbsent": false,
+    "managerCheckedActivities": {},
+    "customSystems": [],
+    "employeeSchedules": [
+      {
+        "id": "emp_1",
+        "name": "Engr. Roan Paul Gallegos",
+        "position": "BM Manager",
+        "department": "Management",
+        "schedule": "8:00am-5:00pm",
+        "remarks": "Regular",
+        "restDay": "Sunday",
+        "contact": "0917 659 8364"
+      },
+      {
+        "id": "emp_2",
+        "name": "Mr. Elmer Esteban",
+        "position": "BM Supervisor",
+        "department": "Management",
+        "schedule": "8:00am-5:00pm",
+        "remarks": "Regular",
+        "restDay": "Thursday",
+        "contact": "0929 623 3556"
+      },
+      {
+        "id": "emp_3",
+        "name": "Mr. Martin Naimes",
+        "position": "Foreman Electrician",
+        "department": "Engineering",
+        "schedule": "7:00am-7:00pm / 7:00pm-7:00am",
+        "remarks": "Rotation Schedule",
+        "restDay": "Tuesday",
+        "contact": "0907 150 5202"
+      },
+      {
+        "id": "emp_4",
+        "name": "Mr. Crispin de Gracia",
+        "position": "Electrician",
+        "department": "Engineering",
+        "schedule": "7:30am-4:30pm",
+        "remarks": "Regular",
+        "restDay": "Sunday",
+        "contact": "0908 466 7701"
+      },
+      {
+        "id": "emp_5",
+        "name": "Mr. Robert Apilado",
+        "position": "Fabrication/Mason",
+        "department": "Engineering",
+        "schedule": "7:30am-4:30pm",
+        "remarks": "Regular",
+        "restDay": "Sunday",
+        "contact": "0912 - 5067 - 937"
+      },
+      {
+        "id": "emp_6",
+        "name": "Mr. George Ybañez",
+        "position": "Plumber",
+        "department": "Engineering",
+        "schedule": "7:00am-7:00pm / 7:00pm-7:00am",
+        "remarks": "Rotation Schedule",
+        "restDay": "Wednesday",
+        "contact": "0948 538 1602"
+      },
+      {
+        "id": "emp_7",
+        "name": "Ms. Kate Telles",
+        "position": "Housekeeping",
+        "department": "Housekeeping",
+        "schedule": "6:00am-3:00pm / 10:00am - 7:00pm",
+        "remarks": "Rotation Schedule",
+        "restDay": "Sunday",
+        "contact": "0985 869 6683"
+      },
+      {
+        "id": "emp_8",
+        "name": "Mr. Mandy Mejia",
+        "position": "Housekeeping",
+        "department": "Housekeeping",
+        "schedule": "6:00am-3:00pm / 10:00am - 7:00pm",
+        "remarks": "Rotation Schedule",
+        "restDay": "Saturday",
+        "contact": "0991 356 5701"
+      },
+      {
+        "id": "emp_9",
+        "name": "Ms. Annalyn Penuliar",
+        "position": "Housekeeping",
+        "department": "Housekeeping",
+        "schedule": "6:00am-3:00pm / 10:00am - 7:00pm",
+        "remarks": "Rotation Schedule",
+        "restDay": "Tuesday",
+        "contact": "0916 665 4138"
+      },
+      {
+        "id": "emp_10",
+        "name": "Mr. Virgilio Ducusin",
+        "position": "CCTV Operator",
+        "department": "CCTV Operator",
+        "schedule": "8:00am-8:00pm / 8:00pm-8:00am",
+        "remarks": "Rotation Schedule",
+        "restDay": "Saturday",
+        "contact": "0995 073 5802"
+      },
+      {
+        "id": "emp_11",
+        "name": "Ms. Cheryl Gonzales",
+        "position": "CCTV Operator",
+        "department": "CCTV Operator",
+        "schedule": "8:00am-8:00pm / 8:00pm-8:00am",
+        "remarks": "Rotation Schedule",
+        "restDay": "Sunday",
+        "contact": "0960 397 2098"
+      },
+      {
+        "id": "emp_12",
+        "name": "Mr. Jojo Bennagen",
+        "position": "Agency Security",
+        "department": "Agency Security",
+        "schedule": "7:00am-7:00pm / 7:00pm-7:00am",
+        "remarks": "Rotation Schedule",
+        "restDay": "Tuesday",
+        "contact": "0946 181 7526"
+      },
+      {
+        "id": "emp_13",
+        "name": "Mr. Ruben Banez",
+        "position": "Agency Security",
+        "department": "Agency Security",
+        "schedule": "7:00am-7:00pm / 7:00pm-7:00am",
+        "remarks": "Rotation Schedule",
+        "restDay": "Saturday",
+        "contact": "0963 478 5879"
+      },
+      {
+        "id": "emp_14",
+        "name": "Mr. Berson Pukchas",
+        "position": "Agency Security",
+        "department": "Agency Security",
+        "schedule": "7:00am-7:00pm / 7:00pm-7:00am",
+        "remarks": "Rotation Schedule",
+        "restDay": "Sunday",
+        "contact": "N/A"
+      }
+    ]
+  }
+}

@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>One Corporate - Asset & Materials Inventory Management</title>
+  <link rel="stylesheet" href="style.css">
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- PRINT ONLY HEADER -->
+  <div class="print-only-header" id="print-header-details">
+    <!-- Populated dynamically via JS on print -->
+  </div>
+
+  <div class="inventory-container">
+    
+    <!-- TOP HEADER -->
+    <header class="inventory-header">
+      <div class="brand-section">
+        <div class="brand-icon-wrapper">
+          <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+            <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+            <line x1="12" y1="22.08" x2="12" y2="12"></line>
+          </svg>
+        </div>
+        <div class="brand-titles">
+          <h1>
+            <span>Asset & Materials Inventory</span>
+            <span class="badge-tag">Excel Grid 2.0</span>
+          </h1>
+          <p>Commercial Facility Equipment, Spare Parts Catalog, Purchase Dates & Stock Valuation</p>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <!-- Theme Mode Switcher -->
+        <button type="button" class="theme-toggle-btn" id="theme-toggle-btn" onclick="toggleTheme()" title="Toggle Dark / Light Mode">
+          <span class="theme-icon" id="theme-toggle-icon">☀️</span>
+          <span id="theme-toggle-label">Light Mode</span>
+        </button>
+
+        <button class="btn btn-primary" onclick="openAddItemModal()">
+          <svg viewBox="0 0 24 24" width="15" height="15" stroke="currentColor" stroke-width="2.5" fill="none"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+          <span>+ Add Inventory Item</span>
+        </button>
+        <button class="btn btn-excel" onclick="exportInventoryToCSV()" title="Download Excel-Compatible CSV">
+          <svg viewBox="0 0 24 24" width="15" height="15" stroke="currentColor" stroke-width="2" fill="none"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+          <span>Export Excel (.csv)</span>
+        </button>
+        <button class="btn btn-secondary" onclick="printInventoryReport()" title="Print Inventory Report">
+          <svg viewBox="0 0 24 24" width="15" height="15" stroke="currentColor" stroke-width="2" fill="none"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+          <span>Print Sheet</span>
+        </button>
+        <button class="btn btn-secondary btn-icon-only" onclick="resetToDefaultCatalog()" title="Reset to Default Standard Catalog">
+          <svg viewBox="0 0 24 24" width="15" height="15" stroke="currentColor" stroke-width="2" fill="none"><polyline points="1 4 1 10 7 10"></polyline><polyline points="23 20 23 14 17 14"></polyline><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"></path></svg>
+        </button>
+        <button type="button" class="btn btn-secondary btn-icon-only" onclick="exitToMainDashboard(event)" title="Back to Dashboard">
+          <svg viewBox="0 0 24 24" width="15" height="15" stroke="currentColor" stroke-width="2" fill="none"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- MAIN BODY -->
+    <main class="inventory-main">
+      
+      <!-- KPI STRIP -->
+      <section class="kpi-strip">
+        <!-- 1. Total Items -->
+        <div class="kpi-card kpi-items">
+          <div class="kpi-icon" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8;">
+            <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
+          </div>
+          <div class="kpi-data">
+            <span class="kpi-label">Total Unique Items</span>
+            <div class="kpi-value" id="kpi-total-items">0</div>
+            <span class="kpi-subtext" id="kpi-total-categories">7 Categories</span>
+          </div>
+        </div>
+
+        <!-- 2. Total Valuation -->
+        <div class="kpi-card kpi-valuation">
+          <div class="kpi-icon" style="background: rgba(16, 185, 129, 0.15); color: #10b981;">
+            <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+          </div>
+          <div class="kpi-data">
+            <span class="kpi-label">Total Asset Valuation</span>
+            <div class="kpi-value" id="kpi-total-valuation">₱ 0.00</div>
+            <span class="kpi-subtext">Sum of (Qty × Unit Cost)</span>
+          </div>
+        </div>
+
+        <!-- 3. Low Stock Alerts -->
+        <div class="kpi-card kpi-lowstock">
+          <div class="kpi-icon" style="background: rgba(245, 158, 11, 0.15); color: #f59e0b;">
+            <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+          </div>
+          <div class="kpi-data">
+            <span class="kpi-label">Low Stock Alerts</span>
+            <div class="kpi-value" id="kpi-low-stock" style="color: #fbbf24;">0</div>
+            <span class="kpi-subtext">Items at or below min level</span>
+          </div>
+        </div>
+
+        <!-- 4. Quick Actions / Filter Scope -->
+        <div class="kpi-card kpi-purchased">
+          <div class="kpi-icon" style="background: rgba(167, 139, 250, 0.15); color: #a78bfa;">
+            <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+          </div>
+          <div class="kpi-data">
+            <span class="kpi-label">Bulk Item Actions</span>
+            <div style="display: flex; gap: 8px; margin-top: 4px;">
+              <button class="btn btn-secondary" onclick="deleteSelectedItems()" style="padding: 4px 10px; font-size: 11px;">
+                <svg viewBox="0 0 24 24" width="12" height="12" stroke="#ef4444" stroke-width="2" fill="none"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                <span>Delete Selected</span>
+              </button>
+            </div>
+            <span class="kpi-subtext" style="margin-top: 4px; display: block;">Select rows with checkboxes</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- FILTERS & CATEGORY BAR -->
+      <section class="filters-section">
+        
+        <!-- Category Filter Pills Strip -->
+        <div class="category-pills-wrapper" id="category-pills-container">
+          <!-- Dynamically generated category filter pills -->
+        </div>
+
+        <!-- Multi-Criteria Secondary Filter Controls -->
+        <div class="filter-controls-bar">
+          
+          <!-- Search Box -->
+          <div class="search-box-wrapper">
+            <svg viewBox="0 0 24 24" width="15" height="15" stroke="currentColor" stroke-width="2" fill="none"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <input type="text" id="search-inventory-input" class="search-input" placeholder="Search SKU code, item name, specs, brand, supplier, or location...">
+          </div>
+
+          <!-- Stock Status Filter -->
+          <div class="filter-group">
+            <label for="filter-stock-select">Stock:</label>
+            <select id="filter-stock-select" class="filter-select" onchange="handleStockFilterChange(this.value)">
+              <option value="All">All Stock Levels</option>
+              <option value="In Stock">In Stock Only</option>
+              <option value="Low Stock">Low Stock Alert</option>
+              <option value="Out of Stock">Out of Stock</option>
+              <option value="Installed">In Service / Installed</option>
+            </select>
+          </div>
+
+          <!-- Date of Purchase Range Filter -->
+          <div class="filter-group">
+            <label for="filter-date-from">Purchased From:</label>
+            <input type="date" id="filter-date-from" class="filter-date-input" onchange="handleDateFromChange(this.value)" title="Filter purchase date starting from">
+          </div>
+
+          <div class="filter-group">
+            <label for="filter-date-to">To:</label>
+            <input type="date" id="filter-date-to" class="filter-date-input" onchange="handleDateToChange(this.value)" title="Filter purchase date up to">
+          </div>
+
+          <!-- Location Filter -->
+          <div class="filter-group">
+            <label for="filter-location-select">Location:</label>
+            <select id="filter-location-select" class="filter-select" onchange="handleLocationFilterChange(this.value)">
+              <option value="All">All Locations & Floors</option>
+            </select>
+          </div>
+
+          <!-- Condition Filter -->
+          <div class="filter-group">
+            <label for="filter-condition-select">Condition:</label>
+            <select id="filter-condition-select" class="filter-select" onchange="handleConditionFilterChange(this.value)">
+              <option value="All">All Conditions</option>
+              <option value="Brand New">Brand New</option>
+              <option value="Good">Good</option>
+              <option value="Fair">Fair</option>
+              <option value="Needs Service">Needs Service</option>
+            </select>
+          </div>
+
+          <!-- Reset Filter Button -->
+          <button class="btn btn-secondary" onclick="clearAllFilters()" style="padding: 7px 12px; font-size: 11.5px;" title="Clear All Active Filters">
+            <span>Reset Filters</span>
+          </button>
+
+        </div>
+      </section>
+
+      <!-- EXCEL-LIKE DATA TABLE CONTAINER -->
+      <section class="table-viewport-card">
+        
+        <!-- Table Sub-Header Toolbar -->
+        <div class="table-header-toolbar">
+          <div class="table-stats-text" id="table-stats-count">
+            Showing <strong>0</strong> items
+          </div>
+          <div class="table-view-options">
+            <button class="btn btn-secondary" onclick="resetColumnWidths()" style="padding: 4px 10px; font-size: 11px;" title="Reset table column widths to standard spreadsheet layout">
+              <svg viewBox="0 0 24 24" width="13" height="13" stroke="currentColor" stroke-width="2" fill="none"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"></path></svg>
+              <span>Reset Column Widths</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Scrollable Table -->
+        <div class="table-scroll-container">
+          <table class="excel-table" id="excel-inventory-table">
+            <thead>
+              <tr>
+                <!-- 1. Checkbox Select All -->
+                <th data-col="checkbox" style="width: 40px; text-align: center;">
+                  <div class="th-content" style="justify-content: center;">
+                    <input type="checkbox" id="cb-select-all" onchange="toggleSelectAll(this.checked)" title="Select all visible items">
+                  </div>
+                  <div class="resizer"></div>
+                </th>
+
+                <!-- 2. Image Thumbnail -->
+                <th data-col="image" style="width: 64px;">
+                  <div class="th-content">
+                    <span>Photo</span>
+                  </div>
+                  <div class="resizer"></div>
+                </th>
+
+                <!-- 3. SKU / Item Code -->
+                <th data-col="code" style="width: 105px;">
+                  <div class="th-content">
+                    <span class="th-sort-btn sorted-asc" onclick="sortTable('code')">
+                      <span>Item Code</span>
+                      <span class="sort-icon">▲</span>
+                    </span>
+                  </div>
+                  <div class="resizer"></div>
+                </th>
+
+                <!-- 4. Description & Brand -->
+                <th data-col="name" style="width: 240px;">
+                  <div class="th-content">
+                    <span class="th-sort-btn" onclick="sortTable('name')">
+                      <span>Item Description & Model</span>
+                      <span class="sort-icon">⇅</span>
+                    </span>
+                  </div>
+                  <div class="resizer"></div>
+                </th>
+
+                <!-- 5. Category Classification -->
+                <th data-col="category" style="width: 155px;">
+                  <div class="th-content">
+                    <span class="th-sort-btn" onclick="sortTable('category')">
+                      <span>Category</span>
+                      <span class="sort-icon">⇅</span>
+                    </span>
+                  </div>
+                  <div class="resizer"></div>
+                </th>
+
+                <!-- 6. Date of Purchase -->
+                <th data-col="purchaseDate" style="width: 125px;">
+                  <div class="th-content">
+                    <span class="th-sort-btn" onclick="sortTable('dateOfPurchase')">
+                      <span>Date Purchased</span>
+                      <span class="sort-icon">⇅</span>
+                    </span>
+                  </div>
+                  <div class="resizer"></div>
+                </th>
+
+                <!-- 7. Quantity in Stock -->
+                <th data-col="stockQty" style="width: 120px;">
+                  <div class="th-content">
+                    <span class="th-sort-btn" onclick="sortTable('qty')">
+                      <span>Stock Qty</span>
+                      <span class="sort-icon">⇅</span>
+                    </span>
+                  </div>
+                  <div class="resizer"></div>
+                </th>
+
+                <!-- 8. Min Reorder Threshold -->
+                <th data-col="minLevel" style="width: 85px;">
+                  <div class="th-content">
+                    <span class="th-sort-btn" onclick="sortTable('minStock')">
+                      <span>Min Lvl</span>
+                      <span class="sort-icon">⇅</span>
+                    </span>
+                  </div>
+                  <div class="resizer"></div>
+                </th>
+
+                <!-- 9. Unit Cost (PHP) -->
+                <th data-col="unitCost" style="width: 115px;">
+                  <div class="th-content">
+                    <span class="th-sort-btn" onclick="sortTable('unitCost')">
+                      <span>Unit Cost</span>
+                      <span class="sort-icon">⇅</span>
+                    </span>
+                  </div>
+                  <div class="resizer"></div>
+                </th>
+
+                <!-- 10. Total Valuation (PHP) -->
+                <th data-col="totalValue" style="width: 125px;">
+                  <div class="th-content">
+                    <span class="th-sort-btn" onclick="sortTable('totalValue')">
+                      <span>Total Value</span>
+                      <span class="sort-icon">⇅</span>
+                    </span>
+                  </div>
+                  <div class="resizer"></div>
+                </th>
+
+                <!-- 11. Storage Location / Floor -->
+                <th data-col="location" style="width: 175px;">
+                  <div class="th-content">
+                    <span class="th-sort-btn" onclick="sortTable('location')">
+                      <span>Storage Location</span>
+                      <span class="sort-icon">⇅</span>
+                    </span>
+                  </div>
+                  <div class="resizer"></div>
+                </th>
+
+                <!-- 12. Supplier / Vendor -->
+                <th data-col="supplier" style="width: 165px;">
+                  <div class="th-content">
+                    <span class="th-sort-btn" onclick="sortTable('supplier')">
+                      <span>Supplier / Vendor</span>
+                      <span class="sort-icon">⇅</span>
+                    </span>
+                  </div>
+                  <div class="resizer"></div>
+                </th>
+
+                <!-- 13. Physical Condition -->
+                <th data-col="condition" style="width: 105px;">
+                  <div class="th-content">
+                    <span class="th-sort-btn" onclick="sortTable('condition')">
+                      <span>Condition</span>
+                      <span class="sort-icon">⇅</span>
+                    </span>
+                  </div>
+                  <div class="resizer"></div>
+                </th>
+
+                <!-- 14. Operational Status -->
+                <th data-col="status" style="width: 110px;">
+                  <div class="th-content">
+                    <span class="th-sort-btn" onclick="sortTable('status')">
+                      <span>Status</span>
+                      <span class="sort-icon">⇅</span>
+                    </span>
+                  </div>
+                  <div class="resizer"></div>
+                </th>
+
+                <!-- 15. Actions -->
+                <th data-col="actions" style="width: 95px;">
+                  <div class="th-content">
+                    <span>Actions</span>
+                  </div>
+                  <div class="resizer"></div>
+                </th>
+              </tr>
+            </thead>
+            <tbody id="inventory-table-body">
+              <!-- Dynamically populated rows via app.js -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ==================== ADD / EDIT ITEM MODAL ==================== -->
+  <div class="modal-backdrop" id="item-modal" style="display: none;">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <svg viewBox="0 0 24 24" width="20" height="20" stroke="#38bdf8" stroke-width="2" fill="none"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4z"></path></svg>
+          <h3 id="item-modal-title">Add New Asset / Inventory Item</h3>
+        </div>
+        <button class="modal-close-btn" onclick="closeItemModal()">&times;</button>
+      </div>
+      
+      <form id="form-inventory-item" onsubmit="saveInventoryItem(event)">
+        <input type="hidden" id="form-item-id">
+
+        <div class="modal-body">
+          
+          <!-- Image Upload Card -->
+          <div class="image-upload-card">
+            <div class="image-preview-box">
+              <img id="form-image-preview" src="" alt="Item photo preview">
+            </div>
+            <div class="image-upload-actions">
+              <span style="font-size: 12px; font-weight: 700; color: #fff;">Item Photo / Equipment Image</span>
+              <span class="image-upload-hint">Upload JPEG, PNG, or WEBP photo from your computer or camera.</span>
+              <div style="display: flex; gap: 8px; margin-top: 4px;">
+                <button type="button" class="btn btn-secondary" onclick="triggerPhotoUpload()" style="padding: 5px 10px; font-size: 11.5px;">
+                  <svg viewBox="0 0 24 24" width="13" height="13" stroke="currentColor" stroke-width="2" fill="none"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                  <span>Choose Photo</span>
+                </button>
+                <button type="button" class="btn btn-danger" onclick="removeUploadedPhoto()" style="padding: 5px 10px; font-size: 11.5px;">
+                  <span>Reset Default</span>
+                </button>
+                <input type="file" id="form-item-photo-input" accept="image/*" onchange="handlePhotoUpload(event)" style="display: none;">
+              </div>
+            </div>
+          </div>
+
+          <!-- Row 1: Code & Category -->
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label for="form-item-code">Item Code / SKU *</label>
+              <input type="text" id="form-item-code" class="form-input" required placeholder="e.g. MEC-101, ELE-205">
+            </div>
+            <div class="form-group">
+              <label for="form-item-category">Classification Category *</label>
+              <select id="form-item-category" class="form-select" required onchange="onFormCategoryChange(this.value)">
+                <option value="Mechanical">Mechanical Items</option>
+                <option value="Electrical">Electrical Items</option>
+                <option value="Sanitary & Plumbing">Sanitary & Plumbing Items</option>
+                <option value="Architectural">Architectural Items</option>
+                <option value="Electronic">Electronic Items</option>
+                <option value="Fire Protection">Fire Protection Items</option>
+                <option value="Tools & Equipment">Tools & Equipment</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Row 2: Name & Brand/Model -->
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label for="form-item-name">Item Name / Description *</label>
+              <input type="text" id="form-item-name" class="form-input" required placeholder="e.g. Chiller Compressor V-Belts">
+            </div>
+            <div class="form-group">
+              <label for="form-item-brand">Brand / Model / Technical Specs</label>
+              <input type="text" id="form-item-brand" class="form-input" placeholder="e.g. Gates B-75 Super Grip 24x24x2">
+            </div>
+          </div>
+
+          <!-- Row 3: Date of Purchase & Warranty -->
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label for="form-item-purchase-date">Date of Purchase *</label>
+              <input type="date" id="form-item-purchase-date" class="form-input" required>
+            </div>
+            <div class="form-group">
+              <label for="form-item-warranty">Warranty Expiration Date</label>
+              <input type="date" id="form-item-warranty" class="form-input">
+            </div>
+          </div>
+
+          <!-- Row 4: Quantity, Unit, Min Threshold, Unit Cost -->
+          <div class="form-grid-3">
+            <div class="form-group">
+              <label for="form-item-qty">Stock Quantity *</label>
+              <input type="number" id="form-item-qty" class="form-input" min="0" required value="10">
+            </div>
+            <div class="form-group">
+              <label for="form-item-unit">Unit of Measure *</label>
+              <input type="text" id="form-item-unit" class="form-input" required placeholder="e.g. pcs, sets, rolls, liters">
+            </div>
+            <div class="form-group">
+              <label for="form-item-min-stock">Min Reorder Level *</label>
+              <input type="number" id="form-item-min-stock" class="form-input" min="0" required value="5">
+            </div>
+          </div>
+
+          <!-- Row 5: Cost & Storage Location -->
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label for="form-item-cost">Unit Purchase Cost (PHP ₱) *</label>
+              <input type="number" id="form-item-cost" class="form-input" min="0" step="0.01" required value="0.00">
+            </div>
+            <div class="form-group">
+              <label for="form-item-location">Storage Location / Floor / Room *</label>
+              <input type="text" id="form-item-location" class="form-input" required placeholder="e.g. Basement 1 - Mech Room B-02">
+            </div>
+          </div>
+
+          <!-- Row 6: Supplier & Supplier Contact -->
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label for="form-item-supplier">Supplier / Vendor Name</label>
+              <input type="text" id="form-item-supplier" class="form-input" placeholder="e.g. MechTech Industrial Supplies Corp.">
+            </div>
+            <div class="form-group">
+              <label for="form-item-contact">Supplier Phone / Email</label>
+              <input type="text" id="form-item-contact" class="form-input" placeholder="e.g. 0917-882-9912 / sales@mechtech.ph">
+            </div>
+          </div>
+
+          <!-- Row 7: Condition & Operational Status -->
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label for="form-item-condition">Physical Condition</label>
+              <select id="form-item-condition" class="form-select">
+                <option value="Brand New">Brand New</option>
+                <option value="Good">Good</option>
+                <option value="Fair">Fair</option>
+                <option value="Needs Service">Needs Service</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="form-item-status">Operational Status</label>
+              <select id="form-item-status" class="form-select">
+                <option value="In Stock">In Stock</option>
+                <option value="Low Stock">Low Stock</option>
+                <option value="Out of Stock">Out of Stock</option>
+                <option value="In Service / Installed">In Service / Installed</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Remarks -->
+          <div class="form-group">
+            <label for="form-item-remarks">Operational Notes / Remarks</label>
+            <textarea id="form-item-remarks" class="form-textarea" rows="2" placeholder="Provide operational application, compatibility, or reorder notes..."></textarea>
+          </div>
+
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeItemModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Inventory Item</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==================== IMAGE ZOOM & DETAILS MODAL ==================== -->
+  <div class="modal-backdrop" id="image-zoom-modal" style="display: none;">
+    <div class="image-zoom-dialog">
+      <div class="modal-header">
+        <h3 id="zoom-modal-title" style="font-size: 15px; color: #fff; font-weight: 700;">Item Image Preview</h3>
+        <button class="modal-close-btn" onclick="closeImageZoomModal()">&times;</button>
+      </div>
+      <div class="image-zoom-body">
+        <div class="image-zoom-frame">
+          <img id="zoom-modal-img" src="" alt="Enlarged view">
+        </div>
+        <div class="image-zoom-info">
+          <div><strong style="color:#94a3b8;">SKU Code:</strong> <span id="zoom-info-code" style="color:#38bdf8; font-weight:700;"></span></div>
+          <div><strong style="color:#94a3b8;">Category:</strong> <span id="zoom-info-category" style="color:#fff;"></span></div>
+          <div><strong style="color:#94a3b8;">Date of Purchase:</strong> <span id="zoom-info-purchase-date" style="color:#cbd5e1;"></span></div>
+          <div><strong style="color:#94a3b8;">Warranty:</strong> <span id="zoom-info-warranty" style="color:#cbd5e1;"></span></div>
+          <div><strong style="color:#94a3b8;">Stock Qty:</strong> <span id="zoom-info-stock" style="color:#4ade80; font-weight:700;"></span></div>
+          <div><strong style="color:#94a3b8;">Unit Cost:</strong> <span id="zoom-info-cost" style="color:#facc15; font-weight:700;"></span></div>
+          <div><strong style="color:#94a3b8;">Location:</strong> <span id="zoom-info-location" style="color:#fff;"></span></div>
+          <div><strong style="color:#94a3b8;">Supplier:</strong> <span id="zoom-info-supplier" style="color:#cbd5e1;"></span></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeImageZoomModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PRINT SIGNATURES BLOCK -->
+  <div class="print-signatures">
+    <div class="signature-box">
+      <strong>Prepared By:</strong><br><br>
+      <div style="font-weight: 700; margin-top: 25px;">Engr. Roan Paul B. Gallegos</div>
+      <div style="color: #64748b;">Building Maintenance Manager</div>
+    </div>
+    <div class="signature-box">
+      <strong>Audited & Verified By:</strong><br><br>
+      <div style="font-weight: 700; margin-top: 25px;">Mr. Elmer Esteban</div>
+      <div style="color: #64748b;">BM Supervisor / Head Custodian</div>
+    </div>
+    <div class="signature-box">
+      <strong>Approved By:</strong><br><br>
+      <div style="font-weight: 700; margin-top: 25px;">Building Administrator</div>
+      <div style="color: #64748b;">One Corporate Property Admin</div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

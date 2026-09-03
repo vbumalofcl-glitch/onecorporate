@@ -1,0 +1,13 @@
+# Build output & temporary caches
+android/app/build/
+android/.gradle/
+.gradle/
+.idea/
+*.apk
+*.log
+*.tmp
+node_modules/
+
+# Local OS files
+.DS_Store
+Thumbs.db

@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notice of Violation (NOV)</title>
+    <style>
+        @page {
+            size: A4 portrait;
+            margin: 15mm !important;
+        }
+        html {
+            margin: 0 !important;
+            padding: 0 !important;
+            background: #ffffff !important;
+        }
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            margin: 0 !important;
+            padding: 0 !important;
+            background: #ffffff !important;
+            color: #000000 !important;
+            width: 100% !important;
+            height: auto !important;
+            min-height: 0 !important;
+            overflow: visible !important;
+        }
+        .document-container {
+            width: 210mm;
+            min-height: 297mm;
+            padding: 15mm;
+            box-sizing: border-box;
+            margin: 0 auto;
+            background-color: #ffffff;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+        }
+        @media print {
+            @page {
+                size: A4 portrait;
+                margin: 15mm !important;
+            }
+            html, body {
+                background: #ffffff !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                width: 100% !important;
+                height: auto !important;
+                min-height: 0 !important;
+            }
+            .document-container {
+                box-shadow: none !important;
+                border: none !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                min-height: 0 !important;
+                height: auto !important;
+                background: #ffffff !important;
+                page-break-before: avoid !important;
+            }
+            .governance-badge-container {
+                display: none !important;
+            }
+            table, tr, td, th, .document-header, .form-title, .signature-section {
+                page-break-inside: avoid !important;
+            }
+        }
+
+        
+        html {
+            margin: 0 !important;
+            padding: 0 !important;
+            background: #ffffff !important;
+        }
+        
+        
+        
+
+        
+        html, 
+        
+        
+
+        
+        
+        
+        @media print {
+            
+            
+        }
+
+        
+        html, 
+        
+
+        /* Elegant Spaces In Between Sections */
+        .document-header, .header-table, .form-hdr-table {
+            margin-bottom: 20px !important;
+        }
+
+        .document-title, .form-title, .form-title-banner {
+            margin-top: 12px !important;
+            margin-bottom: 20px !important;
+            padding: 10px 14px !important;
+        }
+
+        .info-section, .form-section, .rules-section, table, .a4-grid-table {
+            margin-bottom: 20px !important;
+        }
+
+        table th, table td, .a4-grid-table th, .a4-grid-table td {
+            padding: 7px 10px !important;
+        }
+
+        .signature-section, .a4-sig-grid {
+            margin-top: 36px !important;
+        }
+
+        .sig-line, .a4-sig-line {
+            margin-top: 36px !important;
+            padding-top: 6px !important;
+        }
+
+        
+
+        
+        
+        
+        @media print {
+            
+            
+        }
+
+        
+        html, 
+        
+        
+
+        
+        html, 
+        
+        
+
+        
+        html, 
+        
+        
+
+        
+        
+        
+        @media print {
+            html, 
+            
+        }
+
+        
+        
+        
+        @media print {
+            
+            
+        }
+
+        
+        
+        .header-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 0.5in;
+            font-size: 13px;
+        }
+        .header-table td {
+            vertical-align: top;
+            padding: 0;
+        }
+        .logo-img {
+            height: 84px;
+            width: auto;
+            display: block;
+        }
+        .doc-control {
+            text-align: right;
+        }
+        .doc-control-table {
+            width: 100%;
+            border: 1px solid #bdc3c7;
+            border-collapse: collapse;
+            height: 84px;
+        }
+        .doc-control-table td {
+            border: 1px solid #bdc3c7;
+            padding: 3px 8px;
+            font-size: 11px;
+            text-align: left;
+            color: #555;
+            height: 25%;
+            box-sizing: border-box;
+        }
+        .doc-control-table td strong {
+            color: #333;
+        }
+        h1 {
+            text-align: center;
+            font-size: 22px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin: 0 0 25px 0;
+            color: #ffffff;
+            background-color: #c0392b;
+            padding: 10px;
+        }
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px 30px;
+            margin-bottom: 25px;
+        }
+        .form-group {
+            display: flex;
+            align-items: center;
+        }
+        .form-group label {
+            font-weight: bold;
+            margin-right: 8px;
+            font-size: 13px;
+            white-space: nowrap;
+        }
+        input[type="text"], textarea {
+            font-family: inherit;
+            font-size: 13px;
+            color: #2c3e50;
+            border: none;
+            outline: none;
+            background: transparent;
+        }
+        .fillable-line {
+            flex-grow: 1;
+            border-bottom: 1px solid #333;
+            padding: 2px 4px;
+            box-sizing: border-box;
+        }
+        .fillable-line:focus {
+            background-color: #fff8f8;
+            border-bottom: 2px solid #c0392b;
+        }
+        .section-header {
+            background-color: #2c3e50;
+            color: #fff;
+            padding: 8px 12px;
+            font-size: 13px;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin: 25px 0 15px 0;
+        }
+        .nature-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px 20px;
+            font-size: 12px;
+            border: 1px solid #bdc3c7;
+            padding: 15px;
+            background-color: #fafafa;
+            margin-bottom: 25px;
+        }
+        .nature-grid label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .checkbox {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+            accent-color: #c0392b;
+        }
+        table.data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        table.data-table th, table.data-table td {
+            border: 1px solid #bdc3c7;
+            padding: 6px 8px;
+            font-size: 12px;
+        }
+        table.data-table th {
+            background-color: #ecf0f1;
+            color: #2c3e50;
+            text-align: center;
+            font-weight: bold;
+        }
+        .table-input {
+            width: 100%;
+            height: 100%;
+            border: none;
+            outline: none;
+            padding: 4px;
+            box-sizing: border-box;
+            background: transparent;
+        }
+        .table-input:focus {
+            background-color: #fff8f8;
+        }
+        .action-box {
+            border: 2px solid #c0392b;
+            background-color: #fdf6f6;
+            padding: 15px;
+            margin-bottom: 25px;
+            font-size: 13px;
+        }
+        .action-box label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #c0392b;
+        }
+        .signatures {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            margin: 40px 0 25px 0;
+        }
+        .sign-block {
+            text-align: center;
+        }
+        .sign-title {
+            text-align: left;
+            font-weight: bold;
+            font-size: 13px;
+            margin-bottom: 40px;
+        }
+        .sign-line {
+            border-bottom: 1px solid #333;
+            margin-bottom: 8px;
+        }
+        .sign-label {
+            font-size: 12px;
+            color: #555;
+        }
+        .sign-name {
+            font-weight: bold;
+            font-size: 13px;
+            color: #2c3e50;
+        }
+        .copies-section {
+            border-top: 2px solid #2c3e50;
+            padding-top: 10px;
+            margin-top: 30px;
+            display: flex;
+            align-items: center;
+            gap: 25px;
+            font-size: 12px;
+        }
+        .copies-section label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+    
+        /* --- Interactive Fillable Form Styles --- */
+        .fillable-line {
+            flex-grow: 1;
+            border: none;
+            border-bottom: 1px solid #333333;
+            background: transparent;
+            font-family: inherit;
+            font-size: 13px;
+            color: #000000;
+            padding: 0 4px;
+            outline: none;
+            box-sizing: border-box;
+            height: 18px;
+        }
+        .fillable-line:focus {
+            background-color: rgba(52, 152, 219, 0.05);
+            border-bottom: 1px solid #3498db;
+        }
+        .fillable-line.inline-input {
+            display: inline-block;
+            vertical-align: bottom;
+            flex-grow: 0;
+        }
+        .fillable-checkbox {
+            width: 14px;
+            height: 14px;
+            border: 1px solid #333;
+            accent-color: #2c3e50;
+            cursor: pointer;
+            margin-right: 4px;
+            vertical-align: middle;
+        }
+        @media print {
+            /* Force inputs to print cleanly */
+            input[type="text"].fillable-line {
+                border: none !important;
+                border-bottom: 1px solid #000000 !important;
+                background: transparent !important;
+                color: #000000 !important;
+                box-shadow: none !important;
+                padding: 0 !important;
+            }
+            input[type="checkbox"].fillable-checkbox {
+                border: 1px solid #000000 !important;
+                background: transparent !important;
+                accent-color: #000000 !important;
+            }
+            /* Prevent blank pages and container overflow */
+            html, body {
+                background: #ffffff !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                height: auto !important;
+                min-height: 0 !important;
+            }
+            .document-container {
+                box-shadow: none !important;
+                border: none !important;
+                margin: 0 auto !important;
+                padding: 0 !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                min-height: 0 !important;
+                height: auto !important;
+                background: #ffffff !important;
+            }
+        }
+</style>
+</head>
+<body>
+
+<div class="document-container">
+<!-- Header Section -->
+    <table class="header-table" style="width: 100%; border-collapse: collapse; border: 1px solid #bdc3c7; margin-bottom: 20px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;">
+        <tr>
+            <td rowspan="4" style="width: 25%; text-align: center; padding: 10px; border: 1px solid #bdc3c7; vertical-align: middle; background-color: #ffffff;">
+                <img src="images/logo.png" alt="ONE CORPORATE Logo" class="logo-img" style="height: 55px; width: auto; display: block; margin: 0 auto;" />
+            </td>
+            <td rowspan="4" style="width: 40%; text-align: center; padding: 10px; border: 1px solid #bdc3c7; vertical-align: middle; font-weight: bold; font-size: 15px; color: #2c3e50; text-transform: uppercase; letter-spacing: 0.5px; background-color: #ffffff;">
+                NOTICE OF VIOLATION (NOV)
+            </td>
+            <td style="width: 15%; padding: 4px 8px; border: 1px solid #bdc3c7; font-size: 11px; color: #555; vertical-align: middle; font-weight: bold; box-sizing: border-box; height: 21px; background-color: #ffffff;">Doc code:</td>
+            <td style="width: 20%; padding: 4px 8px; border: 1px solid #bdc3c7; font-size: 11px; color: #333; vertical-align: middle; box-sizing: border-box; height: 21px; background-color: #ffffff;">FM-OCT-PMO-14</td>
+        </tr>
+        <tr>
+            <td style="padding: 4px 8px; border: 1px solid #bdc3c7; font-size: 11px; color: #555; vertical-align: middle; font-weight: bold; box-sizing: border-box; height: 21px; background-color: #ffffff;">Rev. no.:</td>
+            <td style="padding: 4px 8px; border: 1px solid #bdc3c7; font-size: 11px; color: #333; vertical-align: middle; box-sizing: border-box; height: 21px; background-color: #ffffff;">0</td>
+        </tr>
+        <tr>
+            <td style="padding: 4px 8px; border: 1px solid #bdc3c7; font-size: 11px; color: #555; vertical-align: middle; font-weight: bold; box-sizing: border-box; height: 21px; background-color: #ffffff;">Eff. Date:</td>
+            <td style="padding: 4px 8px; border: 1px solid #bdc3c7; font-size: 11px; color: #333; vertical-align: middle; box-sizing: border-box; height: 21px; background-color: #ffffff;">9-Jun-25</td>
+        </tr>
+        <tr>
+            <td style="padding: 4px 8px; border: 1px solid #bdc3c7; font-size: 11px; color: #555; vertical-align: middle; font-weight: bold; box-sizing: border-box; height: 21px; background-color: #ffffff;">Page:</td>
+            <td style="padding: 4px 8px; border: 1px solid #bdc3c7; font-size: 11px; color: #333; vertical-align: middle; box-sizing: border-box; height: 21px; background-color: #ffffff;">1 of 1</td>
+        </tr>
+    </table>
+
+    <!-- Basic Form Info -->
+    <div class="form-grid">
+        <div class="form-group">
+            <label>Work Permit Number:</label>
+            <input type="text" class="fillable-line" placeholder="Enter Work Permit No." />
+        </div>
+        <div class="form-group">
+            <label>Reference Number:</label>
+            <input type="text" class="fillable-line" placeholder="Enter NOV Ref No." />
+        </div>
+        <div class="form-group">
+            <label>Date Issuance:</label>
+            <input type="text" class="fillable-line" placeholder="e.g. DD-MMM-YYYY" />
+        </div>
+        <div class="form-group">
+            <label>Authorized Contractor:</label>
+            <input type="text" class="fillable-line" placeholder="Enter Contractor Name" />
+        </div>
+        <div class="form-group">
+            <label>Building / Unit Number:</label>
+            <input type="text" class="fillable-line" placeholder="Enter Unit No." />
+        </div>
+        <div class="form-group">
+            <label>Unit Owner / Tenant Name:</label>
+            <input type="text" class="fillable-line" placeholder="Enter Owner/Tenant Name" />
+        </div>
+        <div class="form-group" style="grid-column: 1 / -1;">
+            <label>Address / Location:</label>
+            <input type="text" class="fillable-line" placeholder="Enter Address" />
+        </div>
+    </div>
+
+    <!-- Nature of Violation -->
+    <div class="section-header">NATURE OF VIOLATION (Check all that apply)</div>
+    <div class="nature-grid">
+        <div>
+            <label><input type="checkbox" class="checkbox" /> <strong>• Fire & Life Safety</strong></label>
+            <div style="margin-left: 20px; display: flex; flex-direction: column; gap: 6px; margin-top: 5px;">
+                <label><input type="checkbox" class="checkbox" /> * Structural</label>
+                <label><input type="checkbox" class="checkbox" /> * Architectural</label>
+                <label><input type="checkbox" class="checkbox" /> * Sanitary & Plumbing</label>
+                <label><input type="checkbox" class="checkbox" /> * Electrical</label>
+                <label><input type="checkbox" class="checkbox" /> * Mechanical & Air Conditioning</label>
+            </div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+            <label><input type="checkbox" class="checkbox" /> <strong>• Plan Deviation</strong></label>
+            <label><input type="checkbox" class="checkbox" /> <strong>• Operational / Conduct Rules</strong></label>
+            <label><input type="checkbox" class="checkbox" /> <strong>• Security & ID Access Pass</strong></label>
+            <label><input type="checkbox" class="checkbox" /> <strong>• Environmental & Waste Management</strong></label>
+            <label style="margin-top: 5px;">
+                <input type="checkbox" class="checkbox" /> <strong>• Others:</strong>
+                <input type="text" class="fillable-line" style="margin-left: 5px;" placeholder="Specify violation" />
+            </label>
+        </div>
+    </div>
+
+    <!-- Specific Violations Table -->
+    <div class="section-header">SPECIFIC VIOLATIONS & REMEDIAL ACTION</div>
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th style="width: 5%;">#</th>
+                <th style="width: 40%;">Description of Specific Violation(s)</th>
+                <th style="width: 30%;">Remedial Action Required</th>
+                <th style="width: 15%;">Penalty Amount (PHP)</th>
+                <th style="width: 10%;">Due Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td style="text-align: center;">1</td>
+                <td><input type="text" class="table-input" placeholder="Enter violation details" /></td>
+                <td><input type="text" class="table-input" placeholder="Enter required action" /></td>
+                <td><input type="text" class="table-input" style="text-align: right;" placeholder="0.00" /></td>
+                <td><input type="text" class="table-input" placeholder="Date" /></td>
+            </tr>
+            <tr>
+                <td style="text-align: center;">2</td>
+                <td><input type="text" class="table-input" /></td>
+                <td><input type="text" class="table-input" /></td>
+                <td><input type="text" class="table-input" style="text-align: right;" /></td>
+                <td><input type="text" class="table-input" /></td>
+            </tr>
+            <tr>
+                <td style="text-align: center;">3</td>
+                <td><input type="text" class="table-input" /></td>
+                <td><input type="text" class="table-input" /></td>
+                <td><input type="text" class="table-input" style="text-align: right;" /></td>
+                <td><input type="text" class="table-input" /></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; font-size: 13px;">
+        <div style="display: flex; align-items: center; gap: 15px;">
+            <strong>Fine/Penalty deduction from Construction Cash Bond:</strong>
+            <label><input type="checkbox" class="checkbox" /> Yes</label>
+            <label><input type="checkbox" class="checkbox" /> No</label>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+            <strong>TOTAL AMOUNT DUE: PHP</strong>
+            <input type="text" class="fillable-line" style="width: 140px; font-weight: bold; font-size: 14px; color: #c0392b; text-align: right;" placeholder="0.00" />
+        </div>
+    </div>
+
+    <!-- Required Action Box -->
+    <div class="action-box">
+        <label>
+            <input type="checkbox" class="checkbox" />
+            IMMEDIATE WORK STOPPAGE UNTIL RECTIFIED
+        </label>
+        <label style="color: #2c3e50; font-weight: normal;">
+            <input type="checkbox" class="checkbox" />
+            Corrective Action Required by (Date & Time):
+            <input type="text" class="fillable-line" style="width: 250px; font-weight: bold;" placeholder="e.g. 25-Jul-2026, 5:00 PM" />
+        </label>
+    </div>
+
+    <!-- Signatures -->
+    <div class="signatures">
+        <div class="sign-block">
+            <div class="sign-title">Issued / Inspected By:</div>
+            <input type="text" class="fillable-line sign-line" />
+            <div class="sign-name">Building Maintenance Office / PMO</div>
+            <div class="sign-label">Signature over Printed name / Date</div>
+        </div>
+        <div class="sign-block">
+            <div class="sign-title">Received / Acknowledged By:</div>
+            <input type="text" class="fillable-line sign-line" />
+            <div class="sign-name">Unit Owner / Tenant / Appointed Contractor</div>
+            <div class="sign-label">Signature over Printed name / Date</div>
+        </div>
+    </div>
+
+    <!-- Copies Section -->
+    <div class="copies-section">
+        <strong>Copies:</strong>
+        <label><input type="checkbox" class="checkbox" /> Property Management Office</label>
+        <label><input type="checkbox" class="checkbox" /> Building Maintenance</label>
+        <label><input type="checkbox" class="checkbox" /> Unit Owner / Tenant</label>
+        <label><input type="checkbox" class="checkbox" /> Appointed Contractor</label>
+    </div>
+
+</div>
+
+</body>
+</html>

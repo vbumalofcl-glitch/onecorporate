@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clearance Certificate</title>
+    <style>
+        @page {
+            size: A4 portrait;
+            margin: 15mm !important;
+        }
+        html {
+            margin: 0 !important;
+            padding: 0 !important;
+            background: #ffffff !important;
+        }
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            margin: 0 !important;
+            padding: 0 !important;
+            background: #ffffff !important;
+            color: #000000 !important;
+            width: 100% !important;
+            height: auto !important;
+            min-height: 0 !important;
+            overflow: visible !important;
+        }
+        .document-container {
+            width: 210mm;
+            min-height: 297mm;
+            padding: 15mm;
+            box-sizing: border-box;
+            margin: 0 auto;
+            background-color: #ffffff;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+        }
+        @media print {
+            @page {
+                size: A4 portrait;
+                margin: 15mm !important;
+            }
+            html, body {
+                background: #ffffff !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                width: 100% !important;
+                height: auto !important;
+                min-height: 0 !important;
+            }
+            .document-container {
+                box-shadow: none !important;
+                border: none !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                min-height: 0 !important;
+                height: auto !important;
+                background: #ffffff !important;
+                page-break-before: avoid !important;
+            }
+            .governance-badge-container {
+                display: none !important;
+            }
+            table, tr, td, th, .document-header, .form-title, .signature-section {
+                page-break-inside: avoid !important;
+            }
+        }
+
+        
+        html {
+            margin: 0 !important;
+            padding: 0 !important;
+            background: #ffffff !important;
+        }
+        
+        
+        
+
+        
+        html, 
+        
+        
+
+        
+        
+                .header-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 0.5in;
+            font-size: 13px;
+        }
+        .header-table td {
+            vertical-align: middle;
+            padding: 0;
+        }
+        .logo-img {
+            height: 84px;
+            width: auto;
+            display: block;
+        }
+        .doc-control {
+            text-align: right;
+        }
+        .doc-control-table {
+            width: 100%;
+            border: 1px solid #bdc3c7;
+            border-collapse: collapse;
+            height: 84px;
+        }
+        .doc-control-table td {
+            border: 1px solid #bdc3c7;
+            padding: 3px 8px;
+            font-size: 11px;
+            text-align: left;
+            color: #555;
+            height: 25%;
+            box-sizing: border-box;
+        }
+        .doc-control-table td strong {
+            color: #333;
+        }
+        h1 {
+            text-align: center;
+            font-size: 22px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin: 0 0 25px 0;
+            color: #2c3e50;
+            background-color: #ecf0f1;
+            padding: 10px;
+        }
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px 30px;
+            margin-bottom: 25px;
+        }
+        .form-group {
+            display: flex;
+            align-items: flex-end;
+        }
+        .form-group label {
+            font-weight: bold;
+            margin-right: 8px;
+            font-size: 13px;
+            white-space: nowrap;
+        }
+        .form-group .line {
+            flex-grow: 1;
+            border-bottom: 1px solid #333;
+            height: 18px;
+        }
+        table.data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        table.data-table th, table.data-table td {
+            border: 1px solid #bdc3c7;
+            padding: 8px 10px;
+            font-size: 13px;
+        }
+        table.data-table th {
+            background-color: #ecf0f1;
+            color: #2c3e50;
+            text-align: center;
+            font-weight: bold;
+        }
+        .checkbox-cell {
+            text-align: center;
+            width: 80px;
+        }
+        .checkbox {
+            width: 14px;
+            height: 14px;
+            border: 1px solid #333;
+            display: inline-block;
+            vertical-align: middle;
+        }
+        .cert-statement {
+            text-align: center;
+            font-size: 15px;
+            font-weight: bold;
+            font-style: italic;
+            margin: 30px 0 25px 0;
+            color: #2c3e50;
+            line-height: 1.5;
+        }
+        .section-title-underline {
+            font-weight: bold;
+            font-style: italic;
+            text-decoration: underline;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        .restriction-text {
+            font-size: 12px;
+            font-style: italic;
+            line-height: 1.6;
+            text-align: justify;
+            margin-bottom: 40px;
+        }
+        .signatures {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            margin: 40px 0 25px 0;
+        }
+        .sign-block {
+            text-align: center;
+        }
+        .sign-title {
+            text-align: left;
+            font-weight: bold;
+            font-size: 13px;
+            margin-bottom: 40px;
+        }
+        .sign-line {
+            border-bottom: 1px solid #333;
+            margin-bottom: 8px;
+        }
+        .sign-label {
+            font-size: 12px;
+            color: #555;
+        }
+        .sign-name {
+            font-weight: bold;
+            font-size: 13px;
+            color: #2c3e50;
+        }
+        .copies-section {
+            border-top: 2px solid #2c3e50;
+            padding-top: 10px;
+            margin-top: 30px;
+            display: flex;
+            align-items: center;
+            gap: 25px;
+            font-size: 12px;
+        }
+        .copies-section label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        @media print {
+            
+            
+        }
+    
+        /* --- Interactive Fillable Form Styles --- */
+        .fillable-line {
+            flex-grow: 1;
+            border: none;
+            border-bottom: 1px solid #333333;
+            background: transparent;
+            font-family: inherit;
+            font-size: 13px;
+            color: #000000;
+            padding: 0 4px;
+            outline: none;
+            box-sizing: border-box;
+            height: 18px;
+        }
+        .fillable-line:focus {
+            background-color: rgba(52, 152, 219, 0.05);
+            border-bottom: 1px solid #3498db;
+        }
+        .fillable-line.inline-input {
+            display: inline-block;
+            vertical-align: bottom;
+            flex-grow: 0;
+        }
+        .fillable-checkbox {
+            width: 14px;
+            height: 14px;
+            border: 1px solid #333;
+            accent-color: #2c3e50;
+            cursor: pointer;
+            margin-right: 4px;
+            vertical-align: middle;
+        }
+        @media print {
+            /* Force inputs to print cleanly */
+            input[type="text"].fillable-line {
+                border: none !important;
+                border-bottom: 1px solid #000000 !important;
+                background: transparent !important;
+                color: #000000 !important;
+                box-shadow: none !important;
+                padding: 0 !important;
+            }
+            input[type="checkbox"].fillable-checkbox {
+                border: 1px solid #000000 !important;
+                background: transparent !important;
+                accent-color: #000000 !important;
+            }
+            /* Prevent blank pages and container overflow */
+            html, body {
+                background: #ffffff !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                height: auto !important;
+                min-height: 0 !important;
+            }
+            .document-container {
+                box-shadow: none !important;
+                border: none !important;
+                margin: 0 auto !important;
+                padding: 0 !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                min-height: 0 !important;
+                height: auto !important;
+                background: #ffffff !important;
+            }
+        }
+</style>
+</head>
+<body>
+
+<div class="document-container">
+    
+    <!-- Header Section -->
+    <table class="header-table" style="width: 100%; border-collapse: collapse; border: 1px solid #bdc3c7; margin-bottom: 20px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;">
+        <tr>
+            <td rowspan="4" style="width: 25%; text-align: center; padding: 10px; border: 1px solid #bdc3c7; vertical-align: middle; background-color: #ffffff;">
+                <img src="images/logo.png" alt="ONE CORPORATE Logo" class="logo-img" style="height: 55px; width: auto; display: block; margin: 0 auto;" />
+            </td>
+            <td rowspan="4" style="width: 40%; text-align: center; padding: 10px; border: 1px solid #bdc3c7; vertical-align: middle; font-weight: bold; font-size: 15px; color: #2c3e50; text-transform: uppercase; letter-spacing: 0.5px; background-color: #ffffff;">
+                CLEARANCE CERTIFICATE
+            </td>
+            <td style="width: 15%; padding: 4px 8px; border: 1px solid #bdc3c7; font-size: 11px; color: #555; vertical-align: middle; font-weight: bold; box-sizing: border-box; height: 21px; background-color: #ffffff;">Doc code:</td>
+            <td style="width: 20%; padding: 4px 8px; border: 1px solid #bdc3c7; font-size: 11px; color: #333; vertical-align: middle; box-sizing: border-box; height: 21px; background-color: #ffffff;">FM-OCT-BM-08</td>
+        </tr>
+        <tr>
+            <td style="padding: 4px 8px; border: 1px solid #bdc3c7; font-size: 11px; color: #555; vertical-align: middle; font-weight: bold; box-sizing: border-box; height: 21px; background-color: #ffffff;">Rev. no.:</td>
+            <td style="padding: 4px 8px; border: 1px solid #bdc3c7; font-size: 11px; color: #333; vertical-align: middle; box-sizing: border-box; height: 21px; background-color: #ffffff;">0</td>
+        </tr>
+        <tr>
+            <td style="padding: 4px 8px; border: 1px solid #bdc3c7; font-size: 11px; color: #555; vertical-align: middle; font-weight: bold; box-sizing: border-box; height: 21px; background-color: #ffffff;">Eff. Date:</td>
+            <td style="padding: 4px 8px; border: 1px solid #bdc3c7; font-size: 11px; color: #333; vertical-align: middle; box-sizing: border-box; height: 21px; background-color: #ffffff;">13-May-26</td>
+        </tr>
+        <tr>
+            <td style="padding: 4px 8px; border: 1px solid #bdc3c7; font-size: 11px; color: #555; vertical-align: middle; font-weight: bold; box-sizing: border-box; height: 21px; background-color: #ffffff;">Page:</td>
+            <td style="padding: 4px 8px; border: 1px solid #bdc3c7; font-size: 11px; color: #333; vertical-align: middle; box-sizing: border-box; height: 21px; background-color: #ffffff;">1 of 1</td>
+        </tr>
+    </table>
+
+    <!-- Form Details -->
+    <div class="form-grid">
+        <div class="form-group">
+            <label>Unit Owner/Tenant Name:</label>
+            <input type="text" class="fillable-line" />
+        </div>
+        <div class="form-group">
+            <label>Permit #:</label>
+            <input type="text" class="fillable-line" />
+        </div>
+        <div class="form-group">
+            <label>Unit Number:</label>
+            <input type="text" class="fillable-line" />
+        </div>
+        <div class="form-group">
+            <label>Level:</label>
+            <input type="text" class="fillable-line" />
+        </div>
+        <div class="form-group">
+            <label>Authorized Contractor:</label>
+            <input type="text" class="fillable-line" />
+        </div>
+        <div class="form-group">
+            <label>Date Issuance:</label>
+            <input type="text" class="fillable-line" />
+        </div>
+    </div>
+
+    <!-- Agreement Table -->
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th style="width: 5%;">#</th>
+                <th style="width: 45%; text-align: left;">AGREEMENT (Check If Applicable )</th>
+                <th class="checkbox-cell">Paid</th>
+                <th class="checkbox-cell">Unpaid</th>
+                <th style="text-align: center;">REMARKS</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td style="text-align: center;">1</td>
+                <td><input type="checkbox" class="fillable-checkbox" /> •Design Agreement</td>
+                <td class="checkbox-cell"><input type="checkbox" class="fillable-checkbox" /></td>
+                <td class="checkbox-cell"><input type="checkbox" class="fillable-checkbox" /></td>
+                <td contenteditable="true"></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- Nature of Works Table -->
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th style="width: 5%;">#</th>
+                <th style="width: 45%; text-align: left;">NATURE OF WORKS (Check all that apply)</th>
+                <th class="checkbox-cell">Approved</th>
+                <th class="checkbox-cell">Disapproved</th>
+                <th style="text-align: center;">REMARKS</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr style="background-color: #f9f9f9; font-weight: bold;">
+                <td style="text-align: center;">2</td>
+                <td><input type="checkbox" class="fillable-checkbox" /> •Plans</td>
+                <td class="checkbox-cell" contenteditable="true"></td>
+                <td class="checkbox-cell" contenteditable="true"></td>
+                <td contenteditable="true"></td>
+            </tr>
+            <tr>
+                <td contenteditable="true"></td>
+                <td style="padding-left: 25px;"><input type="checkbox" class="fillable-checkbox" /> * Structural</td>
+                <td class="checkbox-cell"><input type="checkbox" class="fillable-checkbox" /></td>
+                <td class="checkbox-cell"><input type="checkbox" class="fillable-checkbox" /></td>
+                <td contenteditable="true"></td>
+            </tr>
+            <tr>
+                <td contenteditable="true"></td>
+                <td style="padding-left: 25px;"><input type="checkbox" class="fillable-checkbox" /> * Architectural</td>
+                <td class="checkbox-cell"><input type="checkbox" class="fillable-checkbox" /></td>
+                <td class="checkbox-cell"><input type="checkbox" class="fillable-checkbox" /></td>
+                <td contenteditable="true"></td>
+            </tr>
+            <tr>
+                <td contenteditable="true"></td>
+                <td style="padding-left: 25px;"><input type="checkbox" class="fillable-checkbox" /> * Sanitary and Plumbing</td>
+                <td class="checkbox-cell"><input type="checkbox" class="fillable-checkbox" /></td>
+                <td class="checkbox-cell"><input type="checkbox" class="fillable-checkbox" /></td>
+                <td contenteditable="true"></td>
+            </tr>
+            <tr>
+                <td contenteditable="true"></td>
+                <td style="padding-left: 25px;"><input type="checkbox" class="fillable-checkbox" /> * Electrical</td>
+                <td class="checkbox-cell"><input type="checkbox" class="fillable-checkbox" /></td>
+                <td class="checkbox-cell"><input type="checkbox" class="fillable-checkbox" /></td>
+                <td contenteditable="true"></td>
+            </tr>
+            <tr>
+                <td contenteditable="true"></td>
+                <td style="padding-left: 25px;"><input type="checkbox" class="fillable-checkbox" /> * Mechanical & Air Conditioning</td>
+                <td class="checkbox-cell"><input type="checkbox" class="fillable-checkbox" /></td>
+                <td class="checkbox-cell"><input type="checkbox" class="fillable-checkbox" /></td>
+                <td contenteditable="true"></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="cert-statement">
+        This is to certify that the above unit owner/tenant has complied with the following General<br>
+        Construction Guidelines of our company for their fit-out/renovation plan
+    </div>
+
+    <div class="section-title-underline">Restrictions of Unit Designs</div>
+    <div class="restriction-text">
+        Sanitary Works: Units that are dedicated facility for health, beauty, and relaxation. One Corporate's General Construction Guidelines generally prohibit shower installations in non-residential units, the Board of Directors has granted an exemption for this project. As facilities such as spas, gyms, and dermatological clinics require these amenities to operate, the shower design has been officially cleared by the Building Maintenance Department.
+    </div>
+
+    <!-- Signatures -->
+    <div class="signatures">
+        <div class="sign-block">
+            <div class="sign-title">Reviewed By:</div>
+            <input type="text" class="fillable-line sign-line" />
+            <div class="sign-name">Building Maintenance office</div>
+            <div class="sign-label">Signature over Printed name / Date</div>
+        </div>
+        <div class="sign-block">
+            <div class="sign-title">Approved By:</div>
+            <input type="text" class="fillable-line sign-line" />
+            <div class="sign-name">Lorraine Ashley L. Josue</div>
+            <div class="sign-label">OIC / Corporate Secretary</div>
+        </div>
+    </div>
+
+    <!-- Copies Section -->
+    <div class="copies-section">
+        <strong>Copies:</strong>
+        <label>Property Management office: <input type="checkbox" class="fillable-checkbox" /></label>
+        <label>FCLDC <input type="checkbox" class="fillable-checkbox" /></label>
+        <label>Building Maintenance: <input type="checkbox" class="fillable-checkbox" /></label>
+    </div>
+
+</div>
+
+</body>
+</html>

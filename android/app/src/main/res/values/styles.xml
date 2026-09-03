@@ -1,0 +1,12 @@
+<resources>
+    <style name="Theme.OneCorporate" parent="Theme.AppCompat.DayNight.DarkActionBar">
+        <item name="colorPrimary">#0f172a</item>
+        <item name="colorPrimaryDark">#020617</item>
+        <item name="colorAccent">#38bdf8</item>
+    </style>
+
+    <style name="Theme.OneCorporate.NoActionBar" parent="Theme.OneCorporate">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+</resources>

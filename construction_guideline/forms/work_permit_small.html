@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Work Permit</title>
+    <style>
+        @page {
+            size: A4 portrait;
+            margin: 15mm !important;
+        }
+        html {
+            margin: 0 !important;
+            padding: 0 !important;
+            background: #ffffff !important;
+        }
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            margin: 0 !important;
+            padding: 0 !important;
+            background: #ffffff !important;
+            color: #000000 !important;
+            width: 100% !important;
+            height: auto !important;
+            min-height: 0 !important;
+            overflow: visible !important;
+        }
+        .document-container {
+            width: 210mm;
+            min-height: 297mm;
+            padding: 15mm;
+            box-sizing: border-box;
+            margin: 0 auto;
+            background-color: #ffffff;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+        }
+        @media print {
+            @page {
+                size: A4 portrait;
+                margin: 15mm !important;
+            }
+            html, body {
+                background: #ffffff !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                width: 100% !important;
+                height: auto !important;
+                min-height: 0 !important;
+            }
+            .document-container {
+                box-shadow: none !important;
+                border: none !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                min-height: 0 !important;
+                height: auto !important;
+                background: #ffffff !important;
+                page-break-before: avoid !important;
+            }
+            .governance-badge-container {
+                display: none !important;
+            }
+            table, tr, td, th, .document-header, .form-title, .signature-section {
+                page-break-inside: avoid !important;
+            }
+        }
+
+        
+        html {
+            margin: 0 !important;
+            padding: 0 !important;
+            background: #ffffff !important;
+        }
+        
+        
+        
+
+        
+        html, 
+        
+        
+
+        
+        
+                .header-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 0.5in;
+            font-size: 13px;
+        }
+        .header-table td {
+            vertical-align: middle;
+            padding: 0;
+        }
+        .logo-img {
+            height: 84px;
+            width: auto;
+            display: block;
+        }
+        .doc-control {
+            text-align: right;
+        }
+        .doc-control-table {
+            width: 100%;
+            border: 1px solid #bdc3c7;
+            border-collapse: collapse;
+            height: 84px;
+        }
+        .doc-control-table td {
+            border: 1px solid #bdc3c7;
+            padding: 3px 8px;
+            font-size: 11px;
+            text-align: left;
+            color: #555;
+            height: 25%;
+            box-sizing: border-box;
+        }
+        .doc-control-table td strong {
+            color: #333;
+        }
+        h1 {
+            text-align: center;
+            font-size: 22px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin: 0 0 20px 0;
+            color: #2c3e50;
+            background-color: #ecf0f1;
+            padding: 10px;
+        }
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px 25px;
+            margin-bottom: 15px;
+        }
+        .form-group {
+            display: flex;
+            align-items: flex-end;
+            margin-bottom: 8px;
+        }
+        .form-group label {
+            font-weight: bold;
+            margin-right: 8px;
+            font-size: 12px;
+            white-space: nowrap;
+        }
+        .form-group .line {
+            flex-grow: 1;
+            border-bottom: 1px solid #333;
+            height: 16px;
+        }
+        .checkbox-group-inline {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            font-size: 12px;
+        }
+        .checkbox {
+            width: 14px;
+            height: 14px;
+            border: 1px solid #333;
+            display: inline-block;
+            vertical-align: middle;
+        }
+        .nature-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
+            gap: 15px;
+            border: 1px solid #bdc3c7;
+            padding: 12px;
+            margin-bottom: 20px;
+            background-color: #fafafa;
+        }
+        .nature-col {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            font-size: 12px;
+        }
+        .section-header {
+            background-color: #2c3e50;
+            color: #fff;
+            padding: 6px 12px;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+            text-align: center;
+            margin-top: 15px;
+        }
+        table.data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15px;
+        }
+        table.data-table th, table.data-table td {
+            border: 1px solid #bdc3c7;
+            padding: 5px 8px;
+            font-size: 11px;
+        }
+        table.data-table th {
+            background-color: #ecf0f1;
+            color: #2c3e50;
+            text-align: center;
+            font-weight: bold;
+        }
+        .split-tables {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        ol.terms-list {
+            padding-left: 20px;
+            font-size: 10px;
+            line-height: 1.5;
+            margin-bottom: 20px;
+            text-align: justify;
+        }
+        ol.terms-list li {
+            margin-bottom: 4px;
+        }
+        .sig-header {
+            background-color: #ecf0f1;
+            color: #2c3e50;
+            padding: 6px;
+            text-align: center;
+            font-size: 11px;
+            font-weight: bold;
+            border: 1px solid #bdc3c7;
+            border-bottom: none;
+        }
+        table.signature-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        table.signature-table td {
+            border: 1px solid #bdc3c7;
+            padding: 10px 6px;
+            vertical-align: top;
+            width: 25%;
+            text-align: center;
+        }
+        .sig-title {
+            text-align: left;
+            font-weight: bold;
+            font-size: 11px;
+            margin-bottom: 35px;
+        }
+        .sig-label {
+            font-weight: bold;
+            font-size: 10px;
+            color: #2c3e50;
+        }
+        .inspector-box {
+            border: 1px solid #bdc3c7;
+            padding: 10px 15px;
+            margin-bottom: 20px;
+            background-color: #f9f9f9;
+        }
+        .copies-section {
+            border-top: 2px solid #2c3e50;
+            padding-top: 10px;
+            margin-top: 20px;
+            display: flex;
+            align-items: center;
+            gap: 25px;
+            font-size: 12px;
+        }
+        .copies-section label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        @media print {
+            
+            
+        }
+    
+        /* --- Interactive Fillable Form Styles --- */
+        .fillable-line {
+            flex-grow: 1;
+            border: none;
+            border-bottom: 1px solid #333333;
+            background: transparent;
+            font-family: inherit;
+            font-size: 13px;
+            color: #000000;
+            padding: 0 4px;
+            outline: none;
+            box-sizing: border-box;
+            height: 18px;
+        }
+        .fillable-line:focus {
+            background-color: rgba(52, 152, 219, 0.05);
+            border-bottom: 1px solid #3498db;
+        }
+        .fillable-line.inline-input {
+            display: inline-block;
+            vertical-align: bottom;
+            flex-grow: 0;
+        }
+        .fillable-checkbox {
+            width: 14px;
+            height: 14px;
+            border: 1px solid #333;
+            accent-color: #2c3e50;
+            cursor: pointer;
+            margin-right: 4px;
+            vertical-align: middle;
+        }
+        @media print {
+            /* Force inputs to print cleanly */
+            input[type="text"].fillable-line {
+                border: none !important;
+                border-bottom: 1px solid #000000 !important;
+                background: transparent !important;
+                color: #000000 !important;
+                box-shadow: none !important;
+                padding: 0 !important;
+            }
+            input[type="checkbox"].fillable-checkbox {
+                border: 1px solid #000000 !important;
+                background: transparent !important;
+                accent-color: #000000 !important;
+            }
+            /* Prevent blank pages and container overflow */
+            html, body {
+                background: #ffffff !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                height: auto !important;
+                min-height: 0 !important;
+            }
+            .document-container {
+                box-shadow: none !important;
+                border: none !important;
+                margin: 0 auto !important;
+                padding: 0 !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                min-height: 0 !important;
+                height: auto !important;
+                background: #ffffff !important;
+            }
+        }
+</style>
+</head>
+<body>
+
+<div class="document-container">
+    
+    <!-- Header Section -->
+    <table class="header-table" style="width: 100%; border-collapse: collapse; border: 1px solid #bdc3c7; margin-bottom: 20px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;">
+        <tr>
+            <td rowspan="4" style="width: 25%; text-align: center; padding: 10px; border: 1px solid #bdc3c7; vertical-align: middle; background-color: #ffffff;">
+                <img src="images/logo.png" alt="ONE CORPORATE Logo" class="logo-img" style="height: 55px; width: auto; display: block; margin: 0 auto;" />
+            </td>
+            <td rowspan="4" style="width: 40%; text-align: center; padding: 10px; border: 1px solid #bdc3c7; vertical-align: middle; font-weight: bold; font-size: 15px; color: #2c3e50; text-transform: uppercase; letter-spacing: 0.5px; background-color: #ffffff;">
+                WORK PERMIT
+            </td>
+            <td style="width: 15%; padding: 4px 8px; border: 1px solid #bdc3c7; font-size: 11px; color: #555; vertical-align: middle; font-weight: bold; box-sizing: border-box; height: 21px; background-color: #ffffff;">Doc code:</td>
+            <td style="width: 20%; padding: 4px 8px; border: 1px solid #bdc3c7; font-size: 11px; color: #333; vertical-align: middle; box-sizing: border-box; height: 21px; background-color: #ffffff;">FM-OCT-CON-05</td>
+        </tr>
+        <tr>
+            <td style="padding: 4px 8px; border: 1px solid #bdc3c7; font-size: 11px; color: #555; vertical-align: middle; font-weight: bold; box-sizing: border-box; height: 21px; background-color: #ffffff;">Rev. no.:</td>
+            <td style="padding: 4px 8px; border: 1px solid #bdc3c7; font-size: 11px; color: #333; vertical-align: middle; box-sizing: border-box; height: 21px; background-color: #ffffff;">0</td>
+        </tr>
+        <tr>
+            <td style="padding: 4px 8px; border: 1px solid #bdc3c7; font-size: 11px; color: #555; vertical-align: middle; font-weight: bold; box-sizing: border-box; height: 21px; background-color: #ffffff;">Eff. Date:</td>
+            <td style="padding: 4px 8px; border: 1px solid #bdc3c7; font-size: 11px; color: #333; vertical-align: middle; box-sizing: border-box; height: 21px; background-color: #ffffff;">9-Jun-25</td>
+        </tr>
+        <tr>
+            <td style="padding: 4px 8px; border: 1px solid #bdc3c7; font-size: 11px; color: #555; vertical-align: middle; font-weight: bold; box-sizing: border-box; height: 21px; background-color: #ffffff;">Page:</td>
+            <td style="padding: 4px 8px; border: 1px solid #bdc3c7; font-size: 11px; color: #333; vertical-align: middle; box-sizing: border-box; height: 21px; background-color: #ffffff;">1 of 1</td>
+        </tr>
+    </table>
+
+    <!-- Top Fields -->
+    <div class="form-grid">
+        <div class="form-group">
+            <label>Name of Applicant :</label>
+            <input type="text" class="fillable-line" />
+        </div>
+        <div class="form-group">
+            <label>Date :</label>
+            <input type="text" class="fillable-line" />
+        </div>
+    </div>
+    <div class="form-grid">
+        <div class="checkbox-group-inline">
+            <label><input type="checkbox" class="fillable-checkbox" /> Unit Owner</label>
+            <label><input type="checkbox" class="fillable-checkbox" /> Tenant</label>
+        </div>
+        <div class="form-group">
+            <label>Work Order No. :</label>
+            <input type="text" class="fillable-line" />
+        </div>
+    </div>
+
+    <!-- Nature of Work Grid -->
+    <div class="nature-grid">
+        <div>
+            <div class="form-group">
+                <label>Unit No. :</label>
+                <input type="text" class="fillable-line" />
+            </div>
+            <div class="form-group">
+                <label>Name of Contractor :</label>
+                <input type="text" class="fillable-line" />
+            </div>
+            <div class="form-group">
+                <label>Name of Person-in-charge :</label>
+                <input type="text" class="fillable-line" />
+            </div>
+            <div class="form-group">
+                <label>Telephone No. :</label>
+                <input type="text" class="fillable-line" />
+            </div>
+            <div class="form-group">
+                <label>Work Schedule: Start</label>
+                <input type="text" class="fillable-line" />
+                <label style="margin-left:5px;">End</label>
+                <input type="text" class="fillable-line" />
+            </div>
+        </div>
+        <div class="nature-col">
+            <strong>Nature of Work:</strong>
+            <label><input type="checkbox" class="fillable-checkbox" /> Electrical</label>
+            <label><input type="checkbox" class="fillable-checkbox" /> Mechanical</label>
+            <label><input type="checkbox" class="fillable-checkbox" /> Civil</label>
+            <label><input type="checkbox" class="fillable-checkbox" /> Plumbing</label>
+        </div>
+        <div class="nature-col" style="padding-top: 18px;">
+            <label><input type="checkbox" class="fillable-checkbox" /> Carpentry</label>
+            <label><input type="checkbox" class="fillable-checkbox" /> Painting</label>
+            <label><input type="checkbox" class="fillable-checkbox" /> Air-conditioning Plumbing</label>
+            <label><input type="checkbox" class="fillable-checkbox" /> Others, please specify:</label>
+            <div class="line" style="border-bottom:1px solid #333; height:12px;"></div>
+        </div>
+    </div>
+
+    <div class="form-grid" style="margin-bottom: 20px;">
+        <div class="form-group">
+            <label>Date :</label>
+            <input type="text" class="fillable-line" />
+        </div>
+        <div class="form-group">
+            <label>Time :</label>
+            <input type="text" class="fillable-line" />
+        </div>
+    </div>
+
+    <!-- Workers Table -->
+    <div class="section-header">LIST OF WORKERS/PERSONNEL</div>
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th style="width: 50%;">NAMES</th>
+                <th style="width: 50%;">WORK DESCRIPTION</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td style="height: 18px;" contenteditable="true"></td><td contenteditable="true"></td></tr>
+            <tr><td style="height: 18px;" contenteditable="true"></td><td contenteditable="true"></td></tr>
+            <tr><td style="height: 18px;" contenteditable="true"></td><td contenteditable="true"></td></tr>
+            <tr><td style="height: 18px;" contenteditable="true"></td><td contenteditable="true"></td></tr>
+            <tr><td style="height: 18px;" contenteditable="true"></td><td contenteditable="true"></td></tr>
+            <tr><td style="height: 18px;" contenteditable="true"></td><td contenteditable="true"></td></tr>
+            <tr><td style="height: 18px;" contenteditable="true"></td><td contenteditable="true"></td></tr>
+            <tr><td style="height: 18px;" contenteditable="true"></td><td contenteditable="true"></td></tr>
+        </tbody>
+    </table>
+
+    <!-- Split Tables (Materials & Tools) -->
+    <div class="split-tables">
+        <div>
+            <div class="section-header">LIST OF MATERIALS</div>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th style="width: 30%;">QUANTITY</th>
+                        <th style="width: 70%;">DESCRIPTION</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td style="height: 18px;" contenteditable="true"></td><td contenteditable="true"></td></tr>
+                    <tr><td style="height: 18px;" contenteditable="true"></td><td contenteditable="true"></td></tr>
+                    <tr><td style="height: 18px;" contenteditable="true"></td><td contenteditable="true"></td></tr>
+                    <tr><td style="height: 18px;" contenteditable="true"></td><td contenteditable="true"></td></tr>
+                    <tr><td style="height: 18px;" contenteditable="true"></td><td contenteditable="true"></td></tr>
+                    <tr><td style="height: 18px;" contenteditable="true"></td><td contenteditable="true"></td></tr>
+                </tbody>
+            </table>
+        </div>
+        <div>
+            <div class="section-header">LIST OF TOOLS</div>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th style="width: 30%;">QUANTITY</th>
+                        <th style="width: 70%;">DESCRIPTION</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td style="height: 18px;" contenteditable="true"></td><td contenteditable="true"></td></tr>
+                    <tr><td style="height: 18px;" contenteditable="true"></td><td contenteditable="true"></td></tr>
+                    <tr><td style="height: 18px;" contenteditable="true"></td><td contenteditable="true"></td></tr>
+                    <tr><td style="height: 18px;" contenteditable="true"></td><td contenteditable="true"></td></tr>
+                    <tr><td style="height: 18px;" contenteditable="true"></td><td contenteditable="true"></td></tr>
+                    <tr><td style="height: 18px;" contenteditable="true"></td><td contenteditable="true"></td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Terms & Conditions -->
+    <div class="section-header">TERMS AND CONDITIONS</div>
+    <ol class="terms-list">
+        <li>This permit is valid only on the dates and time specified above.</li>
+        <li>Approval of Work Permit at least two (15) days BEFORE actual work schedule and from 09:00 AM to 4:00 PM, Monday to Saturday only.</li>
+        <li>A strict 'No Approved Work Permit, No Work' policy is in effect.</li>
+        <li>Work permit must be presented to the Guard-on-Duty for access on any area.</li>
+        <li>A copy of this work permit inserted in a plastic sleeve must be posted on the door of the unit during the whole duration of work.</li>
+        <li>All workers must use the <u>specified access of workers to Commercial Units</u>.</li>
+        <li>Workers must present their Company ID (Contractor ID) will be surrendered to the security upon entry to the building. In exchange, a Temporary Workers Access Pass will be worn by the workers and site engineers whenever they are within the building premises.</li>
+        <li>Construction debris and other garbage such as crates and Styrofoam, which are not accepted by garbage collector for hauling, shall be disposed of by the unit owner/tenant every day after the work hour is finished, and will not be disposed in the garbage bins , expenses and penalties of which shall be for the account of the unit owner/lessee if receptacles of construction are seen inside the bins.</li>
+        <li>For hot works the Unit Owner / Contractor shall provide fire Extinguisher at the job site and to observed the safety Guidelines all the times and apply separate work permit for hot works.</li>
+        <li>Loitering in the common areas is prohibited.</li>
+        <li>All workers are bound by the Rules and Regulations of One Corporate.</li>
+        <li>Workers wearing sleeveless shirts, shorts, sandals or slippers and the like shall not be allowed to enter the premises.</li>
+        <li>For any additional Construction rules and regulation's, Please refer to the sent General Constructions Guidelines.</li>
+    </ol>
+
+    <!-- Signatures -->
+    <div class="sig-header">PLEASE AFFIX YOUR SIGNATURE OVER PRINTED NAME ON THE CORRESPONDING SPACE PROVIDED BELOW:</div>
+    <table class="signature-table">
+        <tr>
+            <td>
+                <div class="sig-title" style="margin-bottom: 2px;">Prepared by:</div><div class="sig-line-interactive" contenteditable="true" style="height: 30px; border-bottom: 1px solid #ccc; margin-bottom: 5px; outline: none; font-size: 11px;"></div><div class="sig-label">Applicant</div>
+            </td>
+            <td>
+                <div class="sig-title" style="margin-bottom: 2px;">Endorsed by:</div><div class="sig-line-interactive" contenteditable="true" style="height: 30px; border-bottom: 1px solid #ccc; margin-bottom: 5px; outline: none; font-size: 11px;"></div><div class="sig-label">Unit Owner/Tenant/ SPA</div>
+            </td>
+            <td>
+                <div class="sig-title" style="margin-bottom: 2px;">Issued by:</div><div class="sig-line-interactive" contenteditable="true" style="height: 30px; border-bottom: 1px solid #ccc; margin-bottom: 5px; outline: none; font-size: 11px;"></div><div class="sig-label">Building Maintenance Office</div>
+            </td>
+            <td>
+                <div class="sig-title" style="margin-bottom: 2px;">Approved by:</div><div class="sig-line-interactive" contenteditable="true" style="height: 30px; border-bottom: 1px solid #ccc; margin-bottom: 5px; outline: none; font-size: 11px;"></div><div class="sig-label">Property Management Office</div>
+
+    <!-- Inspector Section -->
+    <div class="inspector-box">
+        <div class="form-grid" style="margin-bottom: 10px;">
+            <div style="font-weight: bold; font-size: 11px;">TO BE FILLED-UP BY INSPECTOR:</div>
+            <div class="form-group">
+                <label style="font-size: 11px;">DATE OF INSPECTION:</label>
+                <input type="text" class="fillable-line" />
+            </div>
+        </div>
+        <div class="form-group">
+            <label style="font-size: 11px;">COMMENTS:</label>
+            <input type="text" class="fillable-line" />
+        </div>
+    </div>
+
+    <!-- Copies Section -->
+    <div class="copies-section">
+        <strong>Copies to :</strong>
+        <label><input type="checkbox" class="fillable-checkbox" /> Property Management Office</label>
+        <label><input type="checkbox" class="fillable-checkbox" /> Building Maintenance</label>
+        <label><input type="checkbox" class="fillable-checkbox" /> Unit Owner</label>
+    </div>
+
+</div>
+
+</body>
+</html>

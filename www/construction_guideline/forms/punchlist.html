@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Punch List Form</title>
+    <style>
+        @page {
+            size: A4 portrait;
+            margin: 15mm !important;
+        }
+        html {
+            margin: 0 !important;
+            padding: 0 !important;
+            background: #ffffff !important;
+        }
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            margin: 0 !important;
+            padding: 0 !important;
+            background: #ffffff !important;
+            color: #000000 !important;
+            width: 100% !important;
+            height: auto !important;
+            min-height: 0 !important;
+            overflow: visible !important;
+        }
+        .document-container {
+            width: 210mm;
+            min-height: 297mm;
+            padding: 15mm;
+            box-sizing: border-box;
+            margin: 0 auto;
+            background-color: #ffffff;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+        }
+        @media print {
+            @page {
+                size: A4 portrait;
+                margin: 15mm !important;
+            }
+            html, body {
+                background: #ffffff !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                width: 100% !important;
+                height: auto !important;
+                min-height: 0 !important;
+            }
+            .document-container {
+                box-shadow: none !important;
+                border: none !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                min-height: 0 !important;
+                height: auto !important;
+                background: #ffffff !important;
+                page-break-before: avoid !important;
+            }
+            .governance-badge-container {
+                display: none !important;
+            }
+            table, tr, td, th, .document-header, .form-title, .signature-section {
+                page-break-inside: avoid !important;
+            }
+        }
+
+        
+        html {
+            margin: 0 !important;
+            padding: 0 !important;
+            background: #ffffff !important;
+        }
+        
+        
+        
+
+        
+        html, 
+        
+        
+
+        
+        
+                .header-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 0.5in;
+            font-size: 13px;
+        }
+        .header-table td {
+            vertical-align: middle;
+            padding: 0;
+        }
+        .logo-img {
+            height: 84px;
+            width: auto;
+            display: block;
+        }
+        .doc-control {
+            text-align: right;
+        }
+        .doc-control-table {
+            width: 100%;
+            border: 1px solid #bdc3c7;
+            border-collapse: collapse;
+            height: 84px;
+        }
+        .doc-control-table td {
+            border: 1px solid #bdc3c7;
+            padding: 3px 8px;
+            font-size: 11px;
+            text-align: left;
+            color: #555;
+            height: 25%;
+            box-sizing: border-box;
+        }
+        .doc-control-table td strong {
+            color: #333;
+        }
+        h1 {
+            text-align: center;
+            font-size: 22px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin: 0 0 25px 0;
+            color: #2c3e50;
+            background-color: #ecf0f1;
+            padding: 10px;
+        }
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px 30px;
+            margin-bottom: 25px;
+        }
+        .form-group {
+            display: flex;
+            align-items: flex-end;
+        }
+        .form-group label {
+            font-weight: bold;
+            margin-right: 8px;
+            font-size: 13px;
+            white-space: nowrap;
+        }
+        .form-group .line {
+            flex-grow: 1;
+            border-bottom: 1px solid #333;
+            height: 18px;
+        }
+        table.data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 25px;
+        }
+        table.data-table th, table.data-table td {
+            border: 1px solid #bdc3c7;
+            padding: 6px 10px;
+            font-size: 12px;
+        }
+        table.data-table th {
+            background-color: #ecf0f1;
+            color: #2c3e50;
+            text-align: center;
+            font-weight: bold;
+        }
+        .section-header {
+            background-color: #ecf0f1;
+            color: #2c3e50;
+            padding: 8px;
+            font-size: 14px;
+            font-weight: bold;
+            text-align: center;
+            margin: 25px 0 20px 0;
+            border: 1px solid #bdc3c7;
+        }
+        .sig-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px 60px;
+            margin-bottom: 30px;
+        }
+        .sig-block {
+            text-align: center;
+        }
+        .sig-line {
+            border-bottom: 1px solid #333;
+            margin-bottom: 5px;
+            height: 35px;
+        }
+        .sig-label {
+            font-weight: bold;
+            font-size: 12px;
+            color: #2c3e50;
+        }
+        .sig-sub {
+            font-size: 11px;
+            color: #555;
+        }
+        .checkbox {
+            width: 14px;
+            height: 14px;
+            border: 1px solid #333;
+            display: inline-block;
+            vertical-align: middle;
+        }
+        .copies-section {
+            border-top: 2px solid #2c3e50;
+            padding-top: 10px;
+            margin-top: 30px;
+            display: flex;
+            align-items: center;
+            gap: 25px;
+            font-size: 12px;
+        }
+        .copies-section label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        @media print {
+            
+            
+        }
+    
+        /* --- Interactive Fillable Form Styles --- */
+        .fillable-line {
+            flex-grow: 1;
+            border: none;
+            border-bottom: 1px solid #333333;
+            background: transparent;
+            font-family: inherit;
+            font-size: 13px;
+            color: #000000;
+            padding: 0 4px;
+            outline: none;
+            box-sizing: border-box;
+            height: 18px;
+        }
+        .fillable-line:focus {
+            background-color: rgba(52, 152, 219, 0.05);
+            border-bottom: 1px solid #3498db;
+        }
+        .fillable-line.inline-input {
+            display: inline-block;
+            vertical-align: bottom;
+            flex-grow: 0;
+        }
+        .fillable-checkbox {
+            width: 14px;
+            height: 14px;
+            border: 1px solid #333;
+            accent-color: #2c3e50;
+            cursor: pointer;
+            margin-right: 4px;
+            vertical-align: middle;
+        }
+        @media print {
+            /* Force inputs to print cleanly */
+            input[type="text"].fillable-line {
+                border: none !important;
+                border-bottom: 1px solid #000000 !important;
+                background: transparent !important;
+                color: #000000 !important;
+                box-shadow: none !important;
+                padding: 0 !important;
+            }
+            input[type="checkbox"].fillable-checkbox {
+                border: 1px solid #000000 !important;
+                background: transparent !important;
+                accent-color: #000000 !important;
+            }
+            /* Prevent blank pages and container overflow */
+            html, body {
+                background: #ffffff !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                height: auto !important;
+                min-height: 0 !important;
+            }
+            .document-container {
+                box-shadow: none !important;
+                border: none !important;
+                margin: 0 auto !important;
+                padding: 0 !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                min-height: 0 !important;
+                height: auto !important;
+                background: #ffffff !important;
+            }
+        }
+</style>
+</head>
+<body>
+
+<div class="document-container">
+    
+    <!-- Header Section -->
+    <table class="header-table" style="width: 100%; border-collapse: collapse; border: 1px solid #bdc3c7; margin-bottom: 20px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;">
+        <tr>
+            <td rowspan="4" style="width: 25%; text-align: center; padding: 10px; border: 1px solid #bdc3c7; vertical-align: middle; background-color: #ffffff;">
+                <img src="images/logo.png" alt="ONE CORPORATE Logo" class="logo-img" style="height: 55px; width: auto; display: block; margin: 0 auto;" />
+            </td>
+            <td rowspan="4" style="width: 40%; text-align: center; padding: 10px; border: 1px solid #bdc3c7; vertical-align: middle; font-weight: bold; font-size: 15px; color: #2c3e50; text-transform: uppercase; letter-spacing: 0.5px; background-color: #ffffff;">
+                PUNCH LIST FORM
+            </td>
+            <td style="width: 15%; padding: 4px 8px; border: 1px solid #bdc3c7; font-size: 11px; color: #555; vertical-align: middle; font-weight: bold; box-sizing: border-box; height: 21px; background-color: #ffffff;">Doc code:</td>
+            <td style="width: 20%; padding: 4px 8px; border: 1px solid #bdc3c7; font-size: 11px; color: #333; vertical-align: middle; box-sizing: border-box; height: 21px; background-color: #ffffff;">FM-OCT-PMO-13</td>
+        </tr>
+        <tr>
+            <td style="padding: 4px 8px; border: 1px solid #bdc3c7; font-size: 11px; color: #555; vertical-align: middle; font-weight: bold; box-sizing: border-box; height: 21px; background-color: #ffffff;">Rev. no.:</td>
+            <td style="padding: 4px 8px; border: 1px solid #bdc3c7; font-size: 11px; color: #333; vertical-align: middle; box-sizing: border-box; height: 21px; background-color: #ffffff;">0</td>
+        </tr>
+        <tr>
+            <td style="padding: 4px 8px; border: 1px solid #bdc3c7; font-size: 11px; color: #555; vertical-align: middle; font-weight: bold; box-sizing: border-box; height: 21px; background-color: #ffffff;">Eff. Date:</td>
+            <td style="padding: 4px 8px; border: 1px solid #bdc3c7; font-size: 11px; color: #333; vertical-align: middle; box-sizing: border-box; height: 21px; background-color: #ffffff;">August 15, 2025</td>
+        </tr>
+        <tr>
+            <td style="padding: 4px 8px; border: 1px solid #bdc3c7; font-size: 11px; color: #555; vertical-align: middle; font-weight: bold; box-sizing: border-box; height: 21px; background-color: #ffffff;">Page:</td>
+            <td style="padding: 4px 8px; border: 1px solid #bdc3c7; font-size: 11px; color: #333; vertical-align: middle; box-sizing: border-box; height: 21px; background-color: #ffffff;">1 of 1</td>
+        </tr>
+    </table>
+
+    <div class="form-grid">
+        <div class="form-group">
+            <label>Unit Owner Name:</label>
+            <input type="text" class="fillable-line" />
+        </div>
+        <div class="form-group">
+            <label>Level:</label>
+            <input type="text" class="fillable-line" />
+        </div>
+        <div class="form-group">
+            <label>Unit Number:</label>
+            <input type="text" class="fillable-line" />
+        </div>
+        <div class="form-group">
+            <label>Date:</label>
+            <input type="text" class="fillable-line" />
+        </div>
+    </div>
+
+    <!-- Rectification Items Table -->
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th style="width: 5%;">#</th>
+                <th style="width: 65%; text-align: left;">Items for Rectification</th>
+                <th style="width: 30%; text-align: center;">Remarks</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td style="text-align: center;">1</td><td contenteditable="true"></td><td contenteditable="true"></td></tr>
+            <tr><td style="text-align: center;">2</td><td contenteditable="true"></td><td contenteditable="true"></td></tr>
+            <tr><td style="text-align: center;">3</td><td contenteditable="true"></td><td contenteditable="true"></td></tr>
+            <tr><td style="text-align: center;">4</td><td contenteditable="true"></td><td contenteditable="true"></td></tr>
+            <tr><td style="text-align: center;">5</td><td contenteditable="true"></td><td contenteditable="true"></td></tr>
+            <tr><td style="text-align: center;">6</td><td contenteditable="true"></td><td contenteditable="true"></td></tr>
+            <tr><td style="text-align: center;">7</td><td contenteditable="true"></td><td contenteditable="true"></td></tr>
+            <tr><td style="text-align: center;">8</td><td contenteditable="true"></td><td contenteditable="true"></td></tr>
+            <tr><td style="text-align: center;">9</td><td contenteditable="true"></td><td contenteditable="true"></td></tr>
+            <tr><td style="text-align: center;">10</td><td contenteditable="true"></td><td contenteditable="true"></td></tr>
+        </tbody>
+    </table>
+
+    <!-- Additional Work Table -->
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th style="width: 5%;">#</th>
+                <th style="width: 65%; text-align: left;">Request for Additional Work ( Subject to terms and Conditions )</th>
+                <th style="width: 30%; text-align: center;">Remarks</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td style="text-align: center;">1</td><td contenteditable="true"></td><td contenteditable="true"></td></tr>
+            <tr><td style="text-align: center;">2</td><td contenteditable="true"></td><td contenteditable="true"></td></tr>
+            <tr><td style="text-align: center;">3</td><td contenteditable="true"></td><td contenteditable="true"></td></tr>
+            <tr><td style="text-align: center;">4</td><td contenteditable="true"></td><td contenteditable="true"></td></tr>
+            <tr><td style="text-align: center;">5</td><td contenteditable="true"></td><td contenteditable="true"></td></tr>
+            <tr><td style="text-align: center;">6</td><td contenteditable="true"></td><td contenteditable="true"></td></tr>
+            <tr><td style="text-align: center;">7</td><td contenteditable="true"></td><td contenteditable="true"></td></tr>
+            <tr><td style="text-align: center;">8</td><td contenteditable="true"></td><td contenteditable="true"></td></tr>
+            <tr><td style="text-align: center;">9</td><td contenteditable="true"></td><td contenteditable="true"></td></tr>
+            <tr><td style="text-align: center;">10</td><td contenteditable="true"></td><td contenteditable="true"></td></tr>
+        </tbody>
+    </table>
+
+    <!-- Inspected / Punch listed -->
+    <div class="section-header">Inspected / Punch listed:</div>
+    <div class="sig-grid">
+        <div class="sig-block">
+            <div class="sig-line"></div>
+            <div class="sig-label">Unit Owner</div>
+            <div class="sig-sub">Signature over printed name/date</div>
+        </div>
+        <div class="sig-block">
+            <div class="sig-line"></div>
+            <div class="sig-label">PMO-OIC</div>
+            <div class="sig-sub">Signature over Printed name/date</div>
+        </div>
+        <div class="sig-block">
+            <div class="sig-line"></div>
+            <div class="sig-label">Contractor Authorized Representative</div>
+            <div class="sig-sub">Signature over printed name/date</div>
+        </div>
+        <div class="sig-block">
+            <div class="sig-line"></div>
+            <div class="sig-label">Building Maintenance Department</div>
+            <div class="sig-sub">Signature over printed name/date</div>
+        </div>
+    </div>
+
+    <!-- Accepted -->
+    <div class="section-header">Accepted :</div>
+    <div class="sig-grid">
+        <div class="sig-block">
+            <div class="sig-line"></div>
+            <div class="sig-label">Unit Owner</div>
+            <div class="sig-sub">Signature over printed name/date</div>
+        </div>
+        <div class="sig-block">
+            <div class="sig-line"></div>
+            <div class="sig-label">PMO-OIC</div>
+            <div class="sig-sub">Signature over Printed name/date</div>
+        </div>
+        <div class="sig-block">
+            <div class="sig-line"></div>
+            <div class="sig-label">Contractor Authorized Representative</div>
+            <div class="sig-sub">Signature over printed name/date</div>
+        </div>
+        <div class="sig-block">
+            <div class="sig-line"></div>
+            <div class="sig-label">Building Maintenance Department</div>
+            <div class="sig-sub">Signature over printed name/date</div>
+        </div>
+    </div>
+
+    <!-- Copies Section -->
+    <div class="copies-section">
+        <strong>Copies:</strong>
+        <label>Property Management office <input type="checkbox" class="fillable-checkbox" /></label>
+        <label>Unit Owner: <input type="checkbox" class="fillable-checkbox" /></label>
+        <label>Building Maintenance: <input type="checkbox" class="fillable-checkbox" /></label>
+    </div>
+
+</div>
+
+</body>
+</html>

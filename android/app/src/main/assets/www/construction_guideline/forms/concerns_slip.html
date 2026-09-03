@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Concern Slip</title>
+    <style>
+        @page {
+            size: A4 portrait;
+            margin: 15mm !important;
+        }
+        html {
+            margin: 0 !important;
+            padding: 0 !important;
+            background: #ffffff !important;
+        }
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            margin: 0 !important;
+            padding: 0 !important;
+            background: #ffffff !important;
+            color: #000000 !important;
+            width: 100% !important;
+            height: auto !important;
+            min-height: 0 !important;
+            overflow: visible !important;
+        }
+        .document-container {
+            width: 210mm;
+            min-height: 297mm;
+            padding: 15mm;
+            box-sizing: border-box;
+            margin: 0 auto;
+            background-color: #ffffff;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+        }
+        @media print {
+            @page {
+                size: A4 portrait;
+                margin: 15mm !important;
+            }
+            html, body {
+                background: #ffffff !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                width: 100% !important;
+                height: auto !important;
+                min-height: 0 !important;
+            }
+            .document-container {
+                box-shadow: none !important;
+                border: none !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                min-height: 0 !important;
+                height: auto !important;
+                background: #ffffff !important;
+                page-break-before: avoid !important;
+            }
+            .governance-badge-container {
+                display: none !important;
+            }
+            table, tr, td, th, .document-header, .form-title, .signature-section {
+                page-break-inside: avoid !important;
+            }
+        }
+
+        
+        html {
+            margin: 0 !important;
+            padding: 0 !important;
+            background: #ffffff !important;
+        }
+        
+        
+        
+
+        
+        html, 
+        
+        
+
+        
+        
+                .header-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 0.5in;
+            font-size: 13px;
+        }
+        .header-table td {
+            vertical-align: middle;
+            padding: 0;
+        }
+        .logo-img {
+            height: 84px;
+            width: auto;
+            display: block;
+        }
+        .doc-control {
+            text-align: right;
+        }
+        .doc-control-table {
+            width: 100%;
+            border: 1px solid #bdc3c7;
+            border-collapse: collapse;
+            height: 84px;
+        }
+        .doc-control-table td {
+            border: 1px solid #bdc3c7;
+            padding: 3px 8px;
+            font-size: 11px;
+            text-align: left;
+            color: #555;
+            height: 25%;
+            box-sizing: border-box;
+        }
+        .doc-control-table td strong {
+            color: #333;
+        }
+        h1 {
+            text-align: center;
+            font-size: 22px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin: 0 0 25px 0;
+            color: #2c3e50;
+            background-color: #ecf0f1;
+            padding: 10px;
+        }
+        .section-header {
+            background-color: #2c3e50;
+            color: #fff;
+            padding: 8px 12px;
+            font-size: 14px;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-top: 25px;
+        }
+        .section-subheader {
+            background-color: #7f8c8d;
+            color: #fff;
+            padding: 5px 12px;
+            font-size: 12px;
+            font-style: italic;
+            margin-bottom: 15px;
+        }
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px 25px;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            display: flex;
+            align-items: flex-end;
+        }
+        .form-group label {
+            font-weight: bold;
+            margin-right: 8px;
+            font-size: 13px;
+            white-space: nowrap;
+        }
+        .form-group .line {
+            flex-grow: 1;
+            border-bottom: 1px solid #333;
+            height: 18px;
+        }
+        .underline-lines {
+            margin-bottom: 20px;
+        }
+        .underline-line {
+            border-bottom: 1px solid #7f8c8d;
+            height: 25px;
+            margin-bottom: 5px;
+        }
+        .field-title {
+            font-weight: bold;
+            font-size: 13px;
+            margin: 15px 0 8px 0;
+            text-decoration: underline;
+        }
+        .note-box {
+            background-color: #f8f9fa;
+            border-left: 4px solid #7f8c8d;
+            padding: 10px 15px;
+            font-size: 11px;
+            margin: 15px 0;
+            line-height: 1.5;
+        }
+        .signatures {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 50px;
+            margin: 30px 0;
+        }
+        .sign-block {
+            text-align: center;
+        }
+        .sign-line {
+            border-bottom: 1px solid #333;
+            margin-bottom: 5px;
+            height: 35px;
+        }
+        .sign-label {
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .sign-sublabel {
+            font-size: 11px;
+            color: #555;
+        }
+        table.rating-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            border: 1px solid #bdc3c7;
+        }
+        table.rating-table td, table.rating-table th {
+            border: 1px solid #bdc3c7;
+            padding: 8px 12px;
+            font-size: 12px;
+        }
+        table.rating-table th {
+            background-color: #ecf0f1;
+            color: #2c3e50;
+            text-align: left;
+        }
+        .checkbox-group-row {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+        .checkbox {
+            width: 14px;
+            height: 14px;
+            border: 1px solid #333;
+            display: inline-block;
+            vertical-align: middle;
+        }
+        .copies-section {
+            border-top: 2px solid #2c3e50;
+            padding-top: 10px;
+            margin-top: 30px;
+            display: flex;
+            align-items: center;
+            gap: 25px;
+            font-size: 12px;
+        }
+        .copies-section label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        @media print {
+            
+            
+        }
+    
+        /* --- Interactive Fillable Form Styles --- */
+        .fillable-line {
+            flex-grow: 1;
+            border: none;
+            border-bottom: 1px solid #333333;
+            background: transparent;
+            font-family: inherit;
+            font-size: 13px;
+            color: #000000;
+            padding: 0 4px;
+            outline: none;
+            box-sizing: border-box;
+            height: 18px;
+        }
+        .fillable-line:focus {
+            background-color: rgba(52, 152, 219, 0.05);
+            border-bottom: 1px solid #3498db;
+        }
+        .fillable-line.inline-input {
+            display: inline-block;
+            vertical-align: bottom;
+            flex-grow: 0;
+        }
+        .fillable-checkbox {
+            width: 14px;
+            height: 14px;
+            border: 1px solid #333;
+            accent-color: #2c3e50;
+            cursor: pointer;
+            margin-right: 4px;
+            vertical-align: middle;
+        }
+        @media print {
+            /* Force inputs to print cleanly */
+            input[type="text"].fillable-line {
+                border: none !important;
+                border-bottom: 1px solid #000000 !important;
+                background: transparent !important;
+                color: #000000 !important;
+                box-shadow: none !important;
+                padding: 0 !important;
+            }
+            input[type="checkbox"].fillable-checkbox {
+                border: 1px solid #000000 !important;
+                background: transparent !important;
+                accent-color: #000000 !important;
+            }
+            /* Prevent blank pages and container overflow */
+            html, body {
+                background: #ffffff !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                height: auto !important;
+                min-height: 0 !important;
+            }
+            .document-container {
+                box-shadow: none !important;
+                border: none !important;
+                margin: 0 auto !important;
+                padding: 0 !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                min-height: 0 !important;
+                height: auto !important;
+                background: #ffffff !important;
+            }
+        }
+</style>
+</head>
+<body>
+
+<div class="document-container">
+    
+    <!-- Header Section -->
+    <table class="header-table" style="width: 100%; border-collapse: collapse; border: 1px solid #bdc3c7; margin-bottom: 20px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;">
+        <tr>
+            <td rowspan="4" style="width: 25%; text-align: center; padding: 10px; border: 1px solid #bdc3c7; vertical-align: middle; background-color: #ffffff;">
+                <img src="images/logo.png" alt="ONE CORPORATE Logo" class="logo-img" style="height: 55px; width: auto; display: block; margin: 0 auto;" />
+            </td>
+            <td rowspan="4" style="width: 40%; text-align: center; padding: 10px; border: 1px solid #bdc3c7; vertical-align: middle; font-weight: bold; font-size: 15px; color: #2c3e50; text-transform: uppercase; letter-spacing: 0.5px; background-color: #ffffff;">
+                CONCERN SLIP
+            </td>
+            <td style="width: 15%; padding: 4px 8px; border: 1px solid #bdc3c7; font-size: 11px; color: #555; vertical-align: middle; font-weight: bold; box-sizing: border-box; height: 21px; background-color: #ffffff;">Doc code:</td>
+            <td style="width: 20%; padding: 4px 8px; border: 1px solid #bdc3c7; font-size: 11px; color: #333; vertical-align: middle; box-sizing: border-box; height: 21px; background-color: #ffffff;">FM-OCT-CON-02</td>
+        </tr>
+        <tr>
+            <td style="padding: 4px 8px; border: 1px solid #bdc3c7; font-size: 11px; color: #555; vertical-align: middle; font-weight: bold; box-sizing: border-box; height: 21px; background-color: #ffffff;">Rev. no.:</td>
+            <td style="padding: 4px 8px; border: 1px solid #bdc3c7; font-size: 11px; color: #333; vertical-align: middle; box-sizing: border-box; height: 21px; background-color: #ffffff;">0</td>
+        </tr>
+        <tr>
+            <td style="padding: 4px 8px; border: 1px solid #bdc3c7; font-size: 11px; color: #555; vertical-align: middle; font-weight: bold; box-sizing: border-box; height: 21px; background-color: #ffffff;">Eff. Date:</td>
+            <td style="padding: 4px 8px; border: 1px solid #bdc3c7; font-size: 11px; color: #333; vertical-align: middle; box-sizing: border-box; height: 21px; background-color: #ffffff;">9-Jun-25</td>
+        </tr>
+        <tr>
+            <td style="padding: 4px 8px; border: 1px solid #bdc3c7; font-size: 11px; color: #555; vertical-align: middle; font-weight: bold; box-sizing: border-box; height: 21px; background-color: #ffffff;">Page:</td>
+            <td style="padding: 4px 8px; border: 1px solid #bdc3c7; font-size: 11px; color: #333; vertical-align: middle; box-sizing: border-box; height: 21px; background-color: #ffffff;">1 of 1</td>
+        </tr>
+    </table>
+
+    <!-- Basic Info -->
+    <div class="form-grid">
+        <div class="form-group">
+            <label>Date:</label>
+            <input type="text" class="fillable-line" />
+        </div>
+        <div class="form-group">
+            <label>Date of Unit Acceptance:</label>
+            <input type="text" class="fillable-line" />
+        </div>
+        <div class="form-group">
+            <label>Unit Owner / Tenant:</label>
+            <input type="text" class="fillable-line" />
+        </div>
+        <div class="form-group">
+            <label>Contact No.:</label>
+            <input type="text" class="fillable-line" />
+        </div>
+        <div class="form-group">
+            <label>Building / Unit Number:</label>
+            <input type="text" class="fillable-line" />
+        </div>
+        <div class="form-group">
+            <label>Email Address:</label>
+            <input type="text" class="fillable-line" />
+        </div>
+    </div>
+
+    <!-- Details of Concern -->
+    <div class="field-title">Details of Concern/s</div>
+    <div class="underline-lines">
+        <div class="underline-line"></div>
+        <div class="underline-line"></div>
+        <div class="underline-line"></div>
+    </div>
+
+    <!-- Available Schedule -->
+    <div class="field-title">Available schedule for BM verification of Concern:</div>
+    <div class="form-grid" style="margin-bottom: 25px;">
+        <div class="form-group">
+            <label>Date:</label>
+            <input type="text" class="fillable-line" />
+        </div>
+        <div class="form-group">
+            <label>Time:</label>
+            <input type="text" class="fillable-line" />
+        </div>
+    </div>
+
+    <div style="max-width: 350px; margin-bottom: 30px;">
+        <input type="text" class="fillable-line sign-line" />
+        <div class="sign-label" style="text-align: center;">Unit Owner/Tenant</div>
+        <div class="sign-sublabel" style="text-align: center;">Signature over printed name</div>
+    </div>
+
+    <!-- ASSESSMENT AND RESOLUTION FORM -->
+    <div class="section-header">CONCERN ASSESSMENT AND RESOLUTION FORM</div>
+    <div class="section-subheader">To be filled out by Building Maintenance Office</div>
+
+    <div class="form-grid">
+        <div class="form-group">
+            <label>Person Assigned:</label>
+            <input type="text" class="fillable-line" />
+        </div>
+        <div class="form-group">
+            <label>Receiving Date:</label>
+            <input type="text" class="fillable-line" />
+        </div>
+    </div>
+
+    <div class="field-title" style="margin-top: 10px;">For repair concern/s only</div>
+    <div style="font-size: 13px; font-weight: bold; margin-bottom: 8px;">Findings:</div>
+    <div class="underline-lines">
+        <div class="underline-line"></div>
+        <div class="underline-line"></div>
+    </div>
+
+    <div style="font-size: 12px; font-weight: bold; margin-bottom: 8px;">Available schedule of client for ONE CORPORATE inspection:</div>
+    <div style="font-size: 12px; margin-bottom: 10px;">
+        1) Date: <input type="text" class="fillable-line inline-input" style="width: 161px;" /> Time: <input type="text" class="fillable-line inline-input" style="width: 161px;" /><br>
+        2) Date: <input type="text" class="fillable-line inline-input" style="width: 161px;" /> Time: <input type="text" class="fillable-line inline-input" style="width: 161px;" /><br>
+        3) Date: <input type="text" class="fillable-line inline-input" style="width: 161px;" /> Time: <input type="text" class="fillable-line inline-input" style="width: 161px;" />
+    </div>
+
+    <div class="note-box">
+        <strong>Note:</strong><br>
+        * In case that the concern was not addressed due to unavailability of the Client / authorized representative, this claim shall be void.<br>
+        * This concern slip shall be valid for three (3) months from the date of receipt.
+    </div>
+
+    <div style="font-size: 13px; font-weight: bold; margin-bottom: 8px;">Action/s Taken:</div>
+    <div class="underline-lines">
+        <div class="underline-line"></div>
+        <div class="underline-line"></div>
+    </div>
+
+    <div style="font-size: 13px; font-weight: bold; margin-bottom: 8px;">Remarks:</div>
+    <div class="underline-lines">
+        <div class="underline-line"></div>
+    </div>
+
+    <!-- CLOSE-OUT FORM -->
+    <div class="section-header">CONCERN CLOSE-OUT FORM</div>
+    <div class="section-subheader">To be filled out by Building Maintenance office</div>
+
+    <div class="form-grid">
+        <div class="form-group">
+            <label>Person Assigned:</label>
+            <input type="text" class="fillable-line" />
+        </div>
+        <div class="form-group">
+            <label>Date:</label>
+            <input type="text" class="fillable-line" />
+        </div>
+    </div>
+
+    <div class="form-grid">
+        <div class="form-group">
+            <label>Inspected By:</label>
+            <input type="text" class="fillable-line" />
+        </div>
+        <div class="form-group">
+            <label>Date Completed:</label>
+            <input type="text" class="fillable-line" />
+        </div>
+        <div class="form-group">
+            <label>Noted By:</label>
+            <input type="text" class="fillable-line" />
+        </div>
+    </div>
+
+    <div style="font-size: 13px; font-weight: bold; margin-top: 15px; margin-bottom: 8px;">To be filled out by Unit Owner/Tenant: Post inspection Remarks:</div>
+    <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; font-size: 13px;">
+        <label><input type="checkbox" class="fillable-checkbox" /> All concern/s were properly addressed</label>
+        <label><input type="checkbox" class="fillable-checkbox" /> All concern/s were not properly addressed</label>
+    </div>
+
+    <div style="max-width: 350px; margin-bottom: 30px;">
+        <input type="text" class="fillable-line sign-line" />
+        <div class="sign-label" style="text-align: center;">Unit Owner/Tenant</div>
+        <div class="sign-sublabel" style="text-align: center;">Signature over printed name</div>
+    </div>
+
+    <!-- SERVICE RATING -->
+    <div style="background-color: #ecf0f1; padding: 10px; text-align: center; font-size: 12px; font-weight: bold; color: #2c3e50; border: 1px solid #bdc3c7;">
+        For us to be able to serve you better, we would like you to rate our service. Kindly check the department you will assess.
+    </div>
+
+    <div style="background-color: #2c3e50; color: #fff; padding: 6px 12px; font-size: 12px; font-weight: bold;">
+        Assessed Department: BUILDING MAINTENANCE OFFICE
+    </div>
+
+    <table class="rating-table">
+        <tr>
+            <td>Were your concern/s addressed within the committed date?</td>
+            <td style="width: 280px;">
+                <div class="checkbox-group-row">
+                    <label><input type="checkbox" class="fillable-checkbox" /> Yes</label>
+                    <label><input type="checkbox" class="fillable-checkbox" /> Fair</label>
+                    <label><input type="checkbox" class="fillable-checkbox" /> Not Satisfied</label>
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <td>Kindly rate the quality of the work/job done.</td>
+            <td>
+                <div class="checkbox-group-row">
+                    <label><input type="checkbox" class="fillable-checkbox" /> Satisfied</label>
+                    <label><input type="checkbox" class="fillable-checkbox" /> Fair</label>
+                    <label><input type="checkbox" class="fillable-checkbox" /> Not Satisfied</label>
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2"><strong>Kindly rate the personnel who attended to your concern/s:</strong></td>
+        </tr>
+        <tr>
+            <td style="padding-left: 25px;">1) Job knowledge</td>
+            <td>
+                <div class="checkbox-group-row">
+                    <label><input type="checkbox" class="fillable-checkbox" /> Satisfied</label>
+                    <label><input type="checkbox" class="fillable-checkbox" /> Fair</label>
+                    <label><input type="checkbox" class="fillable-checkbox" /> Not Satisfied</label>
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <td style="padding-left: 25px;">2) Grooming</td>
+            <td>
+                <div class="checkbox-group-row">
+                    <label><input type="checkbox" class="fillable-checkbox" /> Satisfied</label>
+                    <label><input type="checkbox" class="fillable-checkbox" /> Fair</label>
+                    <label><input type="checkbox" class="fillable-checkbox" /> Not Satisfied</label>
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <td style="padding-left: 25px;">3) Courteousness</td>
+            <td>
+                <div class="checkbox-group-row">
+                    <label><input type="checkbox" class="fillable-checkbox" /> Satisfied</label>
+                    <label><input type="checkbox" class="fillable-checkbox" /> Fair</label>
+                    <label><input type="checkbox" class="fillable-checkbox" /> Not Satisfied</label>
+                </div>
+
+    <!-- Copies Section -->
+    <div class="copies-section">
+        <strong>Copies to:</strong>
+        <label><input type="checkbox" class="fillable-checkbox" /> Property Management Office</label>
+        <label><input type="checkbox" class="fillable-checkbox" /> Building Management Office</label>
+        <label><input type="checkbox" class="fillable-checkbox" /> Unit Owner</label>
+    </div>
+
+</div>
+
+</body>
+</html>
