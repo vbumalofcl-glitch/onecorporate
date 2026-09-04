@@ -468,15 +468,9 @@
         console.error("Failed to restore session:", e);
       }
       
-      // Default to System Admin if first time launch so user is never locked out
-      const defaultUser = this.config?.users?.find(u => u.id === 'user_admin') || this.config?.users?.[0];
-      if (defaultUser) {
-        this.createSession(defaultUser, false);
-        return true;
-      }
-
+      // Require explicit login on launch if no active session exists
       this.currentSession = null;
-      this.showLoginPortal();
+      setTimeout(() => this.showLoginPortal(), 100);
       return false;
     },
 
