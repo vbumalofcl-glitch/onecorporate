@@ -1081,22 +1081,10 @@
             <svg viewBox="0 0 24 24" width="13" height="13" stroke="#94a3b8" stroke-width="2" fill="none"><polyline points="6 9 12 15 18 9"></polyline></svg>
           </div>
 
-          <!-- Prominent Switch Staff Button -->
-          <button type="button" class="btn btn-secondary" onclick="window.switchStaff()" title="Switch Staff Shift / Handover" style="padding: 6px 11px; font-size: 11.5px; font-weight: 600; display: inline-flex; align-items: center; gap: 5px; border-radius: 8px; border-color: rgba(56, 189, 248, 0.4); background: rgba(56, 189, 248, 0.1); color: #38bdf8;">
-            <svg viewBox="0 0 24 24" width="14" height="14" stroke="#38bdf8" stroke-width="2" fill="none"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-            <span>Switch Staff</span>
-          </button>
-
           <!-- Lock Button -->
           <button type="button" class="btn btn-secondary" onclick="window.lockScreen()" title="Lock Screen (PIN Protected)" style="padding: 6px 10px; font-size: 11.5px; display: inline-flex; align-items: center; gap: 4px; border-radius: 8px;">
             <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
             <span>Lock</span>
-          </button>
-
-          <!-- Log Out Button -->
-          <button type="button" class="btn btn-secondary" onclick="window.logoutUser()" title="Log Out of System" style="padding: 6px 10px; font-size: 11.5px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; border-radius: 8px; color: #f87171; border-color: rgba(248, 113, 113, 0.35); background: rgba(248, 113, 113, 0.08);">
-            <svg viewBox="0 0 24 24" width="14" height="14" stroke="#f87171" stroke-width="2" fill="none"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
-            <span>Log Out</span>
           </button>
 
           <!-- USER DROPDOWN MENU -->

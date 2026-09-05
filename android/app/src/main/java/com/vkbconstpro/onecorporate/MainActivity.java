@@ -6,6 +6,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.content.ContentValues;
+import android.media.MediaScannerConnection;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
@@ -13,6 +15,7 @@ import android.provider.MediaStore;
 import android.print.PrintAttributes;
 import android.print.PrintDocumentAdapter;
 import android.print.PrintManager;
+import android.util.Base64;
 import android.webkit.JavascriptInterface;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
@@ -28,7 +31,11 @@ import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -90,6 +97,72 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
             });
+        }
+
+        @JavascriptInterface
+        public boolean saveImageToGallery(final String base64Data, final String fileNamePrefix) {
+            try {
+                if (base64Data == null || base64Data.trim().isEmpty()) return false;
+                String pureBase64 = base64Data.trim();
+                if (pureBase64.contains(",")) {
+                    pureBase64 = pureBase64.substring(pureBase64.indexOf(",") + 1);
+                }
+                final byte[] decodedBytes = Base64.decode(pureBase64, Base64.DEFAULT);
+                if (decodedBytes == null || decodedBytes.length == 0) return false;
+
+                String prefix = (fileNamePrefix != null && !fileNamePrefix.trim().isEmpty()) ? fileNamePrefix.trim() : "OneCorp_Report";
+                String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date());
+                final String fileName = prefix + "_" + timeStamp + ".jpg";
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    ContentValues values = new ContentValues();
+                    values.put(MediaStore.Images.Media.DISPLAY_NAME, fileName);
+                    values.put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg");
+                    values.put(MediaStore.Images.Media.RELATIVE_PATH, Environment.DIRECTORY_DCIM + "/Camera");
+                    values.put(MediaStore.Images.Media.IS_PENDING, 1);
+
+                    Uri uri = getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+                    if (uri != null) {
+                        try (OutputStream out = getContentResolver().openOutputStream(uri)) {
+                            if (out != null) {
+                                out.write(decodedBytes);
+                                out.flush();
+                            }
+                        }
+                        values.clear();
+                        values.put(MediaStore.Images.Media.IS_PENDING, 0);
+                        getContentResolver().update(uri, values, null, null);
+
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast.makeText(MainActivity.this, "📸 Photo saved to Gallery & attached to report", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                        return true;
+                    }
+                } else {
+                    File dcim = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM);
+                    File cameraDir = new File(dcim, "Camera");
+                    if (!cameraDir.exists()) cameraDir.mkdirs();
+                    final File dest = new File(cameraDir, fileName);
+                    try (FileOutputStream fos = new FileOutputStream(dest)) {
+                        fos.write(decodedBytes);
+                        fos.flush();
+                    }
+                    MediaScannerConnection.scanFile(MainActivity.this, new String[]{dest.getAbsolutePath()}, new String[]{"image/jpeg"}, null);
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(MainActivity.this, "📸 Photo saved to Gallery & attached to report", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                    return true;
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return false;
         }
     }
 
@@ -249,6 +322,7 @@ public class MainActivity extends AppCompatActivity {
                 } else if (cameraPhotoUri != null) {
                     File photoFile = cameraPhotoPath != null ? new File(cameraPhotoPath) : null;
                     if (photoFile != null && photoFile.exists() && photoFile.length() > 0) {
+                        saveFileToDefaultMediaStore(photoFile);
                         results = new Uri[]{cameraPhotoUri};
                     }
                 }
@@ -257,6 +331,59 @@ public class MainActivity extends AppCompatActivity {
             filePathCallback = null;
         } else {
             super.onActivityResult(requestCode, resultCode, data);
+        }
+    }
+
+    private void saveFileToDefaultMediaStore(File sourceFile) {
+        if (sourceFile == null || !sourceFile.exists()) return;
+        try {
+            String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date());
+            String fileName = "OneCorp_Camera_" + timeStamp + ".jpg";
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                ContentValues values = new ContentValues();
+                values.put(MediaStore.Images.Media.DISPLAY_NAME, fileName);
+                values.put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg");
+                values.put(MediaStore.Images.Media.RELATIVE_PATH, Environment.DIRECTORY_DCIM + "/Camera");
+                values.put(MediaStore.Images.Media.IS_PENDING, 1);
+
+                Uri uri = getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+                if (uri != null) {
+                    try (InputStream in = new FileInputStream(sourceFile);
+                         OutputStream out = getContentResolver().openOutputStream(uri)) {
+                        if (out != null) {
+                            byte[] buffer = new byte[8192];
+                            int len;
+                            while ((len = in.read(buffer)) != -1) {
+                                out.write(buffer, 0, len);
+                            }
+                            out.flush();
+                        }
+                    }
+                    values.clear();
+                    values.put(MediaStore.Images.Media.IS_PENDING, 0);
+                    getContentResolver().update(uri, values, null, null);
+                    Toast.makeText(this, "📸 Photo saved to Gallery & attached to report", Toast.LENGTH_SHORT).show();
+                }
+            } else {
+                File dcim = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM);
+                File cameraDir = new File(dcim, "Camera");
+                if (!cameraDir.exists()) cameraDir.mkdirs();
+                File dest = new File(cameraDir, fileName);
+                try (InputStream in = new FileInputStream(sourceFile);
+                     OutputStream out = new FileOutputStream(dest)) {
+                    byte[] buffer = new byte[8192];
+                    int len;
+                    while ((len = in.read(buffer)) != -1) {
+                        out.write(buffer, 0, len);
+                    }
+                    out.flush();
+                }
+                MediaScannerConnection.scanFile(this, new String[]{dest.getAbsolutePath()}, new String[]{"image/jpeg"}, null);
+                Toast.makeText(this, "📸 Photo saved to Gallery & attached to report", Toast.LENGTH_SHORT).show();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 

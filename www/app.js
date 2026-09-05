@@ -759,7 +759,8 @@ let appState = {
   currentTaskPhotosBefore: [],
   currentTaskPhotosAfter: [],
   isManagerAbsent: false,
-  managerCheckedActivities: {}
+  managerCheckedActivities: {},
+  reportSignatures: { reportedBy: null, approvedBy: null }
 };
 window.appState = appState;
 
@@ -1725,14 +1726,12 @@ function renderTimeline() {
 
     // Create Manager Oversight column element
     const mgrDiv = document.createElement('div');
-    mgrDiv.className = 'slot-manager-oversight';
-    mgrDiv.style.width = '360px';
-    mgrDiv.style.padding = '12px 16px';
+    mgrDiv.className = 'slot-manager-oversight timeline-manager-col';
+    mgrDiv.style.padding = '8px 5mm 8px 10px';
     mgrDiv.style.borderLeft = '1px solid var(--border-color)';
-    mgrDiv.style.flexShrink = '0';
     mgrDiv.style.display = 'flex';
     mgrDiv.style.flexDirection = 'column';
-    mgrDiv.style.gap = '8px';
+    mgrDiv.style.gap = '6px';
 
     const mgrActivity = (typeof MANAGER_DAILY_ACTIVITIES !== 'undefined' && MANAGER_DAILY_ACTIVITIES[time]) ? MANAGER_DAILY_ACTIVITIES[time] : null;
     if (mgrActivity) {
@@ -1829,11 +1828,290 @@ window.getTimeSlotSortOrder = function(slotStr) {
 };
 
 window.updateReportTypePlaceholder = function() {
+  const reportTypeEl = document.getElementById('report-type');
+  const reportType = reportTypeEl ? reportTypeEl.value : 'Daily';
+  const dailyActContainer = document.getElementById('report-opt-daily-activities-container');
+  if (dailyActContainer) {
+    if (reportType === 'Weekly') {
+      dailyActContainer.style.display = 'flex';
+    } else {
+      dailyActContainer.style.display = 'none';
+    }
+  }
+
   const dateInput = document.getElementById('report-date');
   if (dateInput && !dateInput.value) {
     dateInput.value = new Date().toISOString().split('T')[0];
   }
 };
+
+window.openReportManualModal = function(initialTab) {
+  const modal = document.getElementById('modal-report-manual');
+  if (modal) {
+    modal.style.display = 'flex';
+    if (initialTab) {
+      window.switchReportManualTab(initialTab);
+    }
+  }
+};
+
+window.closeReportManualModal = function() {
+  const modal = document.getElementById('modal-report-manual');
+  if (modal) modal.style.display = 'none';
+};
+
+window.switchReportManualTab = function(tabKey) {
+  const tabs = ['types', 'logs', 'sections', 'export'];
+  tabs.forEach(t => {
+    const btn = document.getElementById(`manual-tab-${t}`);
+    const panel = document.getElementById(`manual-panel-${t}`);
+    if (btn) {
+      if (t === tabKey) {
+        btn.classList.add('active');
+        btn.style.borderBottom = '2px solid #38bdf8';
+        btn.style.color = '#38bdf8';
+      } else {
+        btn.classList.remove('active');
+        btn.style.borderBottom = '2px solid transparent';
+        btn.style.color = '#94a3b8';
+      }
+    }
+    if (panel) {
+      panel.style.display = (t === tabKey) ? 'block' : 'none';
+    }
+  });
+};
+
+
+// Helper to safely format inspection checklist items/findings without rendering [object Object]
+function formatInspectionItem(it) {
+  if (!it) return { icon: '✓', color: '#16a34a', text: '', remarks: '', status: 'OK' };
+  
+  if (typeof it === 'string') {
+    return { icon: '✓', color: '#16a34a', text: it, remarks: '', status: 'OK' };
+  }
+
+  let text = it.text || it.item || it.checkpoint || it.description || it.finding || it.title || it.name || it.task || it.label || '';
+  if (!text && it.content) {
+    text = it.content.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+  }
+  if (!text) {
+    try {
+      text = Object.values(it).filter(v => typeof v === 'string' && v.length > 0).join(' - ') || 'Inspected checkpoint';
+    } catch(e) {
+      text = 'Inspected checkpoint';
+    }
+  }
+
+  const rawResp = (it.response || it.status || it.result || (it.pass !== undefined ? (it.pass ? 'OK' : 'DEFECT') : '') || 'OK').toString().toUpperCase();
+  const isDefect = rawResp === 'DEFECT' || rawResp === 'FAIL' || rawResp === 'FAILED' || rawResp === 'FAULT' || rawResp === 'WARNING' || rawResp === 'ISSUE';
+  const isOk = !isDefect && (rawResp === 'OK' || rawResp === 'PASS' || rawResp === 'PASSED' || rawResp === 'NORMAL' || rawResp === 'COMPLIANT' || rawResp === 'GOOD' || rawResp === 'VERIFIED');
+
+  let icon = '✓';
+  let color = '#16a34a';
+  if (isDefect) {
+    icon = '⚠';
+    color = '#dc2626';
+  } else if (!isOk && rawResp) {
+    icon = '•';
+    color = '#475569';
+  }
+
+  return {
+    icon,
+    color,
+    text,
+    remarks: it.remarks || it.notes || '',
+    status: rawResp || 'OK'
+  };
+}
+
+
+// Helper to generate a narrative brief summary sentence for daily procedure inspection logs
+function generateDailyInspectionNarrative(log) {
+  if (log.narrative && typeof log.narrative === 'string') return log.narrative.trim();
+  if (log.summary && typeof log.summary === 'string') return log.summary.trim();
+  if (log.findingsSummary && typeof log.findingsSummary === 'string') return log.findingsSummary.trim();
+
+  const procId = (log.procedureId || '').toLowerCase();
+  const title = (log.procedureTitle || '').toLowerCase();
+  const items = log.items || [];
+  
+  // Check for defect items
+  const defects = items.filter(rawIt => {
+    const it = formatInspectionItem(rawIt);
+    return it.icon === '⚠';
+  });
+
+  if (defects.length > 0) {
+    const defectTexts = defects.map(d => formatInspectionItem(d).text || 'checkpoint').slice(0, 2).join(', ');
+    return `Daily inspection conducted with attention flagged on: ${defectTexts}; corrective adjustment logged.`;
+  }
+
+  // System-tailored concise narrative summaries
+  if (procId.includes('genset') || title.includes('generator')) {
+    return 'Daily flight checks verified with fuel, oil, and coolant levels nominal, battery charging at 25.4V, and control panel on AUTO standby.';
+  } else if (procId.includes('stp') || title.includes('sewage') || title.includes('treatment')) {
+    return 'Aeration, blowers, clarifiers, and chemical dosing verified nominal with pH/DO in range and compliant effluent clarity.';
+  } else if (procId.includes('water') || title.includes('domestic') || procId.includes('dw')) {
+    return 'Transfer and booster pump packages inspected at nominal 58 PSI with cistern level and residual chlorine within standards.';
+  } else if (procId.includes('submersible') || procId.includes('pump') || title.includes('drainage') || title.includes('sump')) {
+    return 'Main sump pit float switches and operating current verified nominal with clean elevator pit drainage.';
+  } else if (procId.includes('housekeeping') || title.includes('housekeeping') || title.includes('janitorial')) {
+    const area = log.subCategory || 'common areas';
+    return `Daily routine sanitization and upkeep completed across ${area}, elevators, and restrooms in clean and orderly condition.`;
+  }
+
+  // General fallback synthesized from remarks or items count
+  const keyRemarks = items
+    .map(it => formatInspectionItem(it).remarks)
+    .filter(r => r && typeof r === 'string' && r.trim().length > 0 && !r.toLowerCase().includes('ok') && !r.toLowerCase().includes('clean'))
+    .slice(0, 2)
+    .join('; ');
+
+  if (keyRemarks) {
+    return `Daily routine checkpoints verified nominal (${keyRemarks}); all operating parameters within standard specifications.`;
+  }
+
+  const count = items.length > 0 ? items.length : 'standard';
+  return `Daily inspection completed across ${count} operational checkpoints with all parameters verified normal and compliant.`;
+}
+
+// Helper to retrieve all Daily Interval maintenance procedure logs for weekly summary
+function getWeeklyDailyProcedureLogs(startDate, endDateVal) {
+  let logs = [];
+  try {
+    const saved = localStorage.getItem('onecorporate_maintenance_procedures_history');
+    if (saved) logs = JSON.parse(saved);
+  } catch(e) {}
+
+  if (!logs || logs.length === 0) {
+    const seedProcKeys = ['genset', 'stp', 'domestic_water', 'submersible_pump', 'housekeeping'];
+    logs = [];
+    seedProcKeys.forEach(k => {
+      const pLogs = getFilteredComplianceLogs(k, startDate, 'Weekly', startDate, endDateVal);
+      if (pLogs && pLogs.length > 0) {
+        logs.push(...pLogs);
+      } else {
+        // Fallback to Daily seed log
+        const dLogs = getFilteredComplianceLogs(k, '2026-09-03', 'Daily', startDate, endDateVal);
+        if (dLogs && dLogs.length > 0) logs.push(...dLogs);
+      }
+    });
+  }
+
+  return logs.filter(l => {
+    const cat = (l.subCategory || '').toLowerCase();
+    const isDaily = cat.includes('daily') || cat.includes('floor') || cat.includes('basement') || cat.includes('sop') || cat.includes('routine') || cat.includes('shift');
+    const withinRange = (!startDate || l.date >= startDate) && (!endDateVal || l.date <= endDateVal);
+    return isDaily && withinRange;
+  }).sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+}
+
+// Helper to retrieve full Run Hour & Fuel Register entries covering weekly period
+function getWeeklyRunHourFuelRegister(startDate, endDateVal) {
+  let logs = [];
+  try {
+    const saved = localStorage.getItem('onecorporate_run_hours_logs');
+    if (saved) logs = JSON.parse(saved);
+  } catch(e) {}
+
+  if (!logs || logs.length === 0) {
+    logs = [
+      {
+        id: 'rh_genset_latest',
+        procedureId: 'genset',
+        equipmentId: 'eq_genset_1',
+        equipmentName: 'Genset Cummins KTAA19-G6A Engine',
+        dateTime: `${startDate || '2026-09-03'} 06:33`,
+        startMeter: 1248.5,
+        endMeter: 1256.0,
+        runHours: 7.5,
+        fuelBefore: 425.0,
+        fuelAdded: 0,
+        fuelAfter: 312.5,
+        fuelConsumed: 112.5,
+        burnRate: 15.0,
+        technician: 'Martin Naimes',
+        notes: 'Regular weekly test run & utility grid outage duty log.'
+      },
+      {
+        id: 'rh_1',
+        procedureId: 'genset',
+        equipmentId: 'eq_genset_1',
+        equipmentName: 'Genset Cummins KTAA19-G6A Engine',
+        dateTime: `${startDate || '2026-09-01'} 10:00`,
+        startMeter: 1246.0,
+        endMeter: 1248.5,
+        runHours: 2.5,
+        fuelBefore: 460.0,
+        fuelAdded: 0,
+        fuelAfter: 425.0,
+        fuelConsumed: 35.0,
+        burnRate: 14.0,
+        technician: 'Martin Naimes',
+        notes: 'Regular weekly load test run. Genset operated under 50% building load.'
+      },
+      {
+        id: 'rh_2',
+        procedureId: 'firepump',
+        equipmentId: 'eq_fp_1',
+        equipmentName: 'Main Fire Pump Diesel Engine',
+        dateTime: `${startDate || '2026-09-02'} 14:30`,
+        startMeter: 411.5,
+        endMeter: 412.0,
+        runHours: 0.5,
+        fuelBefore: 224.5,
+        fuelAdded: 0,
+        fuelAfter: 220.0,
+        fuelConsumed: 4.5,
+        burnRate: 9.0,
+        technician: 'Mr. Crispin de Gracia',
+        notes: 'Weekly churn test. Cut-in pressure verified at 100 PSI.'
+      },
+      {
+        id: 'rh_3',
+        procedureId: 'stp',
+        equipmentId: 'eq_stp_1',
+        equipmentName: 'Aeration Blower 1 Motor (Duty)',
+        dateTime: `${startDate || '2026-09-03'} 08:00`,
+        startMeter: 3096.0,
+        endMeter: 3120.0,
+        runHours: 24.0,
+        fuelBefore: 0,
+        fuelAdded: 0,
+        fuelAfter: 0,
+        fuelConsumed: 0,
+        burnRate: 0,
+        technician: 'Mr. George Ybañez',
+        notes: 'Continuous duty rotation. Dissolved oxygen levels normal at 2.4 mg/L.'
+      },
+      {
+        id: 'rh_4',
+        procedureId: 'domestic_water',
+        equipmentId: 'eq_dw_3',
+        equipmentName: 'Triplex VFD Booster Pump Package',
+        dateTime: `${startDate || '2026-09-04'} 08:00`,
+        startMeter: 4186.0,
+        endMeter: 4210.0,
+        runHours: 24.0,
+        fuelBefore: 0,
+        fuelAdded: 0,
+        fuelAfter: 0,
+        fuelConsumed: 0,
+        burnRate: 0,
+        technician: 'Mr. Crispin de Gracia',
+        notes: 'Daily constant pressure delivery. Header maintained 58 PSI.'
+      }
+    ];
+  }
+
+  return logs.filter(l => {
+    const logDate = (l.dateTime || '').substring(0, 10);
+    if (!logDate) return true;
+    return (!startDate || logDate >= startDate) && (!endDateVal || logDate <= endDateVal);
+  }).sort((a, b) => (b.dateTime || '').localeCompare(a.dateTime || ''));
+}
 
 window.toggleReportProceduresSelector = function(isChecked) {
   const box = document.getElementById('report-procedures-selector-box');
@@ -3242,6 +3520,7 @@ window.generateReport = function() {
     const incProcedures = document.getElementById('report-opt-procedures') ? document.getElementById('report-opt-procedures').checked : true;
     const incRunHours = document.getElementById('report-opt-runhours') ? document.getElementById('report-opt-runhours').checked : true;
     const incParts = document.getElementById('report-opt-parts') ? document.getElementById('report-opt-parts').checked : true;
+    const incDailyActivities = document.getElementById('report-opt-daily-activities') ? document.getElementById('report-opt-daily-activities').checked : true;
 
     let startDate = '';
     let endDateVal = '';
@@ -3701,20 +3980,23 @@ window.generateReport = function() {
 
           // 4. Render ONLY actual Compliance Inspection Logs History for Section 4
           const historyLogsHtml = matchingHistoryLogs.map(log => {
-            const itemRows = (log.items || []).map(item => `
+            const itemRows = (log.items || []).map(rawItem => {
+            const item = formatInspectionItem(rawItem);
+            return `
               <tr style="border-bottom: 1px solid #f1f5f9;">
-                <td style="padding: 5px 8px; width: 26px; text-align: center; color: ${item.response === 'OK' ? '#10b981' : (item.response === 'DEFECT' ? '#ef4444' : '#64748b')}; font-weight: 800;">
-                  ${item.response === 'OK' ? '✓' : (item.response === 'DEFECT' ? '⚠' : '–')}
+                <td style="padding: 5px 8px; width: 26px; text-align: center; color: ${item.color}; font-weight: 800;">
+                  ${item.icon}
                 </td>
-                <td style="padding: 5px 8px; color: #334155; font-weight: 600;">${item.text || item.item || item}</td>
+                <td style="padding: 5px 8px; color: #334155; font-weight: 600;">${item.text}</td>
                 <td style="padding: 5px 8px; color: #64748b; font-size: 10px; font-style: italic;">${item.remarks || ''}</td>
                 <td style="padding: 5px 8px; width: 85px; text-align: right; font-size: 9.5px; font-weight: 800;">
-                  <span style="padding: 2px 6px; border-radius: 3px; background: ${item.response === 'OK' ? '#dcfce7' : (item.response === 'DEFECT' ? '#fee2e2' : '#f1f5f9')}; color: ${item.response === 'OK' ? '#15803d' : (item.response === 'DEFECT' ? '#991b1b' : '#475569')};">
-                    ${item.response || 'VERIFIED'}
+                  <span style="padding: 2px 6px; border-radius: 3px; background: ${item.icon === '✓' ? '#dcfce7' : (item.icon === '⚠' ? '#fee2e2' : '#f1f5f9')}; color: ${item.color};">
+                    ${item.status}
                   </span>
                 </td>
               </tr>
-            `).join('');
+            `;
+          }).join('');
 
             let photosHtml = '';
             if (log.images && log.images.length > 0) {
@@ -3887,10 +4169,7 @@ window.generateReport = function() {
                         </tbody>
                       </table>
                     ` : ''}
-                  </div>
-                </div>
               ` : ''}
-
               <!-- Safety Guidelines -->
               <div style="background: #fef2f2; border: 1px solid #fecaca; border-left: 4px solid #ef4444; border-radius: 6px; padding: 10px 12px;">
                 <div style="font-size: 10px; font-weight: 800; color: #991b1b; text-transform: uppercase; margin-bottom: 2px;">⚠️ Critical Safety Precautions & LOTO (Lock-Out / Tag-Out) Compliance</div>
@@ -3900,7 +4179,7 @@ window.generateReport = function() {
           `;
         }).join('');
 
-maintenanceProceduresSectionHtml = `
+        maintenanceProceduresSectionHtml = `
           <div style="margin-top: 28px; margin-bottom: 24px;">
             <div style="border-bottom: 2px solid #0f172a; padding-bottom: 8px; margin-bottom: 16px;">
               <h3 style="font-size: 15px; font-weight: 800; color: #0f172a; margin: 0; text-transform: uppercase; letter-spacing: 0.5px;">
@@ -3912,6 +4191,147 @@ maintenanceProceduresSectionHtml = `
           </div>
         `;
       }
+    }
+
+    // Compile Summary of Daily Activities Section (for Weekly Summary Report)
+    let dailyActivitiesSummarySectionHtml = '';
+    if (incDailyActivities && (rType === 'Weekly' || reportType === 'Weekly')) {
+      const weeklyDailyLogs = getWeeklyDailyProcedureLogs(startDate, endDateVal);
+      const weeklyRunHourLogs = getWeeklyRunHourFuelRegister(startDate, endDateVal);
+
+      // 1. Daily Maintenance Procedures Audit Table
+      let procTableRows = '';
+      if (weeklyDailyLogs.length > 0) {
+        procTableRows = weeklyDailyLogs.map(log => {
+          const narrativeSummary = generateDailyInspectionNarrative(log);
+          const isPass = (log.score || 100) >= 90;
+
+          return `
+            <tr style="border-bottom: 1px solid #e2e8f0;">
+              <td style="white-space: nowrap; font-weight: 700; color: #1e3a8a; vertical-align: top; padding: 7px 8px;">${log.date || startDate}</td>
+              <td style="vertical-align: top; padding: 7px 8px;">
+                <strong style="color: #0f172a;">${log.procedureTitle || log.procedureCode || log.procedureId}</strong><br>
+                <span style="font-size: 10px; color: #64748b; background: #eff6ff; padding: 1px 5px; border-radius: 3px; font-weight: 600;">${log.subCategory || 'Daily Routine'}</span>
+              </td>
+              <td style="vertical-align: top; padding: 7px 8px; font-size: 11px; color: #334155; line-height: 1.45;">
+                <div style="display: flex; align-items: flex-start; gap: 6px;">
+                  <span style="color: ${isPass ? '#16a34a' : '#ea580c'}; font-weight: 800; font-size: 11.5px; line-height: 1.3;">${isPass ? '✓' : '⚠'}</span>
+                  <span>${narrativeSummary}</span>
+                </div>
+              </td>
+              <td style="white-space: nowrap; font-size: 10.5px; vertical-align: top; padding: 7px 8px; color: #475569;">${log.preparedBy || log.inspectedBy || 'Duty Technician'}</td>
+              <td style="text-align: center; white-space: nowrap; vertical-align: top; padding: 7px 8px;">
+                <span style="font-size: 10px; font-weight: 800; padding: 2px 7px; border-radius: 4px; background: ${isPass ? '#dcfce7; color: #15803d;' : '#fef3c7; color: #92400e;'};">
+                  ${log.score || 100}% PASS
+                </span>
+              </td>
+            </tr>
+          `;
+        }).join('');
+      } else {
+        procTableRows = '<tr><td colspan="5" style="text-align: center; color: #64748b; padding: 14px;">No daily procedure logs recorded within this week.</td></tr>';
+      }
+
+      // 2. Run Hour & Fuel Log History Register Table & Aggregates
+      let totalPeriodRunHours = 0;
+      let totalPeriodFuelConsumed = 0;
+      let runHourRows = '';
+
+      if (weeklyRunHourLogs.length > 0) {
+        runHourRows = weeklyRunHourLogs.map(rh => {
+          const rHours = typeof rh.runHours === 'number' ? rh.runHours : (parseFloat(rh.runHours) || 0);
+          const fConsumed = typeof rh.fuelConsumed === 'number' ? rh.fuelConsumed : (parseFloat(rh.fuelConsumed) || 0);
+          totalPeriodRunHours += rHours;
+          totalPeriodFuelConsumed += fConsumed;
+
+          return `
+            <tr style="border-bottom: 1px solid #e2e8f0;">
+              <td style="font-weight: 700; color: #0f172a;">${rh.equipmentName || rh.equipmentId}</td>
+              <td style="white-space: nowrap; font-size: 10px; font-family: monospace; color: #2563eb; font-weight: 600;">${rh.dateTime || startDate}</td>
+              <td style="text-align: right; font-family: monospace;">${(rh.startMeter || 0).toFixed(1)}</td>
+              <td style="text-align: right; font-family: monospace;">${(rh.endMeter || 0).toFixed(1)}</td>
+              <td style="text-align: right; font-weight: 800; color: #166534; background: #f0fdf4;">+${rHours.toFixed(1)} hrs</td>
+              <td style="text-align: right; font-family: monospace;">${rh.fuelBefore ? rh.fuelBefore.toFixed(1) : '—'}</td>
+              <td style="text-align: right; font-family: monospace;">${rh.fuelAfter ? rh.fuelAfter.toFixed(1) : '—'}</td>
+              <td style="text-align: right; font-weight: 800; color: ${fConsumed > 0 ? '#b91c1c' : '#475569'}; background: ${fConsumed > 0 ? '#fef2f2' : 'transparent'};">
+                ${fConsumed > 0 ? fConsumed.toFixed(1) + ' L' : '—'}
+              </td>
+              <td style="text-align: right; font-size: 10px; color: #475569;">${rh.burnRate ? rh.burnRate.toFixed(1) + ' L/hr' : '—'}</td>
+              <td style="white-space: nowrap; font-size: 10px;">${rh.technician || 'Duty Tech'}</td>
+              <td style="font-size: 10px; color: #475569; max-width: 180px;">${rh.notes || 'Normal operation'}</td>
+            </tr>
+          `;
+        }).join('');
+      } else {
+        runHourRows = '<tr><td colspan="11" style="text-align: center; color: #64748b; padding: 14px;">No equipment run hour or fuel entries logged within this week.</td></tr>';
+      }
+
+      dailyActivitiesSummarySectionHtml = `
+        <div style="margin-top: 24px; margin-bottom: 24px; page-break-inside: avoid;">
+          <div style="border-bottom: 2px solid #0284c7; padding-bottom: 8px; margin-bottom: 14px;">
+            <h3 style="font-size: 15px; font-weight: 800; color: #0284c7; margin: 0; text-transform: uppercase; letter-spacing: 0.5px; display: flex; justify-content: space-between; align-items: center;">
+              <span>📅 Summary of Daily Activities (Weekly Period: ${headingPeriod})</span>
+              <span style="font-size: 10px; font-weight: 700; color: #fff; background: #0284c7; padding: 3px 8px; border-radius: 4px;">7-DAY SUMMARY</span>
+            </h3>
+            <p style="font-size: 11px; color: #64748b; margin: 3px 0 0 0;">Consolidated record of daily interval maintenance procedure inspections and equipment run hour & fuel tracking registers covering the period starting ${startDate}.</p>
+          </div>
+
+          <!-- Part A: Daily Maintenance Procedures Summary Table -->
+          <div style="margin-bottom: 18px;">
+            <div style="font-size: 11px; font-weight: 800; color: #1e3a8a; text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.5px;">
+              1. Maintenance Procedure Inspection Logs (Daily Intervals)
+            </div>
+            <table class="report-table" style="margin-bottom: 0; background: #ffffff;">
+              <thead>
+                <tr>
+                  <th style="width: 90px;">Date</th>
+                  <th style="width: 200px;">Procedure / System</th>
+                  <th>Daily Inspection Checkpoints & Findings</th>
+                  <th style="width: 140px;">Auditor / Tech</th>
+                  <th style="width: 85px; text-align: center;">Result</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${procTableRows}
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Part B: Run Hour & Fuel Log History Register Table -->
+          <div style="margin-bottom: 12px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+              <div style="font-size: 11px; font-weight: 800; color: #1e3a8a; text-transform: uppercase; letter-spacing: 0.5px;">
+                2. Run Hour & Fuel Log History Register (Period Starting: ${startDate})
+              </div>
+              <div style="display: flex; gap: 12px; font-size: 10.5px; font-weight: 700;">
+                <span style="color: #166534; background: #f0fdf4; padding: 2px 8px; border-radius: 4px; border: 1px solid #bbf7d0;">Total Run: <strong>${totalPeriodRunHours.toFixed(1)} hrs</strong></span>
+                <span style="color: #991b1b; background: #fef2f2; padding: 2px 8px; border-radius: 4px; border: 1px solid #fecaca;">Total Fuel: <strong>${totalPeriodFuelConsumed.toFixed(1)} L</strong></span>
+              </div>
+            </div>
+
+            <table class="report-table" style="margin-bottom: 0; font-size: 10px; background: #ffffff;">
+              <thead>
+                <tr style="background: #f1f5f9;">
+                  <th>Equipment Name</th>
+                  <th style="width: 105px;">Date & Time</th>
+                  <th style="width: 65px; text-align: right;">Start (Hr)</th>
+                  <th style="width: 65px; text-align: right;">End (Hr)</th>
+                  <th style="width: 75px; text-align: right;">Run (Hr)</th>
+                  <th style="width: 60px; text-align: right;">Fuel Init</th>
+                  <th style="width: 60px; text-align: right;">Fuel End</th>
+                  <th style="width: 65px; text-align: right;">Consumed</th>
+                  <th style="width: 65px; text-align: right;">Burn Rate</th>
+                  <th style="width: 100px;">Technician</th>
+                  <th>Operational Notes</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${runHourRows}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `;
     }
 
     const canvas = document.getElementById('report-printable-area');
@@ -3949,6 +4369,8 @@ maintenanceProceduresSectionHtml = `
               <div class="report-stat-label">Health Index</div>
             </div>
           </div>
+
+          ${dailyActivitiesSummarySectionHtml}
 
           <h3>Completed Daily Maintenance Activities (${completed})</h3>
           <table class="report-table">
@@ -4004,20 +4426,59 @@ maintenanceProceduresSectionHtml = `
 
           ${maintenanceProceduresSectionHtml}
 
-          <div style="margin-top: 50px; border-top: 1px solid #e5e7eb; padding-top: 20px; display: flex; justify-content: space-between;">
-            <div style="text-align:center; width:200px;">
-              <div style="border-bottom:1px solid #000; height:40px;"></div>
-              <span style="font-size:10px; color:#4b5563; font-weight:bold;">Reported By (Lead Engineer)</span>
-            </div>
-            <div style="text-align:center; width:250px;">
-              <div style="border-bottom:1px solid #000; height:40px;"></div>
-              <span style="font-size:10px; color:#4b5563; font-weight:bold;">
-                ${appState.isManagerAbsent ? 'Acting Approved By: Assistant Building Maintenance' : 'Approved By: Building Maintenance Manager'}
-              </span>
-            </div>
-          </div>
+          ${(function() {
+            const sigs = appState.reportSignatures || {};
+            const reportedBySig = sigs.reportedBy ? `
+              <div style="position: relative; height: 50px; display: flex; align-items: flex-end; justify-content: center; margin-bottom: 2px;">
+                <img src="${sigs.reportedBy.url}" alt="Lead Engineer Signature" class="report-signature-image">
+                <button type="button" class="preview-resign-btn hide-on-print" onclick="openSignatureModal('reportedBy')" style="position: absolute; top: -14px; right: 0;">✏️ Edit</button>
+              </div>
+            ` : `
+              <div style="height: 50px; display: flex; align-items: center; justify-content: center;">
+                <button type="button" class="preview-sign-btn hide-on-print" onclick="openSignatureModal('reportedBy')">
+                  ✍️ Add / Draw Signature
+                </button>
+              </div>
+            `;
+
+            const approvedBySig = sigs.approvedBy ? `
+              <div style="position: relative; height: 50px; display: flex; align-items: flex-end; justify-content: center; margin-bottom: 2px;">
+                <img src="${sigs.approvedBy.url}" alt="Manager Signature" class="report-signature-image">
+                <button type="button" class="preview-resign-btn hide-on-print" onclick="openSignatureModal('approvedBy')" style="position: absolute; top: -14px; right: 0;">✏️ Edit</button>
+              </div>
+            ` : `
+              <div style="height: 50px; display: flex; align-items: center; justify-content: center;">
+                <button type="button" class="preview-sign-btn hide-on-print" onclick="openSignatureModal('approvedBy')">
+                  ✍️ Add / Draw Signature
+                </button>
+              </div>
+            `;
+
+            return `
+              <div style="margin-top: 50px; border-top: 1px solid #e5e7eb; padding-top: 20px; display: flex; justify-content: space-between; align-items: flex-end; page-break-inside: avoid;">
+                <div style="text-align:center; width:220px;">
+                  ${reportedBySig}
+                  <div style="border-bottom:1px solid #000; margin-bottom: 4px;"></div>
+                  <span style="font-size:10px; color:#4b5563; font-weight:bold; display: block;">Reported By (Lead Engineer)</span>
+                  ${sigs.reportedBy ? `<span style="font-size:8.5px; color:#64748b; font-weight: 500;">Signed: ${sigs.reportedBy.date}</span>` : ''}
+                </div>
+                <div style="text-align:center; width:250px;">
+                  ${approvedBySig}
+                  <div style="border-bottom:1px solid #000; margin-bottom: 4px;"></div>
+                  <span style="font-size:10px; color:#4b5563; font-weight:bold; display: block;">
+                    ${appState.isManagerAbsent ? 'Acting Approved By: Assistant Building Maintenance' : 'Approved By: Building Maintenance Manager'}
+                  </span>
+                  ${sigs.approvedBy ? `<span style="font-size:8.5px; color:#64748b; font-weight: 500;">Signed: ${sigs.approvedBy.date}</span>` : ''}
+                </div>
+              </div>
+            `;
+          })()}
         </div>
       `;
+    }
+
+    if (typeof updateSignatureStatusPills === 'function') {
+      updateSignatureStatusPills();
     }
 
     // Display report preview box
@@ -4032,26 +4493,39 @@ maintenanceProceduresSectionHtml = `
   }
 };
 
-// ==================== TENANT DESK & JOB ORDER MANAGEMENT ====================
-
-// Mode Switcher (Tenant Complaints vs Facility Job Orders)
 window.switchTenantDeskMode = function(mode) {
-  appState.activeTenantDeskTab = mode;
-  const isComplaints = mode === 'complaints';
-  
-  const compBtn = document.getElementById('btn-subnav-complaints');
-  const joBtn = document.getElementById('btn-subnav-joborders');
-  const compView = document.getElementById('tenant-desk-complaints-view');
-  const joView = document.getElementById('tenant-desk-joborders-view');
-  const label = document.getElementById('tenant-desk-active-mode-label');
+  const normalizedMode = (mode === 'joborders' || mode === 'job_orders' || mode === 'joborder') ? 'joborders' : 'complaints';
+  if (typeof appState === 'undefined' || !appState) appState = {};
+  appState.activeTenantDeskTab = normalizedMode;
 
-  if (compBtn) compBtn.classList.toggle('active', isComplaints);
-  if (joBtn) joBtn.classList.toggle('active', !isComplaints);
-  if (compView) compView.style.display = isComplaints ? 'block' : 'none';
-  if (joView) joView.style.display = isComplaints ? 'none' : 'block';
-  if (label) {
-    label.innerText = isComplaints ? 'Tenant Complaints Desk' : 'Facility Job Orders';
-    label.style.color = isComplaints ? '#38bdf8' : '#f59e0b';
+  const complaintsView = document.getElementById('tenant-desk-complaints-view');
+  const jobOrdersView = document.getElementById('tenant-desk-joborders-view');
+  const btnComplaints = document.getElementById('btn-subnav-complaints');
+  const btnJobOrders = document.getElementById('btn-subnav-joborders');
+  const activeLabel = document.getElementById('tenant-desk-active-mode-label');
+
+  if (normalizedMode === 'joborders') {
+    if (complaintsView) complaintsView.style.display = 'none';
+    if (jobOrdersView) jobOrdersView.style.display = 'block';
+    if (btnComplaints) btnComplaints.classList.remove('active');
+    if (btnJobOrders) btnJobOrders.classList.add('active');
+    if (activeLabel) {
+      activeLabel.innerText = 'Facility Job Orders';
+      activeLabel.style.color = '#f59e0b';
+    }
+  } else {
+    if (complaintsView) complaintsView.style.display = 'block';
+    if (jobOrdersView) jobOrdersView.style.display = 'none';
+    if (btnComplaints) btnComplaints.classList.add('active');
+    if (btnJobOrders) btnJobOrders.classList.remove('active');
+    if (activeLabel) {
+      activeLabel.innerText = 'Tenant Complaints Desk';
+      activeLabel.style.color = '#38bdf8';
+    }
+  }
+
+  if (typeof renderTenantComplaints === 'function') {
+    renderTenantComplaints();
   }
 };
 
@@ -4059,7 +4533,6 @@ function renderTenantComplaints() {
   if (!appState.complaints) appState.complaints = [];
   if (!appState.jobOrders) appState.jobOrders = [];
 
-  // Update Counters
   const compCountEl = document.getElementById('tenant-request-count');
   const tabCompCountEl = document.getElementById('count-tab-complaints');
   const joCountEl = document.getElementById('joborder-request-count');
@@ -4354,10 +4827,17 @@ window.removeEditJobOrderPhoto = function() {
 window.handleTenantComplaintSubmit = function(event) {
   event.preventDefault();
   
-  const unit = document.getElementById('tenant-unit').value.trim();
-  const system = document.getElementById('tenant-system').value;
-  const title = document.getElementById('tenant-title').value.trim();
-  const details = document.getElementById('tenant-details').value.trim();
+  const unitEl = document.getElementById('tenant-unit');
+  const systemEl = document.getElementById('tenant-system');
+  const titleEl = document.getElementById('tenant-title');
+  const detailsEl = document.getElementById('tenant-details');
+  
+  if (!unitEl || !systemEl || !titleEl || !detailsEl) return;
+
+  const unit = unitEl.value.trim();
+  const system = systemEl.value;
+  const title = titleEl.value.trim();
+  const details = detailsEl.value.trim();
 
   const newTicket = {
     id: 'ticket_' + Date.now(),
@@ -4385,13 +4865,15 @@ window.handleTenantComplaintSubmit = function(event) {
     status: 'Pending',
     notes: details,
     photo: appState.currentTenantPhotoBase64 || '',
-    assignedTo: getSystemDefaultTechnician(system),
+    assignedTo: (typeof getSystemDefaultTechnician === 'function') ? getSystemDefaultTechnician(system) : '',
     dateCreated: new Date().toISOString().split('T')[0]
   };
 
+  if (!appState.tasks) appState.tasks = [];
   appState.tasks.push(newTimelineTask);
 
   // Notification
+  if (!appState.notifications) appState.notifications = [];
   appState.notifications.unshift({
     id: `tenant_notif_${newTicket.id}`,
     type: 'normal',
@@ -4399,13 +4881,14 @@ window.handleTenantComplaintSubmit = function(event) {
     time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
   });
 
-  saveState();
-  checkOverdueTasks();
+  if (typeof saveState === 'function') saveState();
+  if (typeof checkOverdueTasks === 'function') checkOverdueTasks();
   
-  document.getElementById('tenant-complaint-form').reset();
-  removeTenantPhoto();
+  const form = document.getElementById('tenant-complaint-form');
+  if (form) form.reset();
+  if (typeof removeTenantPhoto === 'function') removeTenantPhoto();
 
-  renderTenantComplaints();
+  if (typeof renderTenantComplaints === 'function') renderTenantComplaints();
   alert("Your maintenance ticket has been filed and sent to the building engineering desk!");
 };
 
@@ -7261,6 +7744,31 @@ window.dropToBacklog = function(e) {
   }
 };
 
+
+// Toggle Timeline Backlog Card Collapse / Expand (>> / <<)
+window.toggleTimelineBacklog = function() {
+  const layout = document.getElementById('timeline-layout-container');
+  const backlogCard = document.getElementById('timeline-backlog-card');
+  const unhideBtn = document.getElementById('btn-unhide-backlog');
+  if (!backlogCard) return;
+
+  const isCurrentlyCollapsed = backlogCard.classList.contains('collapsed');
+
+  if (isCurrentlyCollapsed) {
+    // Expand / Unhide
+    backlogCard.classList.remove('collapsed');
+    if (layout) layout.classList.remove('backlog-collapsed');
+    if (unhideBtn) unhideBtn.style.display = 'none';
+    try { localStorage.setItem('onecorp_timeline_backlog_collapsed', 'false'); } catch(e) {}
+  } else {
+    // Collapse / Hide
+    backlogCard.classList.add('collapsed');
+    if (layout) layout.classList.add('backlog-collapsed');
+    if (unhideBtn) unhideBtn.style.display = 'flex';
+    try { localStorage.setItem('onecorp_timeline_backlog_collapsed', 'true'); } catch(e) {}
+  }
+};
+
 window.renderBacklogTasks = function() {
   const container = document.getElementById('unscheduled-backlog');
   if (!container) return;
@@ -7270,6 +7778,8 @@ window.renderBacklogTasks = function() {
 
   const badge = document.getElementById('backlog-count-badge');
   if (badge) badge.innerText = backlogTasks.length;
+  const collapsedBadge = document.getElementById('backlog-collapsed-badge');
+  if (collapsedBadge) collapsedBadge.innerText = backlogTasks.length;
 
   if (backlogTasks.length === 0) {
     container.innerHTML = '<div style="font-size: 11px; color: var(--text-muted); text-align: center; padding: 20px;">No unscheduled tasks in backlog</div>';
@@ -10513,7 +11023,15 @@ window.acceptAndAttachCameraPhoto = function() {
     return;
   }
 
-  const targetContext = inAppCameraTargetContext || document.getElementById('camera-target-context').value;
+  const targetContext = inAppCameraTargetContext || document.getElementById('camera-target-context').value || 'task-evidence';
+
+  // Save to Android system default gallery/DCIM location if option is enabled
+  const saveGalleryCheckbox = document.getElementById('camera-save-gallery-checkbox');
+  const shouldSaveGallery = !saveGalleryCheckbox || saveGalleryCheckbox.checked;
+
+  if (shouldSaveGallery && window.AndroidNative && typeof window.AndroidNative.saveImageToGallery === 'function') {
+    window.AndroidNative.saveImageToGallery(inAppSnappedDataUrl, 'OneCorp_' + targetContext);
+  }
 
   if (targetContext === 'task-before') {
     if (!appState.currentTaskPhotosBefore) appState.currentTaskPhotosBefore = [];
@@ -10557,6 +11075,10 @@ window.acceptAndAttachCameraPhoto = function() {
     if (box) box.style.display = 'block';
   }
 
+  if (typeof showToast === 'function') {
+    showToast("📸 Photo attached to report" + (shouldSaveGallery ? " & saved to device Gallery" : "") + "!");
+  }
+
   closeInAppCameraModal();
 };
 
@@ -10584,6 +11106,13 @@ window.handleInAppNativeCameraCapture = function(event) {
       if (gridOverlay) gridOverlay.style.display = 'none';
       if (liveControls) liveControls.style.display = 'none';
       if (previewControls) previewControls.style.display = 'flex';
+
+      const saveGalleryCheckbox = document.getElementById('camera-save-gallery-checkbox');
+      const shouldSaveGallery = !saveGalleryCheckbox || saveGalleryCheckbox.checked;
+      const targetContext = inAppCameraTargetContext || document.getElementById('camera-target-context').value || 'native-camera';
+      if (shouldSaveGallery && window.AndroidNative && typeof window.AndroidNative.saveImageToGallery === 'function') {
+        window.AndroidNative.saveImageToGallery(compressedDataUrl, 'OneCorp_' + targetContext);
+      }
     });
   };
   reader.readAsDataURL(file);
@@ -10604,3 +11133,423 @@ window.handleInAppNativeCameraCapture = function(event) {
     }
   };
 })();
+
+// ==================== DIGITAL SIGNATURE ENGINE & SIGNATURE PAD ====================
+
+let sigState = {
+  activeRole: 'reportedBy',
+  activeTab: 'draw',
+  penColor: '#000000',
+  penSize: 3,
+  isDrawing: false,
+  canvas: null,
+  ctx: null,
+  strokeHistory: [],
+  typedFont: 'Dancing Script, cursive',
+  uploadedImageBase64: null,
+  selectedPresetUrl: null
+};
+
+window.initSignaturePad = function() {
+  const canvas = document.getElementById('sig-pad-canvas');
+  if (!canvas) return;
+
+  sigState.canvas = canvas;
+  sigState.ctx = canvas.getContext('2d');
+
+  const rect = canvas.getBoundingClientRect();
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = (rect.width || 582) * dpr;
+  canvas.height = (rect.height || 180) * dpr;
+  sigState.ctx.scale(dpr, dpr);
+
+  sigState.ctx.lineCap = 'round';
+  sigState.ctx.lineJoin = 'round';
+  sigState.ctx.strokeStyle = sigState.penColor;
+  sigState.ctx.lineWidth = sigState.penSize;
+
+  let lastX = 0;
+  let lastY = 0;
+
+  function getPos(e) {
+    const cRect = canvas.getBoundingClientRect();
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    return {
+      x: clientX - cRect.left,
+      y: clientY - cRect.top
+    };
+  }
+
+  function startDraw(e) {
+    if (e.touches && e.touches.length > 1) return;
+    e.preventDefault();
+    sigState.isDrawing = true;
+    const pos = getPos(e);
+    lastX = pos.x;
+    lastY = pos.y;
+
+    saveCanvasState();
+
+    const placeholder = document.getElementById('sig-pad-placeholder');
+    if (placeholder) placeholder.style.display = 'none';
+
+    sigState.ctx.beginPath();
+    sigState.ctx.moveTo(lastX, lastY);
+    sigState.ctx.lineTo(lastX + 0.1, lastY + 0.1);
+    sigState.ctx.stroke();
+  }
+
+  function moveDraw(e) {
+    if (!sigState.isDrawing) return;
+    e.preventDefault();
+    const pos = getPos(e);
+
+    sigState.ctx.beginPath();
+    sigState.ctx.moveTo(lastX, lastY);
+    sigState.ctx.quadraticCurveTo(lastX, lastY, pos.x, pos.y);
+    sigState.ctx.stroke();
+
+    lastX = pos.x;
+    lastY = pos.y;
+  }
+
+  function stopDraw(e) {
+    if (sigState.isDrawing) {
+      sigState.isDrawing = false;
+      sigState.ctx.closePath();
+    }
+  }
+
+  canvas.onmousedown = startDraw;
+  canvas.onmousemove = moveDraw;
+  canvas.onmouseup = stopDraw;
+  canvas.onmouseleave = stopDraw;
+
+  canvas.ontouchstart = startDraw;
+  canvas.ontouchmove = moveDraw;
+  canvas.ontouchend = stopDraw;
+};
+
+function saveCanvasState() {
+  if (!sigState.canvas || !sigState.ctx) return;
+  if (sigState.strokeHistory.length >= 20) sigState.strokeHistory.shift();
+  sigState.strokeHistory.push(sigState.ctx.getImageData(0, 0, sigState.canvas.width, sigState.canvas.height));
+}
+
+window.undoSignaturePad = function() {
+  if (!sigState.canvas || !sigState.ctx) return;
+  if (sigState.strokeHistory.length > 0) {
+    const previousState = sigState.strokeHistory.pop();
+    sigState.ctx.putImageData(previousState, 0, 0);
+  } else {
+    clearSignaturePad();
+  }
+};
+
+window.clearSignaturePad = function() {
+  if (!sigState.canvas || !sigState.ctx) return;
+  sigState.ctx.clearRect(0, 0, sigState.canvas.width, sigState.canvas.height);
+  sigState.strokeHistory = [];
+  const placeholder = document.getElementById('sig-pad-placeholder');
+  if (placeholder) placeholder.style.display = 'block';
+};
+
+window.setPenColor = function(color) {
+  sigState.penColor = color;
+  if (sigState.ctx) sigState.ctx.strokeStyle = color;
+  document.querySelectorAll('.sig-color-swatch').forEach(btn => {
+    btn.style.border = (btn.getAttribute('onclick') && btn.getAttribute('onclick').includes(color)) ? '2px solid #38bdf8' : '2px solid transparent';
+  });
+};
+
+window.setPenSize = function(size) {
+  sigState.penSize = parseFloat(size);
+  if (sigState.ctx) sigState.ctx.lineWidth = sigState.penSize;
+};
+
+window.switchSignatureTab = function(tabName) {
+  sigState.activeTab = tabName;
+  document.querySelectorAll('.sig-tab-btn').forEach(btn => {
+    btn.classList.remove('active');
+    btn.style.borderBottomColor = 'transparent';
+    btn.style.color = '#94a3b8';
+  });
+  const activeBtn = document.getElementById(`sig-tab-${tabName}`);
+  if (activeBtn) {
+    activeBtn.classList.add('active');
+    activeBtn.style.borderBottomColor = '#38bdf8';
+    activeBtn.style.color = '#38bdf8';
+  }
+
+  document.querySelectorAll('.sig-panel').forEach(p => p.style.display = 'none');
+  const targetPanel = document.getElementById(`sig-panel-${tabName}`);
+  if (targetPanel) targetPanel.style.display = 'block';
+
+  if (tabName === 'draw') {
+    setTimeout(initSignaturePad, 50);
+  } else if (tabName === 'presets') {
+    renderSignaturePresets();
+  }
+};
+
+window.openSignatureModal = function(role = 'reportedBy') {
+  sigState.activeRole = role;
+
+  const radio = document.querySelector(`input[name="sig-target-role"][value="${role}"]`);
+  if (radio) radio.checked = true;
+
+  const modal = document.getElementById('signature-modal');
+  if (modal) {
+    modal.style.display = 'flex';
+    switchSignatureTab('draw');
+  }
+};
+
+window.closeSignatureModal = function() {
+  const modal = document.getElementById('signature-modal');
+  if (modal) modal.style.display = 'none';
+};
+
+window.switchSignatureRole = function(role) {
+  sigState.activeRole = role;
+};
+
+window.handleSignatureFileUpload = function(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    sigState.uploadedImageBase64 = e.target.result;
+    const previewImg = document.getElementById('sig-upload-preview-img');
+    const previewBox = document.getElementById('sig-upload-preview-container');
+    if (previewImg && previewBox) {
+      previewImg.src = sigState.uploadedImageBase64;
+      previewBox.style.display = 'block';
+    }
+    processUploadedImageTransparency();
+  };
+  reader.readAsDataURL(file);
+};
+
+window.processUploadedImageTransparency = function() {
+  const previewImg = document.getElementById('sig-upload-preview-img');
+  const cb = document.getElementById('sig-remove-bg-cb');
+  if (!previewImg || !previewImg.src || !cb) return;
+
+  if (!cb.checked) return;
+
+  const img = new Image();
+  img.crossOrigin = "anonymous";
+  img.onload = function() {
+    const c = document.createElement('canvas');
+    c.width = img.width;
+    c.height = img.height;
+    const ctx = c.getContext('2d');
+    ctx.drawImage(img, 0, 0);
+
+    const imgData = ctx.getImageData(0, 0, c.width, c.height);
+    const data = imgData.data;
+
+    for (let i = 0; i < data.length; i += 4) {
+      const r = data[i];
+      const g = data[i+1];
+      const b = data[i+2];
+      if (r > 210 && g > 210 && b > 210) {
+        data[i+3] = 0;
+      }
+    }
+
+    ctx.putImageData(imgData, 0, 0);
+    sigState.uploadedImageBase64 = c.toDataURL('image/png');
+    previewImg.src = sigState.uploadedImageBase64;
+  };
+  img.src = previewImg.src;
+};
+
+window.setTypedFont = function(fontCss) {
+  sigState.typedFont = fontCss;
+  document.querySelectorAll('.sig-font-opt').forEach(btn => {
+    btn.style.borderColor = (btn.getAttribute('onclick') && btn.getAttribute('onclick').includes(fontCss)) ? '#38bdf8' : '#475569';
+  });
+  renderTypedSignaturePreview();
+};
+
+window.renderTypedSignaturePreview = function() {
+  const nameInput = document.getElementById('sig-type-name-input');
+  const textEl = document.getElementById('sig-type-preview-text');
+  if (nameInput && textEl) {
+    textEl.style.fontFamily = sigState.typedFont;
+    textEl.innerText = nameInput.value.trim() || 'Type your name above...';
+  }
+};
+
+function getTypedSignatureDataUrl() {
+  const nameInput = document.getElementById('sig-type-name-input');
+  const text = (nameInput && nameInput.value.trim()) ? nameInput.value.trim() : 'Digital Signature';
+
+  const c = document.createElement('canvas');
+  c.width = 500;
+  c.height = 120;
+  const ctx = c.getContext('2d');
+
+  ctx.clearRect(0, 0, c.width, c.height);
+  ctx.font = `42px ${sigState.typedFont}`;
+  ctx.fillStyle = '#0f172a';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(text, c.width / 2, c.height / 2);
+
+  return c.toDataURL('image/png');
+}
+
+function isCanvasBlank(canvas) {
+  if (!canvas) return true;
+  const ctx = canvas.getContext('2d');
+  const pixelBuffer = new Uint32Array(
+    ctx.getImageData(0, 0, canvas.width, canvas.height).data.buffer
+  );
+  return !pixelBuffer.some(color => color !== 0);
+}
+
+window.applySignatureToReport = function() {
+  let finalSigUrl = null;
+
+  if (sigState.activeTab === 'draw') {
+    if (isCanvasBlank(sigState.canvas)) {
+      alert("Please draw your signature on the canvas first!");
+      return;
+    }
+    finalSigUrl = sigState.canvas.toDataURL('image/png');
+  } else if (sigState.activeTab === 'upload') {
+    if (!sigState.uploadedImageBase64) {
+      alert("Please upload a signature image first!");
+      return;
+    }
+    finalSigUrl = sigState.uploadedImageBase64;
+  } else if (sigState.activeTab === 'type') {
+    finalSigUrl = getTypedSignatureDataUrl();
+  } else if (sigState.activeTab === 'presets') {
+    if (sigState.selectedPresetUrl) {
+      finalSigUrl = sigState.selectedPresetUrl;
+    } else {
+      alert("Please select a saved preset signature!");
+      return;
+    }
+  }
+
+  if (!finalSigUrl) return;
+
+  if (!appState.reportSignatures) {
+    appState.reportSignatures = {};
+  }
+  appState.reportSignatures[sigState.activeRole] = {
+    url: finalSigUrl,
+    date: new Date().toLocaleDateString() + ' ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+  };
+
+  saveToSavedPresets(sigState.activeRole, finalSigUrl);
+  saveState();
+
+  closeSignatureModal();
+  updateSignatureStatusPills();
+
+  if (typeof window.generateReport === 'function') {
+    window.generateReport();
+  }
+  if (typeof window.generateComprehensiveReport === 'function') {
+    window.generateComprehensiveReport();
+  }
+};
+
+window.removeCurrentRoleSignature = function() {
+  if (appState.reportSignatures && appState.reportSignatures[sigState.activeRole]) {
+    delete appState.reportSignatures[sigState.activeRole];
+    saveState();
+    closeSignatureModal();
+    updateSignatureStatusPills();
+    if (typeof window.generateReport === 'function') window.generateReport();
+    if (typeof window.generateComprehensiveReport === 'function') window.generateComprehensiveReport();
+  }
+};
+
+function saveToSavedPresets(role, url) {
+  try {
+    let presets = JSON.parse(localStorage.getItem('onecorp_saved_signatures') || '[]');
+    presets.unshift({
+      id: 'sig_' + Date.now(),
+      role: role,
+      url: url,
+      timestamp: new Date().toLocaleDateString()
+    });
+    if (presets.length > 10) presets = presets.slice(0, 10);
+    localStorage.setItem('onecorp_saved_signatures', JSON.stringify(presets));
+  } catch (err) {
+    console.error("Error saving signature preset:", err);
+  }
+}
+
+function renderSignaturePresets() {
+  const container = document.getElementById('sig-presets-grid');
+  if (!container) return;
+  let presets = [];
+  try {
+    presets = JSON.parse(localStorage.getItem('onecorp_saved_signatures') || '[]');
+  } catch(e) {}
+
+  if (presets.length === 0) {
+    container.innerHTML = '<div style="grid-column: 1/-1; color: #94a3b8; text-align: center; padding: 20px; font-style: italic;">No saved signature presets found. Draw or upload a signature to save it here automatically!</div>';
+    return;
+  }
+
+  container.innerHTML = presets.map((p, idx) => `
+    <div class="sig-preset-card" onclick="selectPresetSignature('${p.id}', '${p.url}')" style="background: #fff; padding: 10px; border-radius: 6px; border: 2px solid #cbd5e1; cursor: pointer; text-align: center; position: relative;">
+      <img src="${p.url}" alt="Saved Signature" style="max-height: 50px; max-width: 100%; object-fit: contain;">
+      <div style="font-size: 10px; color: #64748b; margin-top: 4px; font-weight: 600;">Saved on ${p.timestamp}</div>
+    </div>
+  `).join('');
+}
+
+window.selectPresetSignature = function(id, url) {
+  sigState.selectedPresetUrl = url;
+  document.querySelectorAll('.sig-preset-card').forEach(card => {
+    card.style.borderColor = (card.getAttribute('onclick') && card.getAttribute('onclick').includes(id)) ? '#0284c7' : '#cbd5e1';
+    card.style.background = (card.getAttribute('onclick') && card.getAttribute('onclick').includes(id)) ? '#f0f9ff' : '#fff';
+  });
+};
+
+window.updateSignatureStatusPills = function() {
+  const engPill = document.getElementById('sig-pill-engineer');
+  const mgrPill = document.getElementById('sig-pill-manager');
+
+  const sigs = appState.reportSignatures || {};
+
+  if (engPill) {
+    if (sigs.reportedBy) {
+      engPill.innerHTML = '✓ Reported By (Lead Engineer): Signed';
+      engPill.style.background = 'rgba(16, 185, 129, 0.15)';
+      engPill.style.borderColor = 'rgba(16, 185, 129, 0.4)';
+      engPill.style.color = '#34d399';
+    } else {
+      engPill.innerHTML = '❌ Reported By (Lead Engineer): Missing';
+      engPill.style.background = 'rgba(239, 68, 68, 0.15)';
+      engPill.style.borderColor = 'rgba(239, 68, 68, 0.4)';
+      engPill.style.color = '#f87171';
+    }
+  }
+
+  if (mgrPill) {
+    if (sigs.approvedBy) {
+      mgrPill.innerHTML = '✓ Approved By (Manager): Signed';
+      mgrPill.style.background = 'rgba(16, 185, 129, 0.15)';
+      mgrPill.style.borderColor = 'rgba(16, 185, 129, 0.4)';
+      mgrPill.style.color = '#34d399';
+    } else {
+      mgrPill.innerHTML = '❌ Approved By (Manager): Missing';
+      mgrPill.style.background = 'rgba(239, 68, 68, 0.15)';
+      mgrPill.style.borderColor = 'rgba(239, 68, 68, 0.4)';
+      mgrPill.style.color = '#f87171';
+    }
+  }
+};

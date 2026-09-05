@@ -1536,20 +1536,31 @@ window.generateComprehensiveReport = function() {
       </p>
 
       <!-- Signature Line -->
-      <div style="margin-top: 40px; border-top: 1px solid #d1d5db; padding-top: 20px; display:flex; justify-content: space-between; page-break-inside: avoid;">
-        <div style="text-align:center;">
-          <div style="border-bottom: 1px solid #000; width:180px; height:40px; margin: 0 auto 4px auto;"></div>
-          <span style="font-size: 10px; font-weight:bold; color:#4b5563;">Inspected By: ${log.signInspector || 'Lead Inspector'}</span>
-        </div>
-        <div style="text-align:center;">
-          <div style="border-bottom: 1px solid #000; width:220px; height:40px; margin: 0 auto 4px auto;"></div>
-          <span style="font-size: 10px; font-weight:bold; color:#4b5563;">Verified By: ${approverName}</span>
-        </div>
-        <div style="text-align:center;">
-          <div style="border-bottom: 1px solid #000; width:180px; height:40px; margin: 0 auto 4px auto;"></div>
-          <span style="font-size: 10px; font-weight:bold; color:#4b5563;">Structural Engineer: ${log.signStructural || '—'}</span>
-        </div>
-      </div>
+      ${(function() {
+        const sigs = (window.appState && window.appState.reportSignatures) ? window.appState.reportSignatures : {};
+        const inspSig = sigs.reportedBy ? `<img src="${sigs.reportedBy.url}" alt="Inspector Signature" class="report-signature-image">` : `<button type="button" class="preview-sign-btn hide-on-print" onclick="openSignatureModal('reportedBy')">✍️ Sign</button>`;
+        const verifSig = sigs.approvedBy ? `<img src="${sigs.approvedBy.url}" alt="Verifier Signature" class="report-signature-image">` : `<button type="button" class="preview-sign-btn hide-on-print" onclick="openSignatureModal('approvedBy')">✍️ Sign</button>`;
+
+        return `
+          <div style="margin-top: 40px; border-top: 1px solid #d1d5db; padding-top: 20px; display:flex; justify-content: space-between; align-items: flex-end; page-break-inside: avoid;">
+            <div style="text-align:center; width:180px;">
+              <div style="height: 44px; display: flex; align-items: flex-end; justify-content: center; margin-bottom: 2px;">${inspSig}</div>
+              <div style="border-bottom: 1px solid #000; margin-bottom: 4px;"></div>
+              <span style="font-size: 10px; font-weight:bold; color:#4b5563;">Inspected By: ${log.signInspector || 'Lead Inspector'}</span>
+            </div>
+            <div style="text-align:center; width:220px;">
+              <div style="height: 44px; display: flex; align-items: flex-end; justify-content: center; margin-bottom: 2px;">${verifSig}</div>
+              <div style="border-bottom: 1px solid #000; margin-bottom: 4px;"></div>
+              <span style="font-size: 10px; font-weight:bold; color:#4b5563;">Verified By: ${approverName}</span>
+            </div>
+            <div style="text-align:center; width:180px;">
+              <div style="height: 44px; display: flex; align-items: flex-end; justify-content: center; margin-bottom: 2px;"></div>
+              <div style="border-bottom: 1px solid #000; margin-bottom: 4px;"></div>
+              <span style="font-size: 10px; font-weight:bold; color:#4b5563;">Structural Engineer: ${log.signStructural || '—'}</span>
+            </div>
+          </div>
+        `;
+      })()}
 
       <!-- PAGE 2: TENANT REASSURANCE LETTER -->
       <div class="letter-box">
