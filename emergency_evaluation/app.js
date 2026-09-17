@@ -348,6 +348,10 @@ function saveSharedState() {
 }
 
 function renderEmergencyApp() {
+  const hash = (window.location.hash || '').replace('#', '');
+  if (['wizard', 'logs', 'reassurance', 'critical-evaluation', 'guidelines'].includes(hash)) {
+    activeSection = hash;
+  }
   switchSection(activeSection);
 }
 
@@ -453,6 +457,7 @@ window.switchSection = function(sectionId) {
   let title = 'Post-Earthquake Safety Evaluation (ATC-20)';
   if (sectionId === 'logs') title = 'Inspection History & Audit Logs';
   if (sectionId === 'reassurance') title = 'Comprehensive Reassurance reports';
+  if (sectionId === 'critical-evaluation') title = 'Critical Evaluation: Dynamic Leak & Crack Tracing Audit';
   if (sectionId === 'guidelines') title = 'Emergency Preparedness & Response Plan (ERP/BERT) Manual';
   document.getElementById('page-title-text').innerText = title;
 
@@ -467,6 +472,8 @@ window.switchSection = function(sectionId) {
   } else if (sectionId === 'reassurance') {
     populateReassuranceLogsDropdown();
     generateComprehensiveReport();
+  } else if (sectionId === 'critical-evaluation') {
+    initCriticalEvaluation();
   } else if (sectionId === 'guidelines') {
     renderEmergencyGuidelines();
     renderEmergencyOrgStructure();
@@ -1626,6 +1633,1921 @@ window.copyReassuranceLetter = function() {
       console.error("Failed to copy reassurance letter:", err);
     });
   }
+};
+
+// =========================================================================================
+// ==================== CRITICAL EVALUATION: LEAK & CRACK TRACING SYSTEM ====================
+// =========================================================================================
+
+function getBaselineSignatures() {
+  const ds = window.DEFAULT_SIGNATURE_DATAURLS || {};
+  return [
+    {
+      id: 'sig-prepared',
+      role: 'Prepared by:',
+      name: 'Engr. Roan Paul B. Gallegos',
+      title: 'QAQC Engineer',
+      signature: ds.s0 || 'assets/signatures/p10_0_Image115.png'
+    },
+    {
+      id: 'sig-noted',
+      role: 'Noted by:',
+      name: 'Engr. Jemmer Guilao',
+      title: 'Building Maintenance Engineer',
+      signature: ds.s0 || 'assets/signatures/p10_0_Image115.png'
+    },
+    {
+      id: 'sig-reviewed',
+      role: 'Reviewed by:',
+      name: 'Engr. Virtron Bumal-o',
+      title: 'QAQC Manager',
+      signature: ds.s1 || 'assets/signatures/p10_1_Image117.png'
+    },
+    {
+      id: 'sig-approved',
+      role: 'Approved by:',
+      name: 'Engr. Fernando C. Laranang',
+      title: 'Chief Executive Officer (CEO) — FCLDC',
+      signature: ds.s2 || 'assets/signatures/p10_2_Image119.jpg'
+    }
+  ];
+}
+
+const DEFAULT_CRITICAL_SIGNATORIES = getBaselineSignatures();
+
+let criticalState = {
+  items: [],
+  signatories: [],
+  activeStatusFilter: 'all',
+  activeEventFilter: 'all',
+  activeZoneFilter: 'all',
+  searchQuery: '',
+  reportFilter: 'current_new', // 'current_new' or 'all'
+  modalPhotoDataUrl: null,
+  modalPhotoName: ''
+};
+
+function loadCriticalSignatories() {
+  try {
+    const baseline = getBaselineSignatures();
+    const saved = localStorage.getItem('onecorp_critical_signatories');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed) && parsed.length === 4) {
+        criticalState.signatories = parsed;
+        // Auto-upgrade relative paths to base64 Data URLs for zero-CORS & canvas safety
+        const ds = window.DEFAULT_SIGNATURE_DATAURLS;
+        if (ds) {
+          let upgraded = false;
+          criticalState.signatories.forEach((sig, sIdx) => {
+            if (sig.signature && !sig.signature.startsWith('data:image')) {
+              if (sIdx === 0 || sIdx === 1) sig.signature = ds.s0;
+              else if (sIdx === 2) sig.signature = ds.s1;
+              else if (sIdx === 3) sig.signature = ds.s2;
+              upgraded = true;
+            }
+          });
+          if (upgraded) saveCriticalSignatories();
+        }
+      } else {
+        criticalState.signatories = baseline;
+        saveCriticalSignatories();
+      }
+    } else {
+      criticalState.signatories = baseline;
+      saveCriticalSignatories();
+    }
+  } catch (e) {
+    console.error("Failed to load critical signatories:", e);
+    criticalState.signatories = getBaselineSignatures();
+  }
+}
+
+function saveCriticalSignatories() {
+  try {
+    localStorage.setItem('onecorp_critical_signatories', JSON.stringify(criticalState.signatories));
+  } catch (e) {
+    console.error("Failed to save critical signatories:", e);
+  }
+}
+
+function loadCriticalEvaluationState() {
+  try {
+    const saved = localStorage.getItem('onecorp_critical_evaluation_state');
+    if (saved) {
+      criticalState.items = JSON.parse(saved);
+      // Auto-migrate legacy relative photo paths to base64 Data URLs for zero-CORS & canvas safety
+      if (window.DEFAULT_CRITICAL_LEAKS && Array.isArray(window.DEFAULT_CRITICAL_LEAKS)) {
+        let upgraded = false;
+        const defaultMap = new Map();
+        window.DEFAULT_CRITICAL_LEAKS.forEach(d => {
+          if (d.id) defaultMap.set(d.id, d.photo);
+          if (d.photoName) defaultMap.set(d.photoName, d.photo);
+          if (d.no) defaultMap.set(String(d.no), d.photo);
+        });
+        criticalState.items.forEach(item => {
+          if (item.photo && item.photo.startsWith('assets/leak_photos/')) {
+            const mapped = defaultMap.get(item.id) || defaultMap.get(item.photoName) || defaultMap.get(String(item.no));
+            if (mapped && mapped.startsWith('data:image')) {
+              item.photo = mapped;
+              upgraded = true;
+            }
+          }
+        });
+        if (upgraded) {
+          saveCriticalEvaluationState();
+        }
+      }
+    } else if (window.DEFAULT_CRITICAL_LEAKS && Array.isArray(window.DEFAULT_CRITICAL_LEAKS)) {
+      criticalState.items = JSON.parse(JSON.stringify(window.DEFAULT_CRITICAL_LEAKS));
+      saveCriticalEvaluationState();
+    }
+  } catch (e) {
+    console.error("Error loading critical evaluation state:", e);
+    if (window.DEFAULT_CRITICAL_LEAKS) {
+      criticalState.items = JSON.parse(JSON.stringify(window.DEFAULT_CRITICAL_LEAKS));
+    }
+  }
+  if (!parentState.criticalEvaluation) {
+    parentState.criticalEvaluation = criticalState.items;
+  }
+}
+
+function saveCriticalEvaluationState() {
+  try {
+    localStorage.setItem('onecorp_critical_evaluation_state', JSON.stringify(criticalState.items));
+    parentState.criticalEvaluation = criticalState.items;
+    saveSharedState();
+  } catch (e) {
+    console.error("Error saving critical evaluation state:", e);
+  }
+}
+
+window.initCriticalEvaluation = function() {
+  loadCriticalEvaluationState();
+  loadCriticalSignatories();
+  renderCriticalEvaluationKPIs();
+  renderCriticalEvaluationTable();
+  generateCriticalReport(false);
+};
+
+function renderCriticalEvaluationKPIs() {
+  const items = criticalState.items || [];
+  const total = items.length;
+  
+  const newDefects = items.filter(i => 
+    i.category === 'new_leak' || (i.status && i.status.toLowerCase().includes('new'))
+  ).length;
+
+  const reopenedDefects = items.filter(i => 
+    i.category === 'reopened' || (i.status && i.status.toLowerCase().includes('reopen'))
+  ).length;
+
+  const ongoingDefects = items.filter(i => 
+    i.category === 'ongoing' || (i.status && i.status.toLowerCase().includes('ongoing'))
+  ).length;
+
+  const closedDefects = items.filter(i => 
+    i.category === 'closed' || (i.status && i.status.toLowerCase().includes('close'))
+  ).length;
+
+  const monitoringDefects = items.filter(i => 
+    i.category === 'under_monitoring' || (i.status && i.status.toLowerCase().includes('monitor'))
+  ).length;
+
+  // Update KPI cards
+  const elTotal = document.getElementById('kpi-total-defects');
+  if (elTotal) elTotal.innerText = total;
+
+  const elNew = document.getElementById('kpi-new-defects');
+  if (elNew) elNew.innerText = newDefects;
+
+  const elReopened = document.getElementById('kpi-reopened-defects');
+  if (elReopened) elReopened.innerText = reopenedDefects;
+
+  const elOngoing = document.getElementById('kpi-ongoing-defects');
+  if (elOngoing) elOngoing.innerText = ongoingDefects;
+
+  const elClosed = document.getElementById('kpi-closed-defects');
+  if (elClosed) elClosed.innerText = closedDefects;
+
+  // Update chip counts
+  const cAll = document.getElementById('count-chip-all');
+  if (cAll) cAll.innerText = total;
+
+  const cNew = document.getElementById('count-chip-new');
+  if (cNew) cNew.innerText = newDefects;
+
+  const cReop = document.getElementById('count-chip-reopened');
+  if (cReop) cReop.innerText = reopenedDefects;
+
+  const cOng = document.getElementById('count-chip-ongoing');
+  if (cOng) cOng.innerText = ongoingDefects;
+
+  const cMon = document.getElementById('count-chip-monitoring');
+  if (cMon) cMon.innerText = monitoringDefects;
+
+  const cClose = document.getElementById('count-chip-closed');
+  if (cClose) cClose.innerText = closedDefects;
+}
+
+window.filterCriticalByStatus = function(status) {
+  criticalState.activeStatusFilter = status;
+  
+  // Highlight chips
+  document.querySelectorAll('.comparison-filter-chips .filter-chip').forEach(btn => {
+    btn.classList.remove('active');
+  });
+  const activeChip = document.getElementById(`chip-status-${status}`);
+  if (activeChip) activeChip.classList.add('active');
+
+  // Highlight KPI cards
+  document.querySelectorAll('.critical-kpi-card').forEach(card => {
+    card.classList.remove('active-filter');
+  });
+  if (status === 'new_leak') {
+    document.querySelector('.critical-kpi-card.new-leak-card')?.classList.add('active-filter');
+  } else if (status === 'reopened') {
+    document.querySelector('.critical-kpi-card.reopened-card')?.classList.add('active-filter');
+  } else if (status === 'ongoing') {
+    document.querySelector('.critical-kpi-card.ongoing-card')?.classList.add('active-filter');
+  } else if (status === 'closed') {
+    document.querySelector('.critical-kpi-card.closed-card')?.classList.add('active-filter');
+  } else if (status === 'all') {
+    document.querySelector('.critical-kpi-card.total-card')?.classList.add('active-filter');
+  }
+
+  renderCriticalEvaluationTable();
+};
+
+window.applyCriticalFilters = function() {
+  const eventSelect = document.getElementById('critical-filter-event');
+  if (eventSelect) criticalState.activeEventFilter = eventSelect.value;
+
+  const zoneSelect = document.getElementById('critical-filter-zone');
+  if (zoneSelect) criticalState.activeZoneFilter = zoneSelect.value;
+
+  const searchInput = document.getElementById('critical-search-input');
+  if (searchInput) criticalState.searchQuery = searchInput.value.trim().toLowerCase();
+
+  renderCriticalEvaluationTable();
+};
+
+function getFilteredCriticalItems() {
+  let list = criticalState.items || [];
+
+  // Status filter
+  if (criticalState.activeStatusFilter && criticalState.activeStatusFilter !== 'all') {
+    const f = criticalState.activeStatusFilter;
+    if (f === 'new_leak') {
+      list = list.filter(i => i.category === 'new_leak' || (i.status && i.status.toLowerCase().includes('new')));
+    } else if (f === 'reopened') {
+      list = list.filter(i => i.category === 'reopened' || (i.status && i.status.toLowerCase().includes('reopen')));
+    } else if (f === 'ongoing') {
+      list = list.filter(i => i.category === 'ongoing' || (i.status && i.status.toLowerCase().includes('ongoing')));
+    } else if (f === 'under_monitoring') {
+      list = list.filter(i => i.category === 'under_monitoring' || (i.status && i.status.toLowerCase().includes('monitor')));
+    } else if (f === 'closed') {
+      list = list.filter(i => i.category === 'closed' || (i.status && i.status.toLowerCase().includes('close')));
+    }
+  }
+
+  // Event hazard filter
+  if (criticalState.activeEventFilter && criticalState.activeEventFilter !== 'all') {
+    const ef = criticalState.activeEventFilter.toLowerCase();
+    list = list.filter(i => (i.eventType || '').toLowerCase().includes(ef));
+  }
+
+  // Floor zone filter
+  if (criticalState.activeZoneFilter && criticalState.activeZoneFilter !== 'all') {
+    const zf = criticalState.activeZoneFilter.toLowerCase();
+    list = list.filter(i => (i.floorZone || '').toLowerCase().includes(zf) || (i.area || '').toLowerCase().includes(zf));
+  }
+
+  // Text search query
+  if (criticalState.searchQuery) {
+    const q = criticalState.searchQuery;
+    list = list.filter(i => 
+      (i.id || '').toLowerCase().includes(q) ||
+      (i.area || '').toLowerCase().includes(q) ||
+      (i.finding || '').toLowerCase().includes(q) ||
+      (i.source || '').toLowerCase().includes(q) ||
+      (i.procedure || '').toLowerCase().includes(q) ||
+      (i.actionTaken || '').toLowerCase().includes(q) ||
+      (i.responsible || '').toLowerCase().includes(q) ||
+      (i.remarks || '').toLowerCase().includes(q) ||
+      (i.status || '').toLowerCase().includes(q)
+    );
+  }
+
+  return list;
+}
+
+function renderCriticalEvaluationTable() {
+  const tbody = document.getElementById('critical-eval-tbody');
+  if (!tbody) return;
+
+  tbody.innerHTML = '';
+  const filtered = getFilteredCriticalItems();
+
+  const indicator = document.getElementById('table-filter-indicator');
+  if (indicator) {
+    let desc = `Displaying: ${filtered.length} of ${criticalState.items.length} records`;
+    if (criticalState.activeStatusFilter === 'new_leak') desc = `🔥 Displaying Current & New Leaks Only (${filtered.length} items)`;
+    if (criticalState.activeStatusFilter === 'reopened') desc = `⚠️ Displaying Reopened / Recurrent Leaks (${filtered.length} items)`;
+    indicator.innerText = desc;
+  }
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="13" style="text-align: center; padding: 32px; color: var(--text-muted); font-size: 13px;">
+          🔍 No leak or crack records match the selected filter criteria. Try selecting "All Records" or clearing your search.
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
+  filtered.forEach((item, idx) => {
+    const tr = document.createElement('tr');
+
+    // Status badge class
+    let badgeClass = 'badge-leak-ongoing';
+    const stLower = (item.status || '').toLowerCase();
+    if (item.category === 'new_leak' || stLower.includes('new')) {
+      badgeClass = 'badge-leak-new';
+    } else if (item.category === 'reopened' || stLower.includes('reopen')) {
+      badgeClass = 'badge-leak-reopened';
+    } else if (item.category === 'closed' || stLower.includes('close')) {
+      badgeClass = 'badge-leak-closed';
+    } else if (item.category === 'under_monitoring' || stLower.includes('monitor')) {
+      badgeClass = 'badge-leak-monitoring';
+    }
+
+    // Photo HTML (Area text removed; photo size enhanced)
+    const rowInputId = `row-photo-${item.no || (idx + 1)}`;
+    let photoCellHtml = '';
+    if (item.photo) {
+      photoCellHtml = `
+        <div class="leak-table-photo-cell">
+          <div class="leak-thumb-wrapper" title="Click to enlarge and mark defect location (Circle / Box)" onclick="openCriticalPhotoAnnotator('${encodeURIComponent(item.id || '')}', '', '${escapeHtml(item.area)}')">
+            <img src="${item.photo}" alt="Leak Photo" onerror="this.src='../logo.png';">
+          </div>
+          <input type="file" id="${rowInputId}" accept="image/*" style="display:none;" onchange="handleCriticalRowPhotoUpload('${encodeURIComponent(item.id || '')}', event, ${item.no || (idx + 1)})">
+          <button type="button" class="leak-photo-btn" onclick="document.getElementById('${rowInputId}').click()" title="Change photo">📷 Change</button>
+        </div>
+      `;
+    } else {
+      photoCellHtml = `
+        <div class="leak-table-photo-cell">
+          <input type="file" id="${rowInputId}" accept="image/*" style="display:none;" onchange="handleCriticalRowPhotoUpload('${encodeURIComponent(item.id || '')}', event, ${item.no || (idx + 1)})">
+          <button type="button" class="leak-photo-btn" onclick="document.getElementById('${rowInputId}').click()">📷 Add Photo</button>
+        </div>
+      `;
+    }
+
+    // Event Hazard Tag
+    const isQuake = (item.eventType || '').includes('Earthquake');
+    const hazardBadge = isQuake
+      ? `<span style="font-size: 10.5px; color: #f59e0b; font-weight: 700; display: inline-flex; align-items: center; gap: 3px;">⚠️ Seismic Quake</span>`
+      : `<span style="font-size: 10.5px; color: #38bdf8; font-weight: 700; display: inline-flex; align-items: center; gap: 3px;">🌀 Typhoon Rain</span>`;
+
+    tr.innerHTML = `
+      <td style="text-align: center; font-weight: 700; color: var(--text-muted); font-size: 11px;">${item.no || (idx + 1)}</td>
+      <td style="font-size: 11.5px; font-weight: 600; white-space: nowrap;">${escapeHtml(item.date || '')}</td>
+      <td>
+        <strong style="color: #38bdf8; font-size: 12px; letter-spacing: 0.3px;">${escapeHtml(item.id || '')}</strong>
+        ${item.area ? `<div style="font-size: 11px; color: #cbd5e1; margin-top: 3px; font-weight: 500; line-height: 1.25;">📍 ${escapeHtml(item.area)}</div>` : ''}
+      </td>
+      <td style="text-align: center;">
+        ${photoCellHtml}
+      </td>
+      <td>
+        ${hazardBadge}
+        <div style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">${escapeHtml(item.floorZone || '')}</div>
+      </td>
+      <td>
+        <span class="badge-leak-status ${badgeClass}">${escapeHtml(item.status || 'Ongoing')}</span>
+        ${item.recurrenceDate && item.recurrenceDate !== 'N/A' ? `<div style="font-size: 10px; color: #fbbf24; margin-top: 3px; font-weight: 600;">${escapeHtml(item.recurrenceDate)}</div>` : ''}
+      </td>
+      <td style="font-size: 11px; line-height: 1.4;">${escapeHtml(item.finding || '')}</td>
+      <td style="font-size: 11px; line-height: 1.4; color: var(--text-muted);">${escapeHtml(item.source || '')}</td>
+      <td style="font-size: 11px; line-height: 1.4;">${escapeHtml(item.procedure || '')}</td>
+      <td style="font-size: 11px; line-height: 1.4;">${escapeHtml(item.actionTaken || '')}</td>
+      <td style="font-size: 11px; font-weight: 600;">${escapeHtml(item.responsible || 'DEV.CORP/ QAQC/BM')}</td>
+      <td style="font-size: 11px; color: var(--text-muted);">${escapeHtml(item.remarks || '')}</td>
+      <td style="text-align: center; white-space: nowrap;">
+        <button type="button" class="btn btn-secondary btn-sm" style="font-size: 11px; padding: 3px 6px; margin-right: 4px;" onclick="openEditCriticalLeakModal('${encodeURIComponent(item.id || '')}', ${item.no || (idx + 1)})" title="Edit defect record">✏️</button>
+        <button type="button" class="btn btn-secondary btn-sm" style="font-size: 11px; padding: 3px 6px; color: #f87171;" onclick="deleteCriticalLeak('${encodeURIComponent(item.id || '')}', ${item.no || (idx + 1)})" title="Delete defect record">&times;</button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+// Inline Row Photo Upload
+window.handleCriticalRowPhotoUpload = async function(rawId, event, no) {
+  const file = event.target.files && event.target.files[0];
+  if (!file) return;
+
+  let decodedId = '';
+  try {
+    decodedId = rawId ? decodeURIComponent(rawId) : '';
+  } catch(e) {
+    decodedId = rawId || '';
+  }
+
+  try {
+    const compressedUrl = await compressImageFile(file);
+    let target = null;
+    if (decodedId) target = criticalState.items.find(i => i.id === decodedId);
+    if (!target && no) target = criticalState.items.find(i => i.no === no);
+    if (!target && rawId) target = criticalState.items.find(i => i.id === rawId);
+    if (!target && decodedId) {
+      const clean = decodedId.trim().toLowerCase();
+      target = criticalState.items.find(i => (i.id || '').trim().toLowerCase() === clean);
+    }
+
+    if (target) {
+      target.photo = compressedUrl;
+      target.photoName = file.name;
+      saveCriticalEvaluationState();
+      renderCriticalEvaluationTable();
+      // If preview report is active, re-generate it
+      const previewEl = document.getElementById('critical-preview-section');
+      if (previewEl && previewEl.style.display !== 'none') {
+        generateCriticalReport(false);
+      }
+    }
+  } catch (err) {
+    console.error("Failed to upload row photo:", err);
+    alert("Could not process image file. Please try another photo.");
+  }
+};
+
+// Modal Photo Upload Handlers
+window.handleModalLeakPhotoUpload = async function(event) {
+  const file = event.target.files && event.target.files[0];
+  if (!file) return;
+
+  try {
+    const compressedUrl = await compressImageFile(file);
+    criticalState.modalPhotoDataUrl = compressedUrl;
+    criticalState.modalPhotoName = file.name;
+
+    const imgEl = document.getElementById('modal-leak-photo-preview-img');
+    const placeholder = document.getElementById('modal-leak-photo-placeholder');
+    const btnRemove = document.getElementById('btn-remove-modal-photo');
+
+    if (imgEl) {
+      imgEl.src = compressedUrl;
+      imgEl.style.display = 'block';
+    }
+    if (placeholder) placeholder.style.display = 'none';
+    if (btnRemove) btnRemove.style.display = 'inline-block';
+  } catch (err) {
+    console.error("Failed to upload modal photo:", err);
+    alert("Could not process image file. Please select a valid photo.");
+  }
+};
+
+window.removeModalLeakPhoto = function() {
+  criticalState.modalPhotoDataUrl = null;
+  criticalState.modalPhotoName = '';
+
+  const imgEl = document.getElementById('modal-leak-photo-preview-img');
+  const placeholder = document.getElementById('modal-leak-photo-placeholder');
+  const btnRemove = document.getElementById('btn-remove-modal-photo');
+  const fileInput = document.getElementById('modal-leak-photo-input');
+
+  if (imgEl) {
+    imgEl.src = '';
+    imgEl.style.display = 'none';
+  }
+  if (placeholder) placeholder.style.display = 'block';
+  if (btnRemove) btnRemove.style.display = 'none';
+  if (fileInput) fileInput.value = '';
+};
+
+// ==================== CRITICAL DEFECT PHOTO ANNOTATOR STUDIO ====================
+
+let annotatorState = {
+  itemId: null,
+  itemArea: '',
+  imgObj: null,
+  marks: [], // array of { type: 'circle'|'rectangle', startX, startY, endX, endY, color, lineWidth }
+  currentTool: 'circle', // 'circle' | 'rectangle'
+  currentColor: '#ef4444',
+  currentStroke: 5,
+  isDrawing: false,
+  dragStart: null,
+  dragCurrent: null
+};
+
+function hexToRgba(hex, alpha) {
+  let c = (hex || '#ef4444').replace('#', '');
+  if (c.length === 3) {
+    c = c.split('').map(x => x + x).join('');
+  }
+  const num = parseInt(c, 16) || 0;
+  const r = (num >> 16) & 255;
+  const g = (num >> 8) & 255;
+  const b = num & 255;
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
+function getAnnotatorCoords(e, canvas) {
+  const rect = canvas.getBoundingClientRect();
+  const clientX = (e.touches && e.touches.length > 0) ? e.touches[0].clientX : e.clientX;
+  const clientY = (e.touches && e.touches.length > 0) ? e.touches[0].clientY : e.clientY;
+  const scaleX = canvas.width / rect.width;
+  const scaleY = canvas.height / rect.height;
+  return {
+    x: (clientX - rect.left) * scaleX,
+    y: (clientY - rect.top) * scaleY
+  };
+}
+
+function drawSingleMark(ctx, mark) {
+  ctx.save();
+  ctx.strokeStyle = mark.color || '#ef4444';
+  const sw = mark.lineWidth !== undefined ? mark.lineWidth : 5;
+  ctx.lineWidth = sw;
+  ctx.fillStyle = hexToRgba(mark.color || '#ef4444', 0.14);
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+
+  if (mark.type === 'circle') {
+    const cx = (mark.startX + mark.endX) / 2;
+    const cy = (mark.startY + mark.endY) / 2;
+    const rx = Math.abs(mark.endX - mark.startX) / 2;
+    const ry = Math.abs(mark.endY - mark.startY) / 2;
+    ctx.beginPath();
+    ctx.ellipse(cx, cy, Math.max(rx, 4), Math.max(ry, 4), 0, 0, 2 * Math.PI);
+    ctx.fill();
+    ctx.stroke();
+
+    // Subtle focal dot for medium/thick strokes; omitted for hairline 1px so crack interior remains unobstructed
+    if (sw > 1) {
+      ctx.fillStyle = mark.color || '#ef4444';
+      ctx.beginPath();
+      ctx.arc(cx, cy, Math.min(sw * 0.6, 2.5), 0, 2 * Math.PI);
+      ctx.fill();
+    }
+  } else {
+    // Rectangle
+    const x = Math.min(mark.startX, mark.endX);
+    const y = Math.min(mark.startY, mark.endY);
+    const w = Math.abs(mark.endX - mark.startX);
+    const h = Math.abs(mark.endY - mark.startY);
+    ctx.beginPath();
+    ctx.rect(x, y, Math.max(w, 6), Math.max(h, 6));
+    ctx.fill();
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+function redrawAnnotatorCanvas(previewMark = null) {
+  const canvas = document.getElementById('annotator-canvas');
+  if (!canvas || !annotatorState.imgObj) return;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // 1. Draw base photo
+  ctx.drawImage(annotatorState.imgObj, 0, 0, canvas.width, canvas.height);
+
+  // 2. Draw committed marks
+  annotatorState.marks.forEach(m => drawSingleMark(ctx, m));
+
+  // 3. Draw active dragging preview
+  if (previewMark) {
+    drawSingleMark(ctx, previewMark);
+  }
+}
+
+function initAnnotatorEvents() {
+  const canvas = document.getElementById('annotator-canvas');
+  if (!canvas || canvas.dataset.annotatorInitialized) return;
+  canvas.dataset.annotatorInitialized = 'true';
+
+  function onStart(e) {
+    if (!annotatorState.imgObj) return;
+    e.preventDefault();
+    annotatorState.isDrawing = true;
+    const coords = getAnnotatorCoords(e, canvas);
+    annotatorState.dragStart = coords;
+    annotatorState.dragCurrent = coords;
+    const hint = document.getElementById('annotator-hint');
+    if (hint) hint.style.display = 'none';
+  }
+
+  function onMove(e) {
+    if (!annotatorState.isDrawing || !annotatorState.dragStart) return;
+    e.preventDefault();
+    const coords = getAnnotatorCoords(e, canvas);
+    annotatorState.dragCurrent = coords;
+    const previewMark = {
+      type: annotatorState.currentTool,
+      startX: annotatorState.dragStart.x,
+      startY: annotatorState.dragStart.y,
+      endX: coords.x,
+      endY: coords.y,
+      color: annotatorState.currentColor,
+      lineWidth: annotatorState.currentStroke
+    };
+    redrawAnnotatorCanvas(previewMark);
+  }
+
+  function onEnd(e) {
+    if (!annotatorState.isDrawing) return;
+    annotatorState.isDrawing = false;
+    if (annotatorState.dragStart && annotatorState.dragCurrent) {
+      const dx = Math.abs(annotatorState.dragCurrent.x - annotatorState.dragStart.x);
+      const dy = Math.abs(annotatorState.dragCurrent.y - annotatorState.dragStart.y);
+      if (dx > 4 || dy > 4) {
+        annotatorState.marks.push({
+          type: annotatorState.currentTool,
+          startX: annotatorState.dragStart.x,
+          startY: annotatorState.dragStart.y,
+          endX: annotatorState.dragCurrent.x,
+          endY: annotatorState.dragCurrent.y,
+          color: annotatorState.currentColor,
+          lineWidth: annotatorState.currentStroke
+        });
+      }
+    }
+    annotatorState.dragStart = null;
+    annotatorState.dragCurrent = null;
+    redrawAnnotatorCanvas();
+  }
+
+  canvas.addEventListener('mousedown', onStart);
+  window.addEventListener('mousemove', onMove);
+  window.addEventListener('mouseup', onEnd);
+
+  canvas.addEventListener('touchstart', onStart, { passive: false });
+  window.addEventListener('touchmove', onMove, { passive: false });
+  window.addEventListener('touchend', onEnd);
+}
+
+window.openCriticalPhotoAnnotator = function(rawId, photoUrl, area) {
+  let decodedId = '';
+  try {
+    decodedId = rawId ? decodeURIComponent(rawId) : '';
+  } catch (e) {
+    decodedId = rawId || '';
+  }
+
+  let item = null;
+  if (decodedId) item = criticalState.items.find(i => i.id === decodedId);
+  if (!item && rawId) item = criticalState.items.find(i => i.id === rawId);
+  if (!item && decodedId) {
+    const clean = decodedId.trim().toLowerCase();
+    item = criticalState.items.find(i => (i.id || '').trim().toLowerCase() === clean);
+  }
+
+  let effectivePhoto = (item && item.photo) ? item.photo : photoUrl;
+  const effectiveId = item ? item.id : (decodedId || rawId || 'Defect');
+  const effectiveArea = (item && item.area) ? item.area : (area || '');
+
+  // Fallback to embedded baseline photo if missing or legacy relative path
+  if ((!effectivePhoto || effectivePhoto.startsWith('assets/leak_photos/')) && window.DEFAULT_CRITICAL_LEAKS) {
+    const def = window.DEFAULT_CRITICAL_LEAKS.find(d => 
+      d.id === (item?.id || effectiveId) || 
+      (d.id || '').toLowerCase() === (item?.id || effectiveId).toLowerCase() ||
+      d.photoName === item?.photoName
+    );
+    if (def && def.photo) {
+      effectivePhoto = def.photo;
+      if (item) item.photo = def.photo;
+    }
+  }
+
+  if (!effectivePhoto) {
+    alert("No defect photograph attached to this record yet. Please add a photo first.");
+    return;
+  }
+
+  const modal = document.getElementById('modal-critical-photo-annotator');
+  const canvas = document.getElementById('annotator-canvas');
+  if (!modal || !canvas) return;
+
+  annotatorState.itemId = item ? item.id : effectiveId;
+  annotatorState.itemArea = effectiveArea;
+  annotatorState.marks = [];
+  annotatorState.isDrawing = false;
+  annotatorState.currentTool = 'circle';
+  annotatorState.currentColor = '#ef4444';
+  annotatorState.currentStroke = 5;
+
+  document.getElementById('annotator-modal-title').innerText = `Mark Defect / Ingress Point: ${effectiveId}`;
+  document.getElementById('annotator-modal-subtitle').innerText = `Location: ${effectiveArea || 'Building Envelope'} — Click and drag to circle or box the crack/leak location`;
+
+  setAnnotatorTool('circle');
+  setAnnotatorColor('#ef4444');
+  const strokeSelect = document.getElementById('annotator-stroke-width');
+  if (strokeSelect) strokeSelect.value = '5';
+  const hint = document.getElementById('annotator-hint');
+  if (hint) hint.style.display = 'block';
+
+  initAnnotatorEvents();
+
+  const img = new Image();
+  // IMPORTANT: Do NOT set crossOrigin on data: URIs or local files! Only on remote http(s) URLs
+  if (effectivePhoto.startsWith('http://') || effectivePhoto.startsWith('https://')) {
+    img.crossOrigin = 'anonymous';
+  }
+  img.onload = function() {
+    annotatorState.imgObj = img;
+    const baseW = img.naturalWidth || img.width || 400;
+    const baseH = img.naturalHeight || img.height || 300;
+    // Internal canvas resolution enlarged by 100% (2x) for razor-sharp 1px strokes and high-res export
+    canvas.width = baseW * 2;
+    canvas.height = baseH * 2;
+
+    // Enlarge photo on screen by 100% (2x natural dimensions)
+    setAnnotatorZoom(2.0);
+
+    redrawAnnotatorCanvas();
+    modal.style.display = 'flex';
+  };
+  img.onerror = function() {
+    // If loading relative path failed, try to fallback to DEFAULT_CRITICAL_LEAKS base64
+    if (window.DEFAULT_CRITICAL_LEAKS && !effectivePhoto.startsWith('data:image')) {
+      const def = window.DEFAULT_CRITICAL_LEAKS.find(d => 
+        d.id === (item?.id || effectiveId) || 
+        (d.id || '').toLowerCase() === (item?.id || effectiveId).toLowerCase()
+      );
+      if (def && def.photo && def.photo.startsWith('data:image')) {
+        img.crossOrigin = null;
+        img.src = def.photo;
+        if (item) item.photo = def.photo;
+        return;
+      }
+    }
+    alert("Could not load image for defect marking.");
+  };
+  img.src = effectivePhoto;
+};
+
+let annotatorZoomFactor = 2.0;
+
+window.setAnnotatorZoom = function(factor) {
+  annotatorZoomFactor = factor;
+  const canvas = document.getElementById('annotator-canvas');
+  if (!canvas || !annotatorState.imgObj) return;
+
+  const baseW = annotatorState.imgObj.naturalWidth || annotatorState.imgObj.width || 400;
+  const baseH = annotatorState.imgObj.naturalHeight || annotatorState.imgObj.height || 300;
+
+  canvas.style.width = Math.round(baseW * factor) + 'px';
+  canvas.style.height = Math.round(baseH * factor) + 'px';
+
+  const btnZoom = document.getElementById('btn-annotator-zoom');
+  if (btnZoom) {
+    if (factor >= 2.0) {
+      btnZoom.innerText = '🔍 200% (+100% Enlarge)';
+      btnZoom.classList.add('active');
+    } else {
+      btnZoom.innerText = '🔍 100% (Standard)';
+      btnZoom.classList.remove('active');
+    }
+  }
+};
+
+window.toggleAnnotatorZoom = function() {
+  if (annotatorZoomFactor >= 2.0) {
+    setAnnotatorZoom(1.0);
+  } else {
+    setAnnotatorZoom(2.0);
+  }
+};
+
+window.setAnnotatorTool = function(tool) {
+  annotatorState.currentTool = tool;
+  const btnCircle = document.getElementById('tool-circle');
+  const btnRect = document.getElementById('tool-rectangle');
+  if (tool === 'circle') {
+    btnCircle?.classList.add('active');
+    btnRect?.classList.remove('active');
+  } else {
+    btnRect?.classList.add('active');
+    btnCircle?.classList.remove('active');
+  }
+};
+
+window.setAnnotatorColor = function(color) {
+  annotatorState.currentColor = color;
+  document.querySelectorAll('.annotator-toolbar .color-btn').forEach(btn => {
+    if (btn.dataset.color === color) {
+      btn.classList.add('active');
+    } else {
+      btn.classList.remove('active');
+    }
+  });
+};
+
+window.setAnnotatorStroke = function(val) {
+  annotatorState.currentStroke = parseInt(val, 10) || 1;
+};
+
+window.undoAnnotatorMark = function() {
+  if (annotatorState.marks.length > 0) {
+    annotatorState.marks.pop();
+    redrawAnnotatorCanvas();
+  }
+};
+
+window.clearAnnotatorMarks = function() {
+  if (confirm("Clear all inserted defect marks on this photo?")) {
+    annotatorState.marks = [];
+    redrawAnnotatorCanvas();
+    const hint = document.getElementById('annotator-hint');
+    if (hint) hint.style.display = 'block';
+  }
+};
+
+window.closeCriticalPhotoAnnotator = function() {
+  const modal = document.getElementById('modal-critical-photo-annotator');
+  if (modal) modal.style.display = 'none';
+  annotatorState.isDrawing = false;
+  annotatorState.marks = [];
+  annotatorState.imgObj = null;
+};
+
+window.saveCriticalPhotoAnnotation = function() {
+  if (!annotatorState.itemId) return;
+  const canvas = document.getElementById('annotator-canvas');
+  if (!canvas || !annotatorState.imgObj) return;
+
+  redrawAnnotatorCanvas();
+  let annotatedDataUrl = '';
+  try {
+    annotatedDataUrl = canvas.toDataURL('image/jpeg', 0.88);
+  } catch (err) {
+    console.error("Canvas export error:", err);
+    alert("Could not export annotated photo due to canvas security restriction: " + err.message);
+    return;
+  }
+
+  let item = criticalState.items.find(i => i.id === annotatorState.itemId);
+  if (!item) {
+    item = criticalState.items.find(i => (i.id || '').trim().toLowerCase() === annotatorState.itemId.trim().toLowerCase());
+  }
+
+  if (item) {
+    item.photo = annotatedDataUrl;
+    item.photoName = (item.photoName || item.id) + '_marked.jpg';
+    saveCriticalEvaluationState();
+    renderCriticalEvaluationTable();
+    generateCriticalReport(false);
+    alert(`Defect mark saved successfully for ${item.id}!\nThe marked photo is now updated in the live preview and print report.`);
+  }
+
+  closeCriticalPhotoAnnotator();
+};
+
+// Open Add Defect Modal
+window.openAddCriticalLeakModal = function() {
+  const modal = document.getElementById('modal-critical-leak');
+  if (!modal) return;
+
+  document.getElementById('critical-modal-title').innerText = 'Log New Critical Leak / Crack Defect';
+  document.getElementById('edit-leak-original-id').value = '';
+
+  // Auto-generate next ID: find highest number
+  let nextNum = criticalState.items.length + 1;
+  const ids = criticalState.items.map(i => {
+    const m = (i.id || '').match(/^L(\d+)/i);
+    return m ? parseInt(m[1], 10) : 0;
+  });
+  if (ids.length > 0) {
+    const maxId = Math.max(...ids);
+    nextNum = maxId + 1;
+  }
+  const autoId = `L${String(nextNum).padStart(2, '0')}-301`;
+
+  document.getElementById('edit-leak-id').value = autoId;
+  document.getElementById('edit-leak-date').value = new Date().toLocaleDateString('en-US');
+  document.getElementById('edit-leak-area').value = '';
+  document.getElementById('edit-leak-zone').value = 'Mid-Rise Floors (3F - 6F)';
+  document.getElementById('edit-leak-event').value = 'Typhoon & Wind-Driven Rain';
+  document.getElementById('edit-leak-status').value = 'Open - New Leak';
+  document.getElementById('edit-leak-recurrence').value = 'N/A';
+  document.getElementById('edit-leak-responsible').value = 'DEV.CORP/ QAQC/BM';
+  document.getElementById('edit-leak-finding').value = '';
+  document.getElementById('edit-leak-source').value = '';
+  document.getElementById('edit-leak-procedure').value = '';
+  document.getElementById('edit-leak-action').value = '';
+  document.getElementById('edit-leak-remarks').value = 'Under continuous observation following current weather event.';
+
+  removeModalLeakPhoto();
+  modal.style.display = 'flex';
+};
+
+// Open Edit Defect Modal
+window.openEditCriticalLeakModal = function(rawId, no) {
+  let decodedId = '';
+  try {
+    decodedId = rawId ? decodeURIComponent(rawId) : '';
+  } catch (e) {
+    decodedId = rawId || '';
+  }
+
+  let item = null;
+  if (decodedId) {
+    item = criticalState.items.find(i => i.id === decodedId);
+  }
+  if (!item && no) {
+    item = criticalState.items.find(i => i.no === no);
+  }
+  if (!item && rawId) {
+    item = criticalState.items.find(i => i.id === rawId);
+  }
+  if (!item && decodedId) {
+    const clean = decodedId.trim().toLowerCase();
+    item = criticalState.items.find(i => (i.id || '').trim().toLowerCase() === clean);
+  }
+
+  if (!item) {
+    console.warn("Could not find defect item for modal edit:", rawId, no);
+    alert(`Could not find record "${decodedId || rawId || no}".`);
+    return;
+  }
+
+  const modal = document.getElementById('modal-critical-leak');
+  if (!modal) {
+    console.error("Modal #modal-critical-leak element not found");
+    return;
+  }
+
+  document.getElementById('critical-modal-title').innerText = `Edit Defect Record: ${item.id}`;
+  document.getElementById('edit-leak-original-id').value = item.id;
+  document.getElementById('edit-leak-id').value = item.id;
+  document.getElementById('edit-leak-date').value = item.date || '';
+  document.getElementById('edit-leak-area').value = item.area || '';
+  document.getElementById('edit-leak-zone').value = item.floorZone || 'Mid-Rise Floors (3F - 6F)';
+  document.getElementById('edit-leak-event').value = item.eventType || 'Typhoon & Wind-Driven Rain';
+  document.getElementById('edit-leak-status').value = item.status || 'Ongoing';
+  document.getElementById('edit-leak-recurrence').value = item.recurrenceDate || 'N/A';
+  document.getElementById('edit-leak-responsible').value = item.responsible || 'DEV.CORP/ QAQC/BM';
+  document.getElementById('edit-leak-finding').value = item.finding || '';
+  document.getElementById('edit-leak-source').value = item.source || '';
+  document.getElementById('edit-leak-procedure').value = item.procedure || '';
+  document.getElementById('edit-leak-action').value = item.actionTaken || '';
+  document.getElementById('edit-leak-remarks').value = item.remarks || '';
+
+  // Setup photo preview
+  criticalState.modalPhotoDataUrl = item.photo || null;
+  criticalState.modalPhotoName = item.photoName || '';
+
+  const imgEl = document.getElementById('modal-leak-photo-preview-img');
+  const placeholder = document.getElementById('modal-leak-photo-placeholder');
+  const btnRemove = document.getElementById('btn-remove-modal-photo');
+
+  if (item.photo) {
+    if (imgEl) {
+      imgEl.src = item.photo;
+      imgEl.style.display = 'block';
+    }
+    if (placeholder) placeholder.style.display = 'none';
+    if (btnRemove) btnRemove.style.display = 'inline-block';
+  } else {
+    removeModalLeakPhoto();
+  }
+
+  modal.style.display = 'flex';
+};
+
+window.closeCriticalLeakModal = function() {
+  const modal = document.getElementById('modal-critical-leak');
+  if (modal) modal.style.display = 'none';
+};
+
+window.saveCriticalLeakModal = function() {
+  const originalId = document.getElementById('edit-leak-original-id').value.trim();
+  const idVal = document.getElementById('edit-leak-id').value.trim();
+  const dateVal = document.getElementById('edit-leak-date').value.trim();
+  const areaVal = document.getElementById('edit-leak-area').value.trim();
+
+  if (!idVal) {
+    alert("Please enter a Leak / Defect ID.");
+    return;
+  }
+  if (!dateVal) {
+    alert("Please enter a detection / log date.");
+    return;
+  }
+
+  const zoneVal = document.getElementById('edit-leak-zone').value;
+  const eventVal = document.getElementById('edit-leak-event').value;
+  const statusVal = document.getElementById('edit-leak-status').value;
+  const recVal = document.getElementById('edit-leak-recurrence').value.trim() || 'N/A';
+  const respVal = document.getElementById('edit-leak-responsible').value.trim() || 'DEV.CORP/ QAQC/BM';
+  const findingVal = document.getElementById('edit-leak-finding').value.trim();
+  const sourceVal = document.getElementById('edit-leak-source').value.trim();
+  const procVal = document.getElementById('edit-leak-procedure').value.trim();
+  const actionVal = document.getElementById('edit-leak-action').value.trim();
+  const remarksVal = document.getElementById('edit-leak-remarks').value.trim();
+
+  let cat = 'ongoing';
+  if (statusVal === 'Open - New Leak') cat = 'new_leak';
+  else if (statusVal === 'Reopened') cat = 'reopened';
+  else if (statusVal === 'Closed') cat = 'closed';
+  else if (statusVal === 'Under monitoring') cat = 'under_monitoring';
+
+  if (originalId) {
+    // Update existing
+    let idx = criticalState.items.findIndex(i => i.id === originalId);
+    if (idx === -1) {
+      idx = criticalState.items.findIndex(i => (i.id || '').trim().toLowerCase() === originalId.trim().toLowerCase());
+    }
+    if (idx !== -1) {
+      criticalState.items[idx] = {
+        ...criticalState.items[idx],
+        id: idVal,
+        date: dateVal,
+        area: areaVal || criticalState.items[idx].area,
+        floorZone: zoneVal,
+        eventType: eventVal,
+        status: statusVal,
+        category: cat,
+        recurrenceDate: recVal,
+        responsible: respVal,
+        finding: findingVal,
+        source: sourceVal,
+        procedure: procVal,
+        actionTaken: actionVal,
+        remarks: remarksVal,
+        photo: criticalState.modalPhotoDataUrl || criticalState.items[idx].photo,
+        photoName: criticalState.modalPhotoName || criticalState.items[idx].photoName
+      };
+    }
+  } else {
+    // Create new
+    const newNo = criticalState.items.length + 1;
+    const newItem = {
+      no: newNo,
+      id: idVal,
+      date: dateVal,
+      area: areaVal || 'Building Perimeter',
+      floorZone: zoneVal,
+      eventType: eventVal,
+      status: statusVal,
+      category: cat,
+      recurrenceDate: recVal,
+      responsible: respVal,
+      finding: findingVal || 'Water seepage / crack observed during inspection',
+      source: sourceVal || 'Under investigation; suspected weather/seismic stress',
+      procedure: procVal || 'Inspect exterior connection and seal visible openings',
+      actionTaken: actionVal || 'Inspection completed; scheduled for sealing',
+      remarks: remarksVal || 'Logged for continuous tracking',
+      photo: criticalState.modalPhotoDataUrl || null,
+      photoName: criticalState.modalPhotoName || ''
+    };
+    criticalState.items.unshift(newItem);
+  }
+
+  saveCriticalEvaluationState();
+  renderCriticalEvaluationKPIs();
+  renderCriticalEvaluationTable();
+  closeCriticalLeakModal();
+
+  // If report preview active, update it
+  const previewEl = document.getElementById('critical-preview-section');
+  if (previewEl && previewEl.style.display !== 'none') {
+    generateCriticalReport(false);
+  }
+};
+
+window.deleteCriticalLeak = function(rawId, no) {
+  let decodedId = '';
+  try {
+    decodedId = rawId ? decodeURIComponent(rawId) : '';
+  } catch (e) {
+    decodedId = rawId || '';
+  }
+
+  let item = null;
+  if (decodedId) {
+    item = criticalState.items.find(i => i.id === decodedId);
+  }
+  if (!item && no) {
+    item = criticalState.items.find(i => i.no === no);
+  }
+  if (!item && rawId) {
+    item = criticalState.items.find(i => i.id === rawId);
+  }
+  if (!item && decodedId) {
+    const clean = decodedId.trim().toLowerCase();
+    item = criticalState.items.find(i => (i.id || '').trim().toLowerCase() === clean);
+  }
+
+  const targetDisplay = item ? item.id : (decodedId || rawId || `#${no}`);
+  if (confirm(`Are you sure you want to remove defect record "${targetDisplay}" from the tracking log?`)) {
+    if (item) {
+      criticalState.items = criticalState.items.filter(i => i !== item);
+    } else if (decodedId) {
+      criticalState.items = criticalState.items.filter(i => i.id !== decodedId);
+    } else if (no) {
+      criticalState.items = criticalState.items.filter(i => i.no !== no);
+    }
+
+    saveCriticalEvaluationState();
+    renderCriticalEvaluationKPIs();
+    renderCriticalEvaluationTable();
+    const previewEl = document.getElementById('critical-preview-section');
+    if (previewEl && previewEl.style.display !== 'none') {
+      generateCriticalReport(false);
+    }
+  }
+};
+
+window.resetCriticalEvaluationToBaseline = function() {
+  if (confirm("Reset the entire Leak & Crack Tracing Log back to the 70 official baseline inspection records (from August 31, 2026)? Any unsaved custom entries will be replaced.")) {
+    if (window.DEFAULT_CRITICAL_LEAKS && Array.isArray(window.DEFAULT_CRITICAL_LEAKS)) {
+      criticalState.items = JSON.parse(JSON.stringify(window.DEFAULT_CRITICAL_LEAKS));
+      saveCriticalEvaluationState();
+      renderCriticalEvaluationKPIs();
+      renderCriticalEvaluationTable();
+      alert("Defect tracking matrix reset to official baseline (70 records).");
+      const previewEl = document.getElementById('critical-preview-section');
+      if (previewEl && previewEl.style.display !== 'none') {
+        generateCriticalReport();
+      }
+    }
+  }
+};
+
+// ==================== ADAPTED REPORT GENERATOR (LEAK INSPECTION & TRACING REPORT) ====================
+
+window.setCriticalReportFilter = function(filterType) {
+  criticalState.reportFilter = filterType;
+  
+  const btnNew = document.getElementById('btn-report-scope-new');
+  const btnAll = document.getElementById('btn-report-scope-all');
+
+  if (filterType === 'current_new') {
+    btnNew?.classList.add('btn-primary');
+    btnNew?.classList.remove('btn-secondary');
+    btnAll?.classList.add('btn-secondary');
+    btnAll?.classList.remove('btn-primary');
+  } else {
+    btnAll?.classList.add('btn-primary');
+    btnAll?.classList.remove('btn-secondary');
+    btnNew?.classList.add('btn-secondary');
+    btnNew?.classList.remove('btn-primary');
+  }
+
+  generateCriticalReport();
+};
+
+function generateCriticalReport(showPreview = true) {
+  const previewSection = document.getElementById('critical-preview-section');
+  const canvas = document.getElementById('critical-report-printable-area');
+  if (!previewSection || !canvas) return;
+
+  const allItems = criticalState.items || [];
+  const isCurrentNewOnly = criticalState.reportFilter === 'current_new';
+
+  // Filter items for report
+  let reportItems = allItems;
+  if (isCurrentNewOnly) {
+    reportItems = allItems.filter(i => 
+      i.category === 'new_leak' || 
+      i.category === 'reopened' ||
+      (i.status && i.status.toLowerCase().includes('new')) ||
+      (i.status && i.status.toLowerCase().includes('reopen'))
+    );
+  }
+
+  // Calculate metrics
+  const totalTracked = allItems.length;
+  const newCount = allItems.filter(i => i.category === 'new_leak' || (i.status && i.status.toLowerCase().includes('new'))).length;
+  const reopenedCount = allItems.filter(i => i.category === 'reopened' || (i.status && i.status.toLowerCase().includes('reopen'))).length;
+  const ongoingCount = allItems.filter(i => i.category === 'ongoing' || (i.status && i.status.toLowerCase().includes('ongoing'))).length;
+  const closedCount = allItems.filter(i => i.category === 'closed' || (i.status && i.status.toLowerCase().includes('close'))).length;
+
+  // Build Table Rows matching the 10-page reference document
+  let rowsHtml = '';
+  reportItems.forEach((item, idx) => {
+    let statusStyle = 'color: #1e293b; font-weight: 700;';
+    if (item.category === 'new_leak') statusStyle = 'color: #dc2626; font-weight: 800;';
+    if (item.category === 'reopened') statusStyle = 'color: #d97706; font-weight: 800;';
+    if (item.category === 'closed') statusStyle = 'color: #15803d; font-weight: 800;';
+
+    const photoImgHtml = item.photo ? 
+      `<img src="${item.photo}" class="report-leak-img" alt="Leak Photo" title="Click to enlarge and mark defect location (Circle / Box)" onclick="openCriticalPhotoAnnotator('${encodeURIComponent(item.id || '')}', '', '${escapeHtml(item.area)}')">` : 
+      `<div style="font-size: 9.5px; color: #94a3b8; margin-top: 4px; font-style: italic;">No Photo Attached</div>`;
+
+    rowsHtml += `
+      <tr>
+        <td style="text-align: center; font-weight: 700;">${idx + 1}</td>
+        <td>${escapeHtml(item.date || '')}</td>
+        <td>
+          <strong style="font-weight: 800; color: #0369a1; display: block;">${escapeHtml(item.id || '')}</strong>
+          ${item.area ? `<span style="font-size: 9px; color: #475569; font-weight: 600; display: block; margin-top: 2px;">📍 ${escapeHtml(item.area)}</span>` : ''}
+        </td>
+        <td style="text-align: center;">
+          ${photoImgHtml}
+        </td>
+        <td>${escapeHtml(item.finding || '')}</td>
+        <td style="color: #475569;">${escapeHtml(item.source || '')}</td>
+        <td>${escapeHtml(item.procedure || '')}</td>
+        <td>${escapeHtml(item.actionTaken || '')}</td>
+        <td style="font-weight: 600;">${escapeHtml(item.responsible || 'DEV.CORP/ QAQC/BM')}</td>
+        <td style="font-size: 9.5px;">${escapeHtml(item.remarks || '')}</td>
+        <td style="${statusStyle}; text-align: center;">${escapeHtml(item.status || 'Ongoing')}</td>
+        <td style="text-align: center; font-size: 9.5px; color: #b45309; font-weight: 600;">${escapeHtml(item.recurrenceDate || 'N/A')}</td>
+      </tr>
+    `;
+  });
+
+  // Photo Matrix Grid for evidence
+  let galleryHtml = '';
+  const photoItems = reportItems.filter(i => i.photo);
+  photoItems.slice(0, 16).forEach(pi => {
+    galleryHtml += `
+      <div class="critical-photo-card">
+        <img src="${pi.photo}" alt="Leak Photo" title="Click to enlarge and mark defect location (Circle / Box)" onclick="openCriticalPhotoAnnotator('${encodeURIComponent(pi.id || '')}', '', '${escapeHtml(pi.area)}')">
+        <div class="photo-caption">
+          <strong style="color: #0369a1;">${escapeHtml(pi.id)}</strong> — ${escapeHtml(pi.area)}<br>
+          <span style="color: #64748b; font-size: 9.5px;">${escapeHtml(pi.status)} | ${escapeHtml(pi.date)}</span>
+        </div>
+      </div>
+    `;
+  });
+
+  const scopeBannerText = isCurrentNewOnly
+    ? `🔥 SCOPE: CURRENT & NEW LEAKS ONLY (${reportItems.length} Identified Active Ingress Points & Reopened Fractures)`
+    : `📋 SCOPE: COMPLETE CUMULATIVE DEFECT TRACKING MATRIX (${reportItems.length} Total Monitored Ingress Points)`;
+
+  const scopeTagClass = isCurrentNewOnly ? 'critical-report-scope-tag' : 'critical-report-scope-tag tag-all';
+
+  canvas.innerHTML = `
+    <!-- DOCUMENT CONTROL HEADER -->
+    <table class="critical-report-header-table">
+      <tr>
+        <td rowspan="2" style="width: 140px; text-align: center; background: #fff;">
+          <img src="one corporate logo.png" onerror="this.src='../logo.png';" alt="One Corporate Logo" style="max-height: 48px; max-width: 130px; object-fit: contain;">
+        </td>
+        <td class="doc-ctrl-label">Doc. Code</td>
+        <td style="font-weight: 700; width: 140px;">OCB-LITR-2026</td>
+        <td class="doc-ctrl-label">Rev. No.</td>
+        <td style="font-weight: 700; width: 80px;">02</td>
+        <td rowspan="2" style="width: 150px; text-align: center; background: #fff;">
+          <img src="management services logo.JPG" onerror="this.style.display='none';" alt="Management Services" style="max-height: 48px; max-width: 140px; object-fit: contain;">
+        </td>
+      </tr>
+      <tr>
+        <td class="doc-ctrl-label">Eff. Date</td>
+        <td>August 31, 2026</td>
+        <td class="doc-ctrl-label">Page</td>
+        <td>1 of 10</td>
+      </tr>
+    </table>
+
+    <!-- DOCUMENT TITLE BLOCK -->
+    <div class="critical-report-title-box">
+      <h1>LEAK INSPECTION & TRACING REPORT</h1>
+      <div class="subtitle">Post-Disaster Dynamic Defect Tracing & Rectification Audit (Severe Weather Typhoons & Seismic Earthquakes)</div>
+      <div class="${scopeTagClass}">${scopeBannerText}</div>
+    </div>
+
+    <!-- COMPARATIVE EXECUTIVE SUMMARY -->
+    <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; padding: 14px 18px; margin-bottom: 20px;">
+      <div style="font-weight: 800; font-size: 12px; color: #0f172a; text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.5px;">
+        📌 Comparative Audit Summary & Post-Disaster Structural Water-Tightness Analysis
+      </div>
+      <p style="margin: 0 0 12px 0; font-size: 11px; line-height: 1.5; color: #334155;">
+        This audit compares pre-existing historical leaks (2025 baseline) against current building conditions following recent typhoon-induced wind-driven rainfall and seismic tremor activity. Primary ingress vectors involve concrete slab micro-cracks, exterior aluminum composite panel (ACP) corner sealant debonding, window perimeter joints, and basement soil-contact retaining walls. Polyurethane (PU) injection, structural epoxy injection, and perimeter sealant replacement are systematically tracked below.
+      </p>
+
+      <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; text-align: center;">
+        <div style="background: #fff; border: 1px solid #e2e8f0; padding: 8px; border-radius: 4px;">
+          <div style="font-size: 16px; font-weight: 800; color: #0f172a;">${totalTracked}</div>
+          <div style="font-size: 9.5px; color: #64748b; font-weight: 700; text-transform: uppercase;">Total Tracked</div>
+        </div>
+        <div style="background: #fee2e2; border: 1px solid #fca5a5; padding: 8px; border-radius: 4px;">
+          <div style="font-size: 16px; font-weight: 800; color: #dc2626;">${newCount}</div>
+          <div style="font-size: 9.5px; color: #991b1b; font-weight: 700; text-transform: uppercase;">New Leaks (Current)</div>
+        </div>
+        <div style="background: #fef3c7; border: 1px solid #fcd34d; padding: 8px; border-radius: 4px;">
+          <div style="font-size: 16px; font-weight: 800; color: #d97706;">${reopenedCount}</div>
+          <div style="font-size: 9.5px; color: #92400e; font-weight: 700; text-transform: uppercase;">Reopened / Recurrent</div>
+        </div>
+        <div style="background: #e0f2fe; border: 1px solid #7dd3fc; padding: 8px; border-radius: 4px;">
+          <div style="font-size: 16px; font-weight: 800; color: #0284c7;">${ongoingCount}</div>
+          <div style="font-size: 9.5px; color: #075985; font-weight: 700; text-transform: uppercase;">Ongoing PU Injection</div>
+        </div>
+        <div style="background: #dcfce7; border: 1px solid #86efac; padding: 8px; border-radius: 4px;">
+          <div style="font-size: 16px; font-weight: 800; color: #16a34a;">${closedCount}</div>
+          <div style="font-size: 9.5px; color: #166534; font-weight: 700; text-transform: uppercase;">Closed & Tested</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MAIN ADAPTED TRACING & RECTIFICATION TABLE -->
+    <table class="critical-official-table">
+      <thead>
+        <tr>
+          <th style="width: 2.5%;">No.</th>
+          <th style="width: 5.5%;">Date</th>
+          <th style="width: 7.0%;">Leak ID & Location</th>
+          <th style="width: 10.0%;">Photo / Picture Evidence</th>
+          <th style="width: 13.5%;">Identified Finding / Observation</th>
+          <th style="width: 12.5%;">Possible / Identified Source</th>
+          <th style="width: 12.5%;">Required Rectification Procedure</th>
+          <th style="width: 12.5%;">Rectification / Corrective Action Conducted</th>
+          <th style="width: 6.0%;">Responsible / Verification</th>
+          <th style="width: 8.0%;">Remarks / Date Closed</th>
+          <th style="width: 5.5%;">Current Status</th>
+          <th style="width: 4.5%;">Recurrence Date</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${rowsHtml}
+      </tbody>
+    </table>
+
+    <!-- DEFECT PHOTOGRAPHIC EVIDENCE MATRIX -->
+    ${photoItems.length > 0 ? `
+      <div style="margin-top: 36px; page-break-inside: avoid;">
+        <div style="font-weight: 800; font-size: 12px; color: #0f172a; text-transform: uppercase; border-bottom: 2px solid #0f172a; padding-bottom: 4px; margin-bottom: 12px;">
+          📸 Photographic Evidence & Ingress Location Index
+        </div>
+        <div class="critical-report-photo-matrix">
+          ${galleryHtml}
+        </div>
+      </div>
+    ` : ''}
+
+    <!-- OFFICIAL SIGNATORY BLOCK (Matching Page 10 of Reference PDF) -->
+    <div class="critical-signatories-grid">
+      ${(function() {
+        const sigList = (criticalState.signatories && criticalState.signatories.length) ? 
+          criticalState.signatories : DEFAULT_CRITICAL_SIGNATORIES;
+        return sigList.map((sig, sIdx) => {
+          const sigImg = sig.signature ? 
+            `<img src="${sig.signature}" class="critical-sig-img" alt="Signature">` : 
+            `<span style="font-size: 10px; color: #94a3b8; font-style: italic;">[ Click to Sign ]</span>`;
+          return `
+            <div class="critical-sig-box" onclick="openSignaturePad(${sIdx})" title="Click to draw or upload signature for ${escapeHtml(sig.name || '')}">
+              <div class="critical-sig-role">${escapeHtml(sig.role || '')}</div>
+              <div class="critical-sig-img-wrap">
+                ${sigImg}
+              </div>
+              <div class="critical-sig-name">${escapeHtml(sig.name || '')}</div>
+              <div class="critical-sig-title">${escapeHtml(sig.title || '')}</div>
+            </div>
+          `;
+        }).join('');
+      })()}
+    </div>
+  `;
+
+  if (showPreview) {
+    previewSection.style.display = 'block';
+    previewSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+}
+window.generateCriticalReport = generateCriticalReport;
+
+// ==================== PRINT ENGINES: STANDARD (A4) & CONTINUOUS LENGTH ====================
+
+window.printStandardCriticalReport = function() {
+  document.body.classList.remove('print-mode-continuous');
+  const dynStyle = document.getElementById('continuous-print-dyn-style');
+  if (dynStyle) dynStyle.innerHTML = '';
+
+  const previewSection = document.getElementById('critical-preview-section');
+  const canvas = document.getElementById('critical-report-printable-area');
+  if (!previewSection || previewSection.style.display === 'none' || !canvas || !canvas.innerHTML.trim()) {
+    generateCriticalReport(true);
+  }
+  setTimeout(() => {
+    window.print();
+  }, 250);
+};
+
+window.printContinuousCriticalReport = function() {
+  const previewSection = document.getElementById('critical-preview-section');
+  const reportEl = document.getElementById('critical-report-printable-area');
+  if (!previewSection || previewSection.style.display === 'none' || !reportEl || !reportEl.innerHTML.trim()) {
+    generateCriticalReport(true);
+  }
+
+  // Force layout flush so scrollHeight is accurately measured
+  const heightPx = reportEl.scrollHeight || reportEl.offsetHeight;
+  // Convert px to mm: at 96 DPI: 1 inch = 25.4 mm = 96 px -> 25.4 / 96 = 0.264583 mm per px
+  const heightMm = Math.ceil(heightPx * (25.4 / 96));
+  // Add 10mm top margin + 10mm bottom margin + 12mm buffer to stop cleanly right at the bottom
+  const totalLengthMm = heightMm + 32;
+
+  let dynStyle = document.getElementById('continuous-print-dyn-style');
+  if (!dynStyle) {
+    dynStyle = document.createElement('style');
+    dynStyle.id = 'continuous-print-dyn-style';
+    document.head.appendChild(dynStyle);
+  }
+
+  dynStyle.innerHTML = `
+    @page {
+      size: 297mm ${totalLengthMm}mm !important;
+      margin: 10mm !important;
+    }
+    @page reportLandscape {
+      size: 297mm ${totalLengthMm}mm !important;
+      margin: 10mm !important;
+    }
+    body {
+      overflow: visible !important;
+      height: auto !important;
+    }
+    .critical-report-canvas {
+      page-break-after: avoid !important;
+      page-break-before: avoid !important;
+      page-break-inside: auto !important;
+    }
+    .critical-official-table,
+    .critical-official-table tr,
+    .critical-signatories-grid {
+      page-break-inside: auto !important;
+    }
+  `;
+
+  document.body.classList.add('print-mode-continuous');
+
+  window.addEventListener('afterprint', function onAfterPrint() {
+    document.body.classList.remove('print-mode-continuous');
+    if (dynStyle) dynStyle.innerHTML = '';
+    window.removeEventListener('afterprint', onAfterPrint);
+  });
+
+  setTimeout(() => {
+    window.print();
+  }, 250);
+};
+
+window.printCriticalReport = window.printStandardCriticalReport;
+
+// ==================== EDITABLE SIGNATORIES & SIGNATURE PAD STUDIO ====================
+
+let activeSigningIndex = 0;
+let sigPadState = {
+  isDrawing: false,
+  lastX: 0,
+  lastY: 0,
+  color: '#0f172a',
+  stroke: 3,
+  hasStrokes: false,
+  eventsInited: false
+};
+
+function syncSignatoriesFromForm() {
+  if (!criticalState.signatories || !criticalState.signatories.length) {
+    loadCriticalSignatories();
+  }
+  criticalState.signatories.forEach((sig, idx) => {
+    const roleInput = document.getElementById(`sig-edit-role-${idx}`);
+    const nameInput = document.getElementById(`sig-edit-name-${idx}`);
+    const titleInput = document.getElementById(`sig-edit-title-${idx}`);
+    if (roleInput) sig.role = roleInput.value.trim();
+    if (nameInput) sig.name = nameInput.value.trim();
+    if (titleInput) sig.title = titleInput.value.trim();
+  });
+}
+
+function openSignatoriesEditorModal() {
+  const modal = document.getElementById('modal-critical-signatories-editor');
+  if (!modal) {
+    console.error("Modal #modal-critical-signatories-editor not found");
+    return;
+  }
+  if (!criticalState.signatories || !criticalState.signatories.length) {
+    loadCriticalSignatories();
+  }
+  renderSignatoriesEditorCards();
+  modal.style.display = 'flex';
+}
+window.openSignatoriesEditorModal = openSignatoriesEditorModal;
+
+function closeSignatoriesEditorModal() {
+  const modal = document.getElementById('modal-critical-signatories-editor');
+  if (modal) modal.style.display = 'none';
+}
+window.closeSignatoriesEditorModal = closeSignatoriesEditorModal;
+
+function renderSignatoriesEditorCards() {
+  const container = document.getElementById('signatories-editor-cards-container');
+  if (!container) return;
+
+  if (!criticalState.signatories || !criticalState.signatories.length) {
+    loadCriticalSignatories();
+  }
+
+  const sigList = criticalState.signatories;
+
+  let html = '';
+  sigList.forEach((sig, idx) => {
+    const thumb = sig.signature ? 
+      `<img src="${sig.signature}" alt="Signature">` : 
+      `<span class="no-sig-text">No Signature</span>`;
+
+    html += `
+      <div class="signatory-edit-card">
+        <div class="signatory-card-header">
+          <strong>Signatory Slot #${idx + 1}</strong>
+          <span style="font-size: 11px; color: var(--text-muted);">${escapeHtml(sig.role || '')}</span>
+        </div>
+
+        <div class="sig-input-group">
+          <label>Signatory Role / Header:</label>
+          <input type="text" id="sig-edit-role-${idx}" value="${escapeHtml(sig.role || '')}" placeholder="e.g. Prepared by:, Approved by:">
+        </div>
+
+        <div class="sig-input-group">
+          <label>Full Name & Title / Prefix:</label>
+          <input type="text" id="sig-edit-name-${idx}" value="${escapeHtml(sig.name || '')}" placeholder="e.g. Engr. Full Name">
+        </div>
+
+        <div class="sig-input-group">
+          <label>Position / Organization Title:</label>
+          <input type="text" id="sig-edit-title-${idx}" value="${escapeHtml(sig.title || '')}" placeholder="e.g. QAQC Engineer, Project In-Charge">
+        </div>
+
+        <div class="sig-card-preview-row">
+          <div class="sig-preview-thumb-box" id="sig-thumb-box-${idx}">
+            ${thumb}
+          </div>
+          <div class="sig-card-actions">
+            <button type="button" class="btn btn-sm btn-primary" onclick="openSignaturePad(${idx})" style="font-size: 11px; padding: 4px 8px;">
+              ✍️ Draw Signature
+            </button>
+            <input type="file" id="sig-file-slot-${idx}" accept="image/*" style="display:none;" onchange="handleSlotSignatureUpload(${idx}, event)">
+            <button type="button" class="btn btn-sm btn-secondary" onclick="document.getElementById('sig-file-slot-${idx}').click()" style="font-size: 11px; padding: 4px 8px;">
+              📁 Upload Image
+            </button>
+            ${sig.signature ? `
+              <button type="button" class="btn btn-sm btn-secondary" onclick="clearSlotSignature(${idx})" style="font-size: 10px; color: #ef4444; padding: 2px 6px;">
+                🗑️ Clear
+              </button>
+            ` : ''}
+          </div>
+        </div>
+      </div>
+    `;
+  });
+
+  container.innerHTML = html;
+}
+window.renderSignatoriesEditorCards = renderSignatoriesEditorCards;
+
+function saveSignatoriesEditor() {
+  syncSignatoriesFromForm();
+  criticalState.signatories.forEach((sig) => {
+    if (!sig.role) sig.role = 'Signatory:';
+    if (!sig.name) sig.name = 'Authorized Signatory';
+  });
+
+  saveCriticalSignatories();
+  generateCriticalReport(false);
+  closeSignatoriesEditorModal();
+  alert("Signatories updated and saved to report preview!");
+}
+window.saveSignatoriesEditor = saveSignatoriesEditor;
+
+function resetSignatoriesToDefault() {
+  if (confirm("Reset all 4 signatories and their signatures back to the official Page 10 baseline?")) {
+    criticalState.signatories = getBaselineSignatures();
+    saveCriticalSignatories();
+    renderSignatoriesEditorCards();
+    generateCriticalReport(false);
+    alert("Signatories reset to official baseline.");
+  }
+}
+window.resetSignatoriesToDefault = resetSignatoriesToDefault;
+
+function clearSlotSignature(idx) {
+  syncSignatoriesFromForm();
+  if (!criticalState.signatories || !criticalState.signatories.length) {
+    loadCriticalSignatories();
+  }
+  if (criticalState.signatories[idx]) {
+    criticalState.signatories[idx].signature = '';
+    saveCriticalSignatories();
+    renderSignatoriesEditorCards();
+    generateCriticalReport(false);
+  }
+}
+window.clearSlotSignature = clearSlotSignature;
+
+async function handleSlotSignatureUpload(idx, event) {
+  syncSignatoriesFromForm();
+  const file = event.target.files && event.target.files[0];
+  if (!file) return;
+
+  try {
+    const dataUrl = await compressImageFile(file);
+    if (!criticalState.signatories || !criticalState.signatories.length) {
+      loadCriticalSignatories();
+    }
+    if (criticalState.signatories[idx]) {
+      criticalState.signatories[idx].signature = dataUrl;
+      saveCriticalSignatories();
+      renderSignatoriesEditorCards();
+      generateCriticalReport(false);
+    }
+  } catch (err) {
+    console.error("Failed to upload signature:", err);
+    alert("Could not process signature image file.");
+  }
+}
+window.handleSlotSignatureUpload = handleSlotSignatureUpload;
+
+function openSignaturePad(sigIndex = 0) {
+  syncSignatoriesFromForm();
+  activeSigningIndex = sigIndex;
+  const modal = document.getElementById('modal-critical-signature-pad');
+  const canvas = document.getElementById('sigpad-canvas');
+  if (!modal || !canvas) return;
+
+  if (!criticalState.signatories || !criticalState.signatories.length) {
+    loadCriticalSignatories();
+  }
+  const targetSig = criticalState.signatories[sigIndex] || { role: 'Signatory', name: 'Authorized Officer', title: '' };
+
+  const titleEl = document.getElementById('sigpad-modal-title');
+  const subEl = document.getElementById('sigpad-modal-subtitle');
+  if (titleEl) titleEl.innerText = `Sign Off: ${targetSig.role} ${targetSig.name}`;
+  if (subEl) subEl.innerText = `Draw signature for ${targetSig.name} (${targetSig.title || 'Designated Signatory'}) or upload a signature file.`;
+
+  clearSignaturePad();
+
+  // If there's an existing signature, draw it on canvas
+  if (targetSig.signature) {
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = function() {
+      const ctx = canvas.getContext('2d');
+      const maxW = canvas.width * 0.75;
+      const maxH = canvas.height * 0.75;
+      let w = img.naturalWidth || img.width || 200;
+      let h = img.naturalHeight || img.height || 100;
+      const scale = Math.min(maxW / w, maxH / h, 1);
+      w *= scale;
+      h *= scale;
+      const x = (canvas.width - w) / 2;
+      const y = (canvas.height - h) / 2 - 10;
+      ctx.drawImage(img, x, y, w, h);
+      sigPadState.hasStrokes = true;
+    };
+    img.src = targetSig.signature;
+  }
+
+  initSignaturePadEvents();
+  modal.style.display = 'flex';
+}
+window.openSignaturePad = openSignaturePad;
+
+function closeSignaturePad() {
+  const modal = document.getElementById('modal-critical-signature-pad');
+  if (modal) modal.style.display = 'none';
+  sigPadState.isDrawing = false;
+}
+window.closeSignaturePad = closeSignaturePad;
+
+function clearSignaturePad() {
+  const canvas = document.getElementById('sigpad-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  sigPadState.hasStrokes = false;
+}
+window.clearSignaturePad = clearSignaturePad;
+
+function setSigPadColor(color) {
+  sigPadState.color = color;
+  document.querySelectorAll('.sigpad-toolbar .color-btn').forEach(btn => {
+    if (btn.dataset.color === color) {
+      btn.classList.add('active');
+    } else {
+      btn.classList.remove('active');
+    }
+  });
+}
+window.setSigPadColor = setSigPadColor;
+
+function setSigPadStroke(val) {
+  sigPadState.stroke = parseInt(val, 10) || 3;
+}
+window.setSigPadStroke = setSigPadStroke;
+
+function handleSignatureFileUpload(event) {
+  const file = event.target.files && event.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = function() {
+      const canvas = document.getElementById('sigpad-canvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      const maxW = canvas.width * 0.75;
+      const maxH = canvas.height * 0.75;
+      let w = img.naturalWidth || img.width;
+      let h = img.naturalHeight || img.height;
+      const scale = Math.min(maxW / w, maxH / h, 1);
+      w *= scale;
+      h *= scale;
+      const x = (canvas.width - w) / 2;
+      const y = (canvas.height - h) / 2 - 10;
+      ctx.drawImage(img, x, y, w, h);
+      sigPadState.hasStrokes = true;
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+window.handleSignatureFileUpload = handleSignatureFileUpload;
+
+function saveSignaturePad() {
+  const canvas = document.getElementById('sigpad-canvas');
+  if (!canvas) return;
+
+  if (!sigPadState.hasStrokes) {
+    alert("Please draw or upload a signature before saving.");
+    return;
+  }
+
+  const sigDataUrl = canvas.toDataURL('image/png');
+  if (!criticalState.signatories || !criticalState.signatories.length) {
+    loadCriticalSignatories();
+  }
+
+  if (criticalState.signatories[activeSigningIndex]) {
+    criticalState.signatories[activeSigningIndex].signature = sigDataUrl;
+    saveCriticalSignatories();
+    generateCriticalReport(false);
+    renderSignatoriesEditorCards();
+  }
+
+  closeSignaturePad();
+}
+window.saveSignaturePad = saveSignaturePad;
+
+function getSigPadCoords(e, canvas) {
+  const rect = canvas.getBoundingClientRect();
+  const clientX = (e.touches && e.touches.length > 0) ? e.touches[0].clientX : e.clientX;
+  const clientY = (e.touches && e.touches.length > 0) ? e.touches[0].clientY : e.clientY;
+  const scaleX = canvas.width / rect.width;
+  const scaleY = canvas.height / rect.height;
+  return {
+    x: (clientX - rect.left) * scaleX,
+    y: (clientY - rect.top) * scaleY
+  };
+}
+
+function initSignaturePadEvents() {
+  if (sigPadState.eventsInited) return;
+  const canvas = document.getElementById('sigpad-canvas');
+  if (!canvas) return;
+
+  const ctx = canvas.getContext('2d');
+
+  function onStart(e) {
+    e.preventDefault();
+    sigPadState.isDrawing = true;
+    const coords = getSigPadCoords(e, canvas);
+    sigPadState.lastX = coords.x;
+    sigPadState.lastY = coords.y;
+    ctx.beginPath();
+    ctx.moveTo(coords.x, coords.y);
+    ctx.strokeStyle = sigPadState.color || '#0f172a';
+    ctx.lineWidth = sigPadState.stroke || 3;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    sigPadState.hasStrokes = true;
+  }
+
+  function onMove(e) {
+    if (!sigPadState.isDrawing) return;
+    e.preventDefault();
+    const coords = getSigPadCoords(e, canvas);
+    ctx.beginPath();
+    ctx.moveTo(sigPadState.lastX, sigPadState.lastY);
+    ctx.lineTo(coords.x, coords.y);
+    ctx.stroke();
+    sigPadState.lastX = coords.x;
+    sigPadState.lastY = coords.y;
+  }
+
+  function onEnd() {
+    sigPadState.isDrawing = false;
+  }
+
+  canvas.addEventListener('mousedown', onStart);
+  window.addEventListener('mousemove', onMove);
+  window.addEventListener('mouseup', onEnd);
+
+  canvas.addEventListener('touchstart', onStart, { passive: false });
+  window.addEventListener('touchmove', onMove, { passive: false });
+  window.addEventListener('touchend', onEnd);
+
+  sigPadState.eventsInited = true;
+}
+
+window.copyCriticalReportSummary = function() {
+  const items = criticalState.items || [];
+  const newLeaks = items.filter(i => i.category === 'new_leak' || (i.status && i.status.toLowerCase().includes('new')));
+  const reopenedLeaks = items.filter(i => i.category === 'reopened' || (i.status && i.status.toLowerCase().includes('reopen')));
+
+  let summaryText = `ONE CORPORATE BUILDING - LEAK INSPECTION & TRACING SUMMARY\n`;
+  summaryText += `Date: ${new Date().toLocaleDateString('en-US')}\n`;
+  summaryText += `Total Tracked Ingress / Cracks: ${items.length}\n`;
+  summaryText += `Current & New Leaks: ${newLeaks.length}\n`;
+  summaryText += `Reopened / Recurrent Leaks: ${reopenedLeaks.length}\n\n`;
+  summaryText += `=== HIGH PRIORITY CURRENT & NEW LEAKS ===\n`;
+
+  newLeaks.forEach((l, idx) => {
+    summaryText += `${idx + 1}. [${l.id}] ${l.area}: ${l.finding} (Proc: ${l.procedure})\n`;
+  });
+
+  if (reopenedLeaks.length > 0) {
+    summaryText += `\n=== REOPENED POST-EVENT LEAKS ===\n`;
+    reopenedLeaks.forEach((l, idx) => {
+      summaryText += `${idx + 1}. [${l.id}] ${l.area}: ${l.finding} (Status: ${l.status} - ${l.recurrenceDate})\n`;
+    });
+  }
+
+  navigator.clipboard.writeText(summaryText).then(() => {
+    alert("Critical Evaluation report summary copied to clipboard!");
+  }).catch(err => {
+    console.error("Failed to copy report summary:", err);
+  });
+};
+
+window.exportCriticalEvaluationCSV = function() {
+  const items = criticalState.items || [];
+  if (items.length === 0) {
+    alert("No defect records to export.");
+    return;
+  }
+
+  const headers = [
+    "No.",
+    "Date",
+    "Leak ID",
+    "Area / Location",
+    "Floor Zone",
+    "Event Hazard",
+    "Current Status",
+    "Recurrence Date",
+    "Identified Finding / Observation",
+    "Possible / Identified Source",
+    "Required Rectification Procedure",
+    "Rectification / Corrective Action",
+    "Responsible Team",
+    "Remarks / Verification",
+    "Photo URL / Asset"
+  ];
+
+  const csvRows = [headers.join(',')];
+
+  items.forEach(item => {
+    const row = [
+      item.no || '',
+      `"${(item.date || '').replace(/"/g, '""')}"`,
+      `"${(item.id || '').replace(/"/g, '""')}"`,
+      `"${(item.area || '').replace(/"/g, '""')}"`,
+      `"${(item.floorZone || '').replace(/"/g, '""')}"`,
+      `"${(item.eventType || '').replace(/"/g, '""')}"`,
+      `"${(item.status || '').replace(/"/g, '""')}"`,
+      `"${(item.recurrenceDate || '').replace(/"/g, '""')}"`,
+      `"${(item.finding || '').replace(/"/g, '""')}"`,
+      `"${(item.source || '').replace(/"/g, '""')}"`,
+      `"${(item.procedure || '').replace(/"/g, '""')}"`,
+      `"${(item.actionTaken || '').replace(/"/g, '""')}"`,
+      `"${(item.responsible || '').replace(/"/g, '""')}"`,
+      `"${(item.remarks || '').replace(/"/g, '""')}"`,
+      `"${(item.photo || '').replace(/"/g, '""')}"`
+    ];
+    csvRows.push(row.join(','));
+  });
+
+  const csvContent = "data:text/csv;charset=utf-8," + encodeURIComponent(csvRows.join('\n'));
+  const link = document.createElement("a");
+  link.setAttribute("href", csvContent);
+  link.setAttribute("download", `OneCorporate_Leak_Inspection_Tracing_Report_${new Date().toISOString().split('T')[0]}.csv`);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
 };
 
 // =========================================================================================
