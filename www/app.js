@@ -377,6 +377,27 @@ function getSystemRunHourLogForTargetDate(procKey, targetDateStr) {
     const saved = localStorage.getItem('onecorporate_run_hours_logs');
     if (saved) {
       logs = JSON.parse(saved);
+      let dirty = false;
+      logs = logs.map(l => {
+        if (l.equipmentId === 'eq_fp_1' || l.equipmentName === 'Main Fire Pump Diesel Engine') {
+          if (l.equipmentName !== 'Main Fire Pump Electric Motor' || l.fuelBefore !== 0 || l.fuelAfter !== 0 || l.fuelConsumed !== 0 || l.burnRate !== 0) {
+            dirty = true;
+            return {
+              ...l,
+              equipmentName: 'Main Fire Pump Electric Motor',
+              fuelBefore: 0,
+              fuelAdded: 0,
+              fuelAfter: 0,
+              fuelConsumed: 0,
+              burnRate: 0
+            };
+          }
+        }
+        return l;
+      });
+      if (dirty) {
+        try { localStorage.setItem('onecorporate_run_hours_logs', JSON.stringify(logs)); } catch(e) {}
+      }
     }
   } catch (e) {}
 
@@ -391,9 +412,9 @@ function getSystemRunHourLogForTargetDate(procKey, targetDateStr) {
         startMeter: 1248.5,
         endMeter: 1256.0,
         runHours: 7.5,
-        fuelBefore: 425.0,
+        fuelBefore: 1020.0,
         fuelAdded: 0,
-        fuelAfter: 312.5,
+        fuelAfter: 907.5,
         fuelConsumed: 112.5,
         burnRate: 15.0,
         technician: 'Martin Naimes',
@@ -408,9 +429,9 @@ function getSystemRunHourLogForTargetDate(procKey, targetDateStr) {
         startMeter: 1246.0,
         endMeter: 1248.5,
         runHours: 2.5,
-        fuelBefore: 460.0,
+        fuelBefore: 1055.0,
         fuelAdded: 0,
-        fuelAfter: 425.0,
+        fuelAfter: 1020.0,
         fuelConsumed: 35.0,
         burnRate: 14.0,
         technician: 'Martin Naimes',
@@ -420,16 +441,16 @@ function getSystemRunHourLogForTargetDate(procKey, targetDateStr) {
         id: 'rh_2',
         procedureId: 'firepump',
         equipmentId: 'eq_fp_1',
-        equipmentName: 'Main Fire Pump Diesel Engine',
+        equipmentName: 'Main Fire Pump Electric Motor',
         dateTime: '2026-08-12 14:30',
         startMeter: 411.5,
         endMeter: 412.0,
         runHours: 0.5,
-        fuelBefore: 224.5,
+        fuelBefore: 0,
         fuelAdded: 0,
-        fuelAfter: 220.0,
-        fuelConsumed: 4.5,
-        burnRate: 9.0,
+        fuelAfter: 0,
+        fuelConsumed: 0,
+        burnRate: 0,
         technician: 'Mr. Crispin de Gracia',
         notes: 'Weekly churn test.'
       },
@@ -1215,6 +1236,12 @@ function getInitials(name) {
 
 // Navigation switcher
 window.switchTab = function(tabName) {
+  let targetPeriodicFreq = null;
+  if (tabName === 'weekly' || tabName === 'monthly' || tabName === 'quarterly' || tabName === 'yearly') {
+    targetPeriodicFreq = tabName.charAt(0).toUpperCase() + tabName.slice(1);
+    tabName = 'periodic';
+  }
+
   const role = (window.SecurityEngine && window.SecurityEngine.currentSession) 
     ? (window.SecurityEngine.currentSession.role || appState.currentUserRole) 
     : (appState.currentUserRole || 'Admin persona');
@@ -1231,7 +1258,7 @@ window.switchTab = function(tabName) {
   document.querySelectorAll('.menu-item').forEach(item => {
     item.classList.remove('active');
   });
-  const activeNav = document.getElementById('nav-' + tabName);
+  const activeNav = document.getElementById('nav-' + (targetPeriodicFreq ? targetPeriodicFreq.toLowerCase() : tabName)) || document.getElementById('nav-' + tabName);
   if (activeNav) activeNav.classList.add('active');
 
   document.querySelectorAll('.tab-panel').forEach(panel => {
@@ -1241,9 +1268,12 @@ window.switchTab = function(tabName) {
   if (activePanel) activePanel.classList.add('active');
 
   if (tabName === 'timeline') renderTimeline();
-  if (tabName === 'periodic') renderPeriodicMaintenance();
-  if (tabName === 'weekly' || tabName === 'monthly' || tabName === 'quarterly' || tabName === 'yearly') {
-    selectPeriodicFrequency(tabName.charAt(0).toUpperCase() + tabName.slice(1));
+  if (tabName === 'periodic') {
+    if (targetPeriodicFreq) {
+      selectPeriodicFrequency(targetPeriodicFreq);
+    } else {
+      renderPeriodicMaintenance();
+    }
   }
   if (tabName === 'registry') renderRegistry();
   if (tabName === 'procedures') renderProceduresList();
@@ -1475,11 +1505,13 @@ function checkOverdueTasks() {
   const banner = document.getElementById('overdue-banner');
   const bannerText = document.getElementById('overdue-banner-text');
   
-  if (overdueCount > 0 && appState.currentUserRole !== 'Tenant') {
-    banner.style.display = 'flex';
-    bannerText.innerText = `Engineering Alert: You have ${overdueCount} overdue maintenance task(s) scheduled prior to 1:00 PM.`;
-  } else {
-    banner.style.display = 'none';
+  if (banner) {
+    if (overdueCount > 0 && appState.currentUserRole !== 'Tenant') {
+      banner.style.display = 'flex';
+      if (bannerText) bannerText.innerText = `Engineering Alert: You have ${overdueCount} overdue maintenance task(s) scheduled prior to 1:00 PM.`;
+    } else {
+      banner.style.display = 'none';
+    }
   }
 
   updateNotificationBadge();
@@ -1648,7 +1680,13 @@ function renderTechnicianLoad() {
   ];
 
   techs.forEach(tech => {
-    const techTasks = appState.tasks.filter(t => t.assignedTo && (t.assignedTo === tech || t.assignedTo.includes(tech.split(' ')[1] || '')));
+    const techLastName = tech.split(' ')[1] || '';
+    const techTasks = appState.tasks.filter(t => {
+      if (Array.isArray(t.assignedTechnicians) && t.assignedTechnicians.length > 0) {
+        return t.assignedTechnicians.some(name => name === tech || (techLastName && name.includes(techLastName)));
+      }
+      return t.assignedTo && (t.assignedTo === tech || (techLastName && t.assignedTo.includes(techLastName)));
+    });
     const completedTasks = techTasks.filter(t => t.status === 'Completed');
     
     const total = techTasks.length;
@@ -1797,7 +1835,11 @@ function renderTimeline() {
   });
 
   // Render unscheduled backlog
-  renderBacklogTasks();
+  if (typeof renderBacklogTasks === 'function') {
+    renderBacklogTasks();
+  } else if (typeof window !== 'undefined' && typeof window.renderBacklogTasks === 'function') {
+    window.renderBacklogTasks();
+  }
 }
 
 function getSampleBeforeSvg(system, title) {
@@ -2013,7 +2055,30 @@ function getWeeklyRunHourFuelRegister(startDate, endDateVal) {
   let logs = [];
   try {
     const saved = localStorage.getItem('onecorporate_run_hours_logs');
-    if (saved) logs = JSON.parse(saved);
+    if (saved) {
+      logs = JSON.parse(saved);
+      let dirty = false;
+      logs = logs.map(l => {
+        if (l.equipmentId === 'eq_fp_1' || l.equipmentName === 'Main Fire Pump Diesel Engine') {
+          if (l.equipmentName !== 'Main Fire Pump Electric Motor' || l.fuelBefore !== 0 || l.fuelAfter !== 0 || l.fuelConsumed !== 0 || l.burnRate !== 0) {
+            dirty = true;
+            return {
+              ...l,
+              equipmentName: 'Main Fire Pump Electric Motor',
+              fuelBefore: 0,
+              fuelAdded: 0,
+              fuelAfter: 0,
+              fuelConsumed: 0,
+              burnRate: 0
+            };
+          }
+        }
+        return l;
+      });
+      if (dirty) {
+        try { localStorage.setItem('onecorporate_run_hours_logs', JSON.stringify(logs)); } catch(e) {}
+      }
+    }
   } catch(e) {}
 
   if (!logs || logs.length === 0) {
@@ -2027,9 +2092,9 @@ function getWeeklyRunHourFuelRegister(startDate, endDateVal) {
         startMeter: 1248.5,
         endMeter: 1256.0,
         runHours: 7.5,
-        fuelBefore: 425.0,
+        fuelBefore: 1020.0,
         fuelAdded: 0,
-        fuelAfter: 312.5,
+        fuelAfter: 907.5,
         fuelConsumed: 112.5,
         burnRate: 15.0,
         technician: 'Martin Naimes',
@@ -2044,9 +2109,9 @@ function getWeeklyRunHourFuelRegister(startDate, endDateVal) {
         startMeter: 1246.0,
         endMeter: 1248.5,
         runHours: 2.5,
-        fuelBefore: 460.0,
+        fuelBefore: 1055.0,
         fuelAdded: 0,
-        fuelAfter: 425.0,
+        fuelAfter: 1020.0,
         fuelConsumed: 35.0,
         burnRate: 14.0,
         technician: 'Martin Naimes',
@@ -2056,16 +2121,16 @@ function getWeeklyRunHourFuelRegister(startDate, endDateVal) {
         id: 'rh_2',
         procedureId: 'firepump',
         equipmentId: 'eq_fp_1',
-        equipmentName: 'Main Fire Pump Diesel Engine',
+        equipmentName: 'Main Fire Pump Electric Motor',
         dateTime: `${startDate || '2026-09-02'} 14:30`,
         startMeter: 411.5,
         endMeter: 412.0,
         runHours: 0.5,
-        fuelBefore: 224.5,
+        fuelBefore: 0,
         fuelAdded: 0,
-        fuelAfter: 220.0,
-        fuelConsumed: 4.5,
-        burnRate: 9.0,
+        fuelAfter: 0,
+        fuelConsumed: 0,
+        burnRate: 0,
         technician: 'Mr. Crispin de Gracia',
         notes: 'Weekly churn test. Cut-in pressure verified at 100 PSI.'
       },
@@ -2315,7 +2380,7 @@ const REPORT_PROCEDURES_CATALOG = {
       "fuelEnergyMetrics": [
         {
           "label": "Day Tank Fuel Level",
-          "val": "85% (425.0 Liters / 500 L Capacity)",
+          "val": "85% (1,020.0 Liters / 1,200 L Capacity)",
           "time": "10:00 AM",
           "status": "NORMAL"
         },
@@ -2495,30 +2560,12 @@ const REPORT_PROCEDURES_CATALOG = {
       ]
     },
     "runHourFuelTracking": {
-      "initialRunHours": "411.5 hrs (Fire Engine)",
-      "currentRunHours": "412.0 hrs (Fire Engine)",
+      "initialRunHours": "411.5 hrs (Electric Motor)",
+      "currentRunHours": "412.0 hrs (Electric Motor)",
       "periodRunHours": "0.5 hrs (Weekly Churn Test Run)",
       "readingTime": "02:30 PM (Inspection Shift Log)",
       "readingDate": "2026-08-12",
       "fuelEnergyMetrics": [
-        {
-          "label": "Diesel Engine Day Tank",
-          "val": "88% (220.0 Liters / 250 L Capacity)",
-          "time": "02:30 PM",
-          "status": "FULL"
-        },
-        {
-          "label": "Fuel Consumed This Period",
-          "val": "4.5 Liters (During 0.5 Hr Churn Test)",
-          "time": "02:30 PM",
-          "status": "LOGGED"
-        },
-        {
-          "label": "Average Fuel Burn Rate",
-          "val": "9.0 L/hr (Diesel Fire Engine)",
-          "time": "02:30 PM",
-          "status": "NORMAL"
-        },
         {
           "label": "Header Static Water Pressure",
           "val": "125 PSI (Maintained by Jockey Pump)",
@@ -2530,6 +2577,12 @@ const REPORT_PROCEDURES_CATALOG = {
           "val": "100 PSI (Verified via pressure drop simulation)",
           "time": "02:30 PM",
           "status": "VERIFIED"
+        },
+        {
+          "label": "Electric Motor Controller Power",
+          "val": "460V / 3-Phase Normal (Utility / Generator Bus)",
+          "time": "02:30 PM",
+          "status": "READY"
         }
       ]
     },
@@ -3592,9 +3645,15 @@ window.generateReport = function() {
     // Get technician completions
     const techCompletions = {};
     reportTasks.filter(t => t.status === 'Completed').forEach(t => {
-      if (t.assignedTo) {
-        techCompletions[t.assignedTo] = (techCompletions[t.assignedTo] || 0) + 1;
+      let techList = [];
+      if (Array.isArray(t.assignedTechnicians) && t.assignedTechnicians.length > 0) {
+        techList = t.assignedTechnicians;
+      } else if (t.assignedTo) {
+        techList = t.assignedTo.split(',').map(s => s.trim()).filter(Boolean);
       }
+      techList.forEach(name => {
+        techCompletions[name] = (techCompletions[name] || 0) + 1;
+      });
     });
 
     // Critical issues list sorted by time slot
@@ -3969,7 +4028,7 @@ window.generateReport = function() {
             if (key === 'genset') {
               const timeStr = activeLog.dateTime.includes(' ') ? activeLog.dateTime.split(' ')[1] : '06:33';
               metricsList = [
-                { label: 'Day Tank Fuel Level', val: activeLog.fuelAfter ? (activeLog.fuelAfter.toFixed(1) + ' Liters (' + Math.round(activeLog.fuelAfter/5) + '% Capacity)') : '312.5 Liters (62.5%)', time: timeStr, status: 'NORMAL' },
+                { label: 'Day Tank Fuel Level', val: activeLog.fuelAfter ? (activeLog.fuelAfter.toFixed(1) + ' Liters (' + Math.round((activeLog.fuelAfter/1200)*100) + '% Capacity)') : '1,020.0 Liters (85% Capacity)', time: timeStr, status: 'NORMAL' },
                 { label: 'Fuel Consumed This Period', val: activeLog.fuelConsumed.toFixed(1) + ' Liters (' + (activeLog.notes || 'During Test & Outage') + ')', time: timeStr, status: 'LOGGED' },
                 { label: 'Average Fuel Burn Rate', val: activeLog.burnRate.toFixed(1) + ' L/hr @ Load (Cummins PT System)', time: timeStr, status: 'EFFICIENT' },
                 { label: 'Operating Lube Oil Pressure', val: '60.0 PSI (Within 50-70 PSI Nominal Range)', time: timeStr, status: 'HEALTHY' },
@@ -6225,13 +6284,14 @@ function renderDashboardSynchronizedTimeline() {
         const sysClass = (typeof getSystemClass === 'function') ? getSystemClass(task.system) : 'arch';
         const isComp = task.status === 'Completed';
         const remainingHtml = (typeof calculateRemainingDaysLabel === 'function') ? calculateRemainingDaysLabel(task) : '';
+        const prio = task.priority || 'Minor';
         tasksHtml += `
           <div class="sync-task-item ${isComp ? 'completed' : ''}" style="border-left-color: var(--sys-${sysClass});" onclick="openEditTaskModal('${task.id}')">
             <span class="sync-task-name">${task.name}</span>
             <div class="sync-task-meta">
-              <span>${task.system}</span>
+              <span>${task.system || 'General'}</span>
               <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 3px;">
-                <span class="priority-tag tag-${task.priority.toLowerCase()}">${task.priority}</span>
+                <span class="priority-tag tag-${prio.toLowerCase()}">${prio}</span>
                 ${remainingHtml}
               </div>
             </div>
@@ -6477,9 +6537,11 @@ function handleSaveFileUpload(event) {
 
 // ==================== PERIODIC MAINTENANCE TIMELINES LOGIC ====================
 let currentPeriodicFrequency = 'Weekly';
+window.currentPeriodicFrequency = currentPeriodicFrequency;
 
 function selectPeriodicFrequency(freq) {
   currentPeriodicFrequency = freq;
+  window.currentPeriodicFrequency = freq;
 
   // Update pills
   ['Weekly', 'Monthly', 'Quarterly', 'Yearly'].forEach(f => {
@@ -6510,14 +6572,51 @@ function selectPeriodicFrequency(freq) {
 
   renderPeriodicMaintenance();
 }
+window.selectPeriodicFrequency = selectPeriodicFrequency;
 
 function renderPeriodicMaintenance() {
   const container = document.getElementById('periodic-activities-container');
   if (!container) return;
   container.innerHTML = '';
 
+  // Initialize registry if empty
+  if (!appState.registry || appState.registry.length === 0) {
+    appState.registry = (typeof DEFAULT_MANUAL_TASKS !== 'undefined') ? [...DEFAULT_MANUAL_TASKS] : [];
+  }
+
+  // Auto-sync: Ensure any non-daily tasks in appState.tasks are registered in appState.registry
+  (appState.tasks || []).forEach(t => {
+    if (t.frequency && t.frequency !== 'Daily') {
+      const exists = appState.registry.some(r => String(r.id) === String(t.id) || (t.manualTaskId && String(r.id) === String(t.manualTaskId)) || r.name === t.name);
+      if (!exists) {
+        const regId = t.manualTaskId || ('reg_' + t.id);
+        t.manualTaskId = regId;
+        appState.registry.push({
+          id: regId,
+          name: t.name,
+          system: t.system,
+          frequency: t.frequency,
+          timeSlot: t.timeSlot || '',
+          priority: t.priority || 'Minor',
+          assignedTo: t.assignedTo || '',
+          notes: t.notes || '',
+          isMultiDay: t.isMultiDay || false,
+          startDate: t.startDate || '',
+          finishDate: t.finishDate || '',
+          photosBefore: t.photosBefore ? [...t.photosBefore] : [],
+          photosAfter: t.photosAfter ? [...t.photosAfter] : [],
+          photo: t.photo || t.photoBefore || '',
+          photoBefore: t.photoBefore || '',
+          photoAfter: t.photoAfter || '',
+          dateCreated: t.dateCreated || new Date().toISOString().split('T')[0]
+        });
+      }
+    }
+  });
+
   // Query activities from registry matching current frequency
-  const activities = appState.registry.filter(t => t.frequency === currentPeriodicFrequency);
+  const targetFreq = (currentPeriodicFrequency || 'Weekly').trim().toLowerCase();
+  const activities = (appState.registry || []).filter(t => (t.frequency || '').trim().toLowerCase() === targetFreq);
 
   const totalEl = document.getElementById('periodic-stat-total');
   if (totalEl) totalEl.innerText = `${activities.length} Activities`;
@@ -6527,46 +6626,100 @@ function renderPeriodicMaintenance() {
     return;
   }
 
-    activities.forEach(item => {
-    const sysClass = getSystemClass(item.system);
+  activities.forEach(item => {
+    const sysClass = (typeof getSystemClass === 'function') ? getSystemClass(item.system) : 'arch';
     const card = document.createElement('div');
     card.className = 'periodic-activity-card';
+    card.style.borderLeftColor = `var(--sys-${sysClass})`;
     const remainingHtml = calculateRemainingDaysLabel(item);
 
     card.innerHTML = `
       <div>
         <div class="periodic-card-header">
-          <span class="periodic-card-title">${item.name}</span>
-          <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px;">
+          <span class="periodic-card-title" title="${(item.name || '').replace(/"/g, '&quot;')}">${item.name}</span>
+          <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 3px; flex-shrink: 0;">
             <span class="priority-tag tag-${(item.priority || 'Minor').toLowerCase()}">${item.priority || 'Minor'}</span>
             ${remainingHtml}
           </div>
         </div>
-        <div class="periodic-card-meta" style="margin-top: 8px;">
-          <span style="color: var(--sys-${sysClass}); font-weight: 600;">System: ${item.system}</span>
-          <span>Freq: ${item.frequency}</span>
+        
+        <div class="periodic-card-tags">
+          <span class="periodic-pill-tag" style="background: rgba(var(--sys-${sysClass}-rgb, 56, 189, 248), 0.15); color: var(--sys-${sysClass}); border-color: rgba(var(--sys-${sysClass}-rgb, 56, 189, 248), 0.3);">
+            ⚙️ ${item.system}
+          </span>
+          <span class="periodic-pill-tag">🔁 ${item.frequency}</span>
+          ${item.timeSlot ? `<span class="periodic-pill-tag" style="color: #f1f5f9;">⏰ ${item.timeSlot}</span>` : ''}
+        </div>
+
+        <div class="periodic-card-tech-section">
+          <span class="periodic-tech-label">Assigned Technician:</span>
+          <div class="card-technicians-wrap">
+            ${(typeof renderCardTechnicianBadges === 'function') ? renderCardTechnicianBadges(item.assignedTechnicians || item.assignedTo, 200) : (item.assignedTo ? `<span style="color: #94a3b8; font-size: 10px;">👤 ${item.assignedTo}</span>` : '')}
+          </div>
         </div>
       </div>
+
       <div class="periodic-card-actions">
-        <span style="font-size: 10px; color: var(--text-dim);">ID: ${item.id}</span>
-        <div style="display: flex; gap: 6px;">
-          <button class="btn btn-secondary" style="padding: 4px 8px; font-size: 10px;" onclick="openEditTaskModalFromRegistry('${item.id}')">Edit</button>
-          <button class="btn btn-danger" style="padding: 4px 8px; font-size: 10px;" onclick="deleteRegistryActivity('${item.id}')">Delete</button>
-          <button class="btn btn-primary btn-add-to-daily" style="padding: 4px 8px; font-size: 10px; background: rgba(56, 189, 248, 0.15); border: 1px solid #38bdf8; color: #38bdf8; display: inline-flex; align-items: center; gap: 4px;" onclick="addPeriodicToDailyActivities('${item.id}')" title="Schedule this periodic routine into Today's Daily Activities timeline">+ Add to Daily Activities</button>
+        <span style="font-size: 10px; font-family: monospace; color: #64748b;">#${item.id}</span>
+        <div style="display: flex; gap: 5px;">
+          <button class="btn btn-secondary" style="padding: 3px 8px; font-size: 10.5px;" onclick="openEditTaskModalFromRegistry('${item.id}')">Edit</button>
+          <button class="btn btn-danger" style="padding: 3px 8px; font-size: 10.5px;" onclick="deleteRegistryActivity('${item.id}')">Delete</button>
+          <button class="btn btn-primary btn-add-to-daily" style="padding: 3px 8px; font-size: 10.5px; background: rgba(56, 189, 248, 0.15); border: 1px solid #38bdf8; color: #38bdf8; display: inline-flex; align-items: center; gap: 4px;" onclick="addPeriodicToDailyActivities('${item.id}')" title="Schedule this periodic routine into Today's Daily Activities timeline">+ Add to Daily</button>
         </div>
       </div>
     `;
     container.appendChild(card);
   });
 }
+window.renderPeriodicMaintenance = renderPeriodicMaintenance;
 
-function openAddPeriodicActivityModal() {
-  // Pre-fill task modal with current periodic frequency
+window.onFormFrequencyChange = function(val) {
+  const titleEl = document.getElementById('modal-task-title');
+  const idEl = document.getElementById('form-task-id');
+  const isEditing = idEl && idEl.value;
+
+  if (titleEl && !isEditing) {
+    if (val === 'Daily') {
+      titleEl.innerText = "Add Maintenance Task";
+    } else {
+      titleEl.innerText = `Add ${val} Maintenance Activity`;
+    }
+  }
+
+  const timeLabel = document.querySelector('label[for="form-task-time"]');
+  if (timeLabel) {
+    if (val === 'Daily') {
+      timeLabel.innerText = "Scheduled Hour (8 AM - 5 PM)";
+    } else {
+      timeLabel.innerText = `Scheduled Hour / Preferred Time (${val})`;
+    }
+  }
+};
+
+window.openAddPeriodicActivityModal = function() {
   openAddTaskModal();
-  setTimeout(() => {
-    const freqSel = document.getElementById('form-task-freq');
-    if (freqSel) freqSel.value = currentPeriodicFrequency;
-  }, 100);
+  const freq = currentPeriodicFrequency || 'Weekly';
+
+  const applyFreq = (f) => {
+    const freqSel = document.getElementById('form-task-frequency');
+    if (freqSel) {
+      freqSel.value = f;
+    }
+    const titleEl = document.getElementById('modal-task-title');
+    if (titleEl) {
+      titleEl.innerText = `Add ${f} Maintenance Activity`;
+    }
+    if (typeof onFormFrequencyChange === 'function') {
+      onFormFrequencyChange(f);
+    }
+  };
+
+  applyFreq(freq);
+  setTimeout(() => applyFreq(freq), 30);
+  setTimeout(() => applyFreq(freq), 100);
+};
+function openAddPeriodicActivityModal() {
+  return window.openAddPeriodicActivityModal();
 }
 
 
@@ -6592,6 +6745,7 @@ window.addPeriodicToDailyActivities = function(activityId) {
     status: 'Pending',
     notes: `[Scheduled from ${item.frequency || currentPeriodicFrequency || 'Weekly'} Routine] ${item.notes || ''}`.trim(),
     assignedTo: item.assignedTo || defaultTech,
+    assignedTechnicians: (item.assignedTechnicians && item.assignedTechnicians.length > 0) ? [...item.assignedTechnicians] : (item.assignedTo ? item.assignedTo.split(',').map(s => s.trim()).filter(Boolean) : [defaultTech]),
     isMultiDay: item.isMultiDay || false,
     startDate: item.startDate || new Date().toISOString().split('T')[0],
     finishDate: item.finishDate || '',
@@ -6622,12 +6776,20 @@ window.addPeriodicToDailyActivities = function(activityId) {
 };
 
 
-function deleteRegistryActivity(activityId) {
+window.deleteRegistryActivity = function(activityId) {
   if (confirm("Are you sure you want to remove this periodic activity?")) {
-    appState.registry = appState.registry.filter(item => item.id !== activityId);
+    appState.registry = (appState.registry || []).filter(item => item.id !== activityId);
+    appState.tasks = (appState.tasks || []).filter(item => item.id !== activityId && item.manualTaskId !== activityId);
     saveState();
-    renderPeriodicMaintenance();
+    if (typeof renderPeriodicMaintenance === 'function') renderPeriodicMaintenance();
+    if (typeof renderRegistry === 'function') renderRegistry();
+    if (typeof renderTimeline === 'function') renderTimeline();
+    if (typeof renderDashboardSynchronizedTimeline === 'function') renderDashboardSynchronizedTimeline();
+    if (typeof renderPMCalendar === 'function') renderPMCalendar();
   }
+};
+function deleteRegistryActivity(activityId) {
+  return window.deleteRegistryActivity(activityId);
 }
 
 
@@ -6987,6 +7149,247 @@ window.removeTaskPhoto = window.removeTaskPhotoBefore1;
 window.handleTaskPhotoAfterUpload = window.handleTaskPhotosAfterUpload;
 window.removeTaskPhotoAfter = window.removeTaskPhotoAfter1;
 
+// ==================== TECHNICIAN MULTI-SELECT & BADGES LOGIC ====================
+let selectedTaskTechnicians = [];
+
+function getAvailableTechnicianRoster() {
+  const list = [];
+  const schedules = (typeof appState !== 'undefined' && appState.employeeSchedules && appState.employeeSchedules.length > 0)
+    ? appState.employeeSchedules
+    : (typeof DEFAULT_EMPLOYEE_SCHEDULES !== 'undefined' ? DEFAULT_EMPLOYEE_SCHEDULES : []);
+
+  if (schedules && schedules.length > 0) {
+    schedules.forEach(emp => {
+      list.push({
+        fullName: `${emp.name} (${emp.position})`,
+        name: emp.name,
+        position: emp.position,
+        department: emp.department || 'Staff'
+      });
+    });
+  } else {
+    const defaults = [
+      { name: 'Engr. Roan Paul Gallegos', position: 'BM Manager', department: 'Management' },
+      { name: 'Mr. Elmer Esteban', position: 'BM Supervisor', department: 'Management' },
+      { name: 'Mr. Martin Naimes', position: 'Foreman Electrician', department: 'Engineering' },
+      { name: 'Mr. Crispin de Gracia', position: 'Electrician', department: 'Engineering' },
+      { name: 'Mr. Robert Apilado', position: 'Fabrication/Mason', department: 'Engineering' },
+      { name: 'Mr. George Ybañez', position: 'Plumber', department: 'Engineering' },
+      { name: 'Ms. Kate Telles', position: 'Housekeeping', department: 'Housekeeping' },
+      { name: 'Mr. Mandy Mejia', position: 'Housekeeping', department: 'Housekeeping' },
+      { name: 'Ms. Annalyn Penuliar', position: 'Housekeeping', department: 'Housekeeping' },
+      { name: 'Mr. Virgilio Ducusin', position: 'CCTV Operator', department: 'CCTV Operator' },
+      { name: 'Ms. Cheryl Gonzales', position: 'CCTV Operator', department: 'CCTV Operator' },
+      { name: 'Mr. Jojo Bennagen', position: 'Agency Security', department: 'Agency Security' },
+      { name: 'Mr. Ruben Banez', position: 'Agency Security', department: 'Agency Security' },
+      { name: 'Mr. Berson Pukchas', position: 'Agency Security', department: 'Agency Security' }
+    ];
+    defaults.forEach(emp => {
+      list.push({
+        fullName: `${emp.name} (${emp.position})`,
+        name: emp.name,
+        position: emp.position,
+        department: emp.department
+      });
+    });
+  }
+  return list;
+}
+window.getAvailableTechnicianRoster = getAvailableTechnicianRoster;
+
+function populateTechnicianOptions() {
+  const container = document.getElementById('tech-options-list');
+  if (!container) return;
+  const roster = getAvailableTechnicianRoster();
+  
+  container.innerHTML = roster.map(tech => {
+    const isChecked = selectedTaskTechnicians.includes(tech.fullName);
+    const escapedFullName = tech.fullName.replace(/"/g, '&quot;');
+    return `
+      <label class="tech-option-row ${isChecked ? 'selected' : ''}" data-name="${escapedFullName.toLowerCase()}" data-role="${tech.position.toLowerCase()}" style="display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 6px 8px; border-radius: 6px; cursor: pointer; font-size: 12px; color: #e2e8f0; background: ${isChecked ? 'rgba(56, 189, 248, 0.12)' : 'transparent'};">
+        <div style="display: flex; align-items: center; gap: 8px; min-width: 0;">
+          <input type="checkbox" value="${escapedFullName}" ${isChecked ? 'checked' : ''} onchange="toggleTechnicianOption(this.value, this.checked)" style="accent-color: #38bdf8; cursor: pointer; width: 14px; height: 14px;">
+          <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 500;">${tech.name}</span>
+        </div>
+        <span style="font-size: 10px; padding: 1px 6px; border-radius: 3px; background: rgba(255,255,255,0.08); color: #94a3b8; white-space: nowrap; flex-shrink: 0;">${tech.position}</span>
+      </label>
+    `;
+  }).join('');
+}
+window.populateTechnicianOptions = populateTechnicianOptions;
+
+function toggleTechDropdown(e) {
+  if (e) e.stopPropagation();
+  const menu = document.getElementById('tech-multiselect-menu');
+  if (!menu) return;
+  const isHidden = menu.style.display === 'none' || !menu.style.display;
+  menu.style.display = isHidden ? 'flex' : 'none';
+  if (isHidden) {
+    populateTechnicianOptions();
+    const search = document.getElementById('tech-multiselect-search');
+    if (search) {
+      search.value = '';
+      filterTechOptions('');
+      search.focus();
+    }
+  }
+}
+window.toggleTechDropdown = toggleTechDropdown;
+
+function toggleTechnicianOption(techFullName, isChecked) {
+  if (isChecked) {
+    if (!selectedTaskTechnicians.includes(techFullName)) {
+      selectedTaskTechnicians.push(techFullName);
+    }
+  } else {
+    selectedTaskTechnicians = selectedTaskTechnicians.filter(t => t !== techFullName);
+  }
+  updateTechnicianMultiSelectDisplay();
+}
+window.toggleTechnicianOption = toggleTechnicianOption;
+
+function removeTechnicianSelection(techFullName, event) {
+  if (event) event.stopPropagation();
+  selectedTaskTechnicians = selectedTaskTechnicians.filter(t => t !== techFullName);
+  updateTechnicianMultiSelectDisplay();
+  populateTechnicianOptions();
+}
+window.removeTechnicianSelection = removeTechnicianSelection;
+
+function selectAllTechnicians(event) {
+  if (event) event.stopPropagation();
+  const roster = getAvailableTechnicianRoster();
+  selectedTaskTechnicians = roster.map(r => r.fullName);
+  updateTechnicianMultiSelectDisplay();
+  populateTechnicianOptions();
+}
+window.selectAllTechnicians = selectAllTechnicians;
+
+function clearAllTechnicianSelections(event) {
+  if (event) event.stopPropagation();
+  selectedTaskTechnicians = [];
+  updateTechnicianMultiSelectDisplay();
+  populateTechnicianOptions();
+}
+window.clearAllTechnicianSelections = clearAllTechnicianSelections;
+
+function filterTechOptions(query) {
+  const q = (query || '').trim().toLowerCase();
+  const rows = document.querySelectorAll('#tech-options-list .tech-option-row');
+  rows.forEach(row => {
+    const name = row.getAttribute('data-name') || '';
+    const role = row.getAttribute('data-role') || '';
+    if (!q || name.includes(q) || role.includes(q)) {
+      row.style.display = 'flex';
+    } else {
+      row.style.display = 'none';
+    }
+  });
+}
+window.filterTechOptions = filterTechOptions;
+
+function updateTechnicianMultiSelectDisplay() {
+  const hiddenInput = document.getElementById('form-task-technician');
+  const badge = document.getElementById('tech-multiselect-badge');
+  const placeholder = document.getElementById('tech-multiselect-placeholder');
+  const chipsContainer = document.getElementById('tech-selected-chips');
+  
+  const count = selectedTaskTechnicians.length;
+  if (badge) {
+    badge.innerText = `${count} Selected`;
+    badge.style.color = count > 0 ? '#38bdf8' : '#94a3b8';
+    badge.style.background = count > 0 ? 'rgba(56, 189, 248, 0.12)' : 'rgba(148, 163, 184, 0.1)';
+  }
+
+  const commaSeparated = selectedTaskTechnicians.join(', ');
+  if (hiddenInput) {
+    hiddenInput.value = commaSeparated;
+  }
+
+  if (placeholder) {
+    if (count === 0) {
+      placeholder.innerText = "Select Technicians...";
+      placeholder.style.color = '#94a3b8';
+    } else if (count === 1) {
+      placeholder.innerText = selectedTaskTechnicians[0];
+      placeholder.style.color = '#ffffff';
+    } else {
+      placeholder.innerText = `${count} Technicians Assigned`;
+      placeholder.style.color = '#ffffff';
+    }
+  }
+
+  if (chipsContainer) {
+    if (count === 0) {
+      chipsContainer.innerHTML = '';
+    } else {
+      chipsContainer.innerHTML = selectedTaskTechnicians.map(t => {
+        const escaped = t.replace(/"/g, '&quot;').replace(/'/g, "\\'");
+        return `
+          <span class="tech-chip">
+            <span>👤 ${t}</span>
+            <span class="tech-chip-remove" onclick="removeTechnicianSelection('${escaped}', event)" title="Remove">×</span>
+          </span>
+        `;
+      }).join('');
+    }
+  }
+}
+window.updateTechnicianMultiSelectDisplay = updateTechnicianMultiSelectDisplay;
+
+function setSelectedTaskTechnicians(techInput) {
+  if (!techInput) {
+    selectedTaskTechnicians = [];
+  } else if (Array.isArray(techInput)) {
+    selectedTaskTechnicians = techInput.map(t => String(t).trim()).filter(Boolean);
+  } else if (typeof techInput === 'string') {
+    selectedTaskTechnicians = techInput.split(',').map(t => t.trim()).filter(Boolean);
+  } else {
+    selectedTaskTechnicians = [];
+  }
+  updateTechnicianMultiSelectDisplay();
+  populateTechnicianOptions();
+}
+window.setSelectedTaskTechnicians = setSelectedTaskTechnicians;
+
+function getSelectedTaskTechnicians() {
+  return [...selectedTaskTechnicians];
+}
+window.getSelectedTaskTechnicians = getSelectedTaskTechnicians;
+
+function renderCardTechnicianBadges(assignedTo, maxBadgeWidth = 145) {
+  if (!assignedTo) {
+    return '<span class="tech-badge unassigned" title="No technician assigned"><span class="tech-badge-icon">👤</span><span class="tech-badge-name">Unassigned</span></span>';
+  }
+  let list = [];
+  if (Array.isArray(assignedTo)) {
+    list = assignedTo.map(s => String(s).trim()).filter(Boolean);
+  } else if (typeof assignedTo === 'string') {
+    list = assignedTo.split(',').map(s => s.trim()).filter(Boolean);
+  }
+  if (list.length === 0) {
+    return '<span class="tech-badge unassigned" title="No technician assigned"><span class="tech-badge-icon">👤</span><span class="tech-badge-name">Unassigned</span></span>';
+  }
+  const widthStyle = maxBadgeWidth ? `max-width: ${maxBadgeWidth}px;` : '';
+  return list.map(tech => {
+    const escaped = tech.replace(/"/g, '&quot;');
+    return `<span class="tech-badge" title="${escaped}"><span class="tech-badge-icon">👤</span><span class="tech-badge-name" style="${widthStyle}">${escaped}</span></span>`;
+  }).join('');
+}
+window.renderCardTechnicianBadges = renderCardTechnicianBadges;
+
+if (typeof document !== 'undefined') {
+  document.addEventListener('click', function(e) {
+    const container = document.getElementById('tech-multiselect-container');
+    const menu = document.getElementById('tech-multiselect-menu');
+    if (container && menu && menu.style.display !== 'none') {
+      if (!container.contains(e.target)) {
+        menu.style.display = 'none';
+      }
+    }
+  });
+}
+
 window.openEditTaskModal = function(taskId) {
   currentSelectedTaskId = taskId;
   isCreatingRegistryTask = false;
@@ -7027,7 +7430,8 @@ window.openEditTaskModal = function(taskId) {
     return;
   }
 
-  document.getElementById('modal-task-title').innerText = "Edit Maintenance Task";
+  const isPeriodic = task.frequency && task.frequency !== 'Daily';
+  document.getElementById('modal-task-title').innerText = isPeriodic ? `Edit ${task.frequency} Maintenance Activity` : "Edit Maintenance Task";
   document.getElementById('form-task-id').value = task.id;
   document.getElementById('form-task-name').value = task.name;
   
@@ -7038,9 +7442,15 @@ window.openEditTaskModal = function(taskId) {
   document.getElementById('form-task-system').value = task.system;
   document.getElementById('form-task-priority').value = task.priority || 'Minor';
   document.getElementById('form-task-frequency').value = task.frequency || 'Daily';
+  if (typeof onFormFrequencyChange === 'function') {
+    onFormFrequencyChange(task.frequency || 'Daily');
+  }
   document.getElementById('form-task-time').value = task.timeSlot || '';
   document.getElementById('form-task-status').value = task.status || 'Pending';
   document.getElementById('form-task-technician').value = task.assignedTo || '';
+  if (typeof setSelectedTaskTechnicians === 'function') {
+    setSelectedTaskTechnicians(task.assignedTechnicians || task.assignedTo || '');
+  }
   document.getElementById('form-task-notes').value = task.notes || '';
 
   // Multi-day schedule fields
@@ -7120,6 +7530,10 @@ window.openAddTaskModal = function() {
     const form = document.getElementById('task-form');
     if (form) form.reset();
 
+    const freqEl = document.getElementById('form-task-frequency');
+    if (freqEl) freqEl.value = 'Daily';
+    if (typeof onFormFrequencyChange === 'function') onFormFrequencyChange('Daily');
+
     const idEl = document.getElementById('form-task-id');
     if (idEl) idEl.value = '';
 
@@ -7140,6 +7554,9 @@ window.openAddTaskModal = function() {
     appState.currentTaskPhotosBefore = [];
     appState.currentTaskPhotosAfter = [];
     renderTaskPhotoGalleries();
+    if (typeof setSelectedTaskTechnicians === 'function') {
+      setSelectedTaskTechnicians([]);
+    }
 
     const delBtn = document.getElementById('btn-delete-task');
     if (delBtn) delBtn.style.display = 'none';
@@ -7162,18 +7579,25 @@ window.openCreateRegistryTaskModal = function() {
   if (titleEl) titleEl.innerText = "Add Manual Registry Task";
 };
 
-window.closeAddTaskModal = function() {
+function closeAddTaskModal() {
   const modal = document.getElementById('task-modal');
   if (modal) modal.style.display = 'none';
   appState.currentTaskPhotosBefore = [];
   appState.currentTaskPhotosAfter = [];
-};
+}
+window.closeAddTaskModal = closeAddTaskModal;
 
 window.setTaskModalFormDisabled = function(disabled) {
   ['form-task-name', 'form-task-system', 'form-task-priority', 'form-task-frequency', 'form-task-time', 'form-task-technician'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.disabled = disabled;
   });
+  const techTrigger = document.getElementById('tech-multiselect-trigger');
+  if (techTrigger) {
+    techTrigger.disabled = disabled;
+    techTrigger.style.opacity = disabled ? '0.6' : '1';
+    techTrigger.style.pointerEvents = disabled ? 'none' : 'auto';
+  }
 };
 
 window.handleTaskSubmit = function(event) {
@@ -7201,6 +7625,7 @@ window.handleTaskSubmit = function(event) {
   const timeSlot = document.getElementById('form-task-time').value;
   const status = document.getElementById('form-task-status').value;
   const assignedTo = document.getElementById('form-task-technician').value;
+  const assignedTechnicians = (typeof getSelectedTaskTechnicians === 'function') ? getSelectedTaskTechnicians() : (assignedTo ? assignedTo.split(',').map(s => s.trim()).filter(Boolean) : []);
   const notes = document.getElementById('form-task-notes').value;
 
   // Multi-day schedule fields
@@ -7227,25 +7652,92 @@ window.handleTaskSubmit = function(event) {
   if (isCreatingRegistryTask) {
     if (appState.currentUserRole === 'Technician') return;
     
+    const regId = 'reg_custom_' + Date.now();
     const newRegistryItem = {
-      id: 'reg_custom_' + Date.now(),
+      id: regId,
       name,
       system: finalSystem,
-      frequency,
+      frequency: frequency || 'Weekly',
       timeSlot: timeSlot || '',
-      priority,
+      priority: priority || 'Minor',
+      assignedTo: assignedTo || '',
+      assignedTechnicians: [...assignedTechnicians],
+      notes: notes || '',
       isMultiDay,
       startDate,
       finishDate,
       photosBefore: [...(appState.currentTaskPhotosBefore || [])],
-      photosAfter: [...(appState.currentTaskPhotosAfter || [])]
+      photosAfter: [...(appState.currentTaskPhotosAfter || [])],
+      photo: b1Val,
+      photoBefore: b1Val,
+      photoAfter: a1Val,
+      photoBefore1: b1Val,
+      photoBefore2: b2Val,
+      photoAfter1: a1Val,
+      photoAfter2: a2Val,
+      captionBefore: capB1Val,
+      captionAfter: capA1Val,
+      captionBefore1: capB1Val,
+      captionBefore2: capB2Val,
+      captionAfter1: capA1Val,
+      captionAfter2: capA2Val,
+      dateCreated: new Date().toISOString().split('T')[0]
     };
 
+    if (!appState.registry) appState.registry = [];
     appState.registry.push(newRegistryItem);
+
+    // Also push a corresponding task into appState.tasks
+    const newTask = {
+      id: 'task_' + regId,
+      manualTaskId: regId,
+      name,
+      system: finalSystem,
+      priority: priority || 'Minor',
+      frequency: frequency || 'Weekly',
+      timeSlot: timeSlot || '',
+      status: status || 'Pending',
+      assignedTo: assignedTo || '',
+      assignedTechnicians: [...assignedTechnicians],
+      notes: notes || '',
+      isMultiDay,
+      startDate,
+      finishDate,
+      photosBefore: photosBefore,
+      photosAfter: photosAfter,
+      photo: b1Val,
+      photoBefore: b1Val,
+      photoAfter: a1Val,
+      photoBefore1: b1Val,
+      photoBefore2: b2Val,
+      photoAfter1: a1Val,
+      photoAfter2: a2Val,
+      captionBefore: capB1Val,
+      captionAfter: capA1Val,
+      captionBefore1: capB1Val,
+      captionBefore2: capB2Val,
+      captionAfter1: capA1Val,
+      captionAfter2: capA2Val,
+      dateCreated: new Date().toISOString().split('T')[0],
+      dateCompleted: status === 'Completed' ? new Date().toISOString().split('T')[0] : null
+    };
+    appState.tasks.push(newTask);
+
+    appState.currentTaskPhotosBefore = [];
+    appState.currentTaskPhotosAfter = [];
+
     saveState();
     closeAddTaskModal();
     renderApp();
-    alert(`Added task "${name}" to the manual registry.`);
+    if (typeof renderPeriodicMaintenance === 'function') renderPeriodicMaintenance();
+    if (typeof renderRegistry === 'function') renderRegistry();
+    if (typeof renderTimeline === 'function') renderTimeline();
+    if (typeof renderDashboardSynchronizedTimeline === 'function') renderDashboardSynchronizedTimeline();
+    if (typeof renderPMCalendar === 'function') renderPMCalendar();
+
+    if (appState.activeTab === 'periodic' && frequency && frequency !== 'Daily') {
+      selectPeriodicFrequency(frequency);
+    }
     return;
   }
 
@@ -7301,6 +7793,7 @@ window.handleTaskSubmit = function(event) {
         task.frequency = frequency;
         task.timeSlot = timeSlot;
         task.assignedTo = assignedTo;
+        task.assignedTechnicians = [...assignedTechnicians];
         task.isMultiDay = isMultiDay;
         task.startDate = startDate;
         task.finishDate = finishDate;
@@ -7335,13 +7828,16 @@ window.handleTaskSubmit = function(event) {
       }
 
       // Sync matching registry item
-      const matchingReg = appState.registry.find(r => String(r.id) === String(taskId) || (task.manualTaskId && String(r.id) === String(task.manualTaskId)));
+      let matchingReg = appState.registry.find(r => String(r.id) === String(taskId) || (task.manualTaskId && String(r.id) === String(task.manualTaskId)));
       if (matchingReg) {
         matchingReg.name = name;
         matchingReg.system = finalSystem;
         matchingReg.frequency = frequency;
         matchingReg.priority = priority;
         matchingReg.timeSlot = timeSlot;
+        matchingReg.assignedTo = assignedTo;
+        matchingReg.assignedTechnicians = [...assignedTechnicians];
+        matchingReg.notes = notes;
         matchingReg.isMultiDay = isMultiDay;
         matchingReg.startDate = startDate;
         matchingReg.finishDate = finishDate;
@@ -7354,6 +7850,47 @@ window.handleTaskSubmit = function(event) {
         matchingReg.photo = b1Val;
         matchingReg.photoBefore = b1Val;
         matchingReg.photoAfter = a1Val;
+        matchingReg.captionBefore = capB1Val;
+        matchingReg.captionAfter = capA1Val;
+        matchingReg.captionBefore1 = capB1Val;
+        matchingReg.captionBefore2 = capB2Val;
+        matchingReg.captionAfter1 = capA1Val;
+        matchingReg.captionAfter2 = capA2Val;
+      } else if (frequency && frequency !== 'Daily') {
+        const regId = task.manualTaskId || ('reg_' + task.id);
+        task.manualTaskId = regId;
+        const newRegItem = {
+          id: regId,
+          name,
+          system: finalSystem,
+          frequency,
+          timeSlot: timeSlot || '',
+          priority: priority || 'Minor',
+          assignedTo: assignedTo || '',
+          assignedTechnicians: [...assignedTechnicians],
+          notes: notes || '',
+          isMultiDay: isMultiDay || false,
+          startDate: startDate || '',
+          finishDate: finishDate || '',
+          photosBefore: photosBefore,
+          photosAfter: photosAfter,
+          photo: b1Val,
+          photoBefore: b1Val,
+          photoAfter: a1Val,
+          photoBefore1: b1Val,
+          photoBefore2: b2Val,
+          photoAfter1: a1Val,
+          photoAfter2: a2Val,
+          captionBefore: capB1Val,
+          captionAfter: capA1Val,
+          captionBefore1: capB1Val,
+          captionBefore2: capB2Val,
+          captionAfter1: capA1Val,
+          captionAfter2: capA2Val,
+          dateCreated: task.dateCreated || new Date().toISOString().split('T')[0]
+        };
+        if (!appState.registry) appState.registry = [];
+        appState.registry.push(newRegItem);
       }
 
       // Sync matching tenant complaint ticket if applicable
@@ -7391,6 +7928,7 @@ window.handleTaskSubmit = function(event) {
       timeSlot,
       status,
       assignedTo,
+      assignedTechnicians: [...assignedTechnicians],
       notes,
       isMultiDay,
       startDate,
@@ -7414,6 +7952,46 @@ window.handleTaskSubmit = function(event) {
       dateCompleted: status === 'Completed' ? new Date().toISOString().split('T')[0] : null
     };
 
+    // If frequency is periodic (Weekly, Monthly, Quarterly, Yearly), save into registry
+    if (frequency && frequency !== 'Daily') {
+      const regId = 'reg_' + newTask.id;
+      newTask.manualTaskId = regId;
+
+      const newRegItem = {
+        id: regId,
+        name,
+        system: finalSystem,
+        frequency,
+        timeSlot: timeSlot || '',
+        priority: priority || 'Minor',
+        assignedTo: assignedTo || '',
+        assignedTechnicians: [...assignedTechnicians],
+        notes: notes || '',
+        isMultiDay: isMultiDay || false,
+        startDate: startDate || '',
+        finishDate: finishDate || '',
+        photosBefore: [...photosBefore],
+        photosAfter: [...photosAfter],
+        photo: b1Val,
+        photoBefore: b1Val,
+        photoAfter: a1Val,
+        photoBefore1: b1Val,
+        photoBefore2: b2Val,
+        photoAfter1: a1Val,
+        photoAfter2: a2Val,
+        captionBefore: capB1Val,
+        captionAfter: capA1Val,
+        captionBefore1: capB1Val,
+        captionBefore2: capB2Val,
+        captionAfter1: capA1Val,
+        captionAfter2: capA2Val,
+        dateCreated: new Date().toISOString().split('T')[0]
+      };
+
+      if (!appState.registry) appState.registry = [];
+      appState.registry.push(newRegItem);
+    }
+
     appState.tasks.push(newTask);
     
     if (priority === 'Critical') {
@@ -7435,6 +8013,28 @@ window.handleTaskSubmit = function(event) {
   closeAddTaskModal();
   renderApp();
   if (typeof renderPeriodicMaintenance === 'function') renderPeriodicMaintenance();
+  if (typeof renderRegistry === 'function') renderRegistry();
+  if (typeof renderTimeline === 'function') renderTimeline();
+  if (typeof renderDashboardSynchronizedTimeline === 'function') renderDashboardSynchronizedTimeline();
+  if (typeof renderPMCalendar === 'function') renderPMCalendar();
+
+  if (frequency && frequency !== 'Daily') {
+    if (typeof switchTab === 'function') {
+      switchTab('periodic');
+    } else if (typeof window !== 'undefined' && typeof window.switchTab === 'function') {
+      window.switchTab('periodic');
+    }
+    if (typeof selectPeriodicFrequency === 'function') {
+      selectPeriodicFrequency(frequency);
+    } else if (typeof window !== 'undefined' && typeof window.selectPeriodicFrequency === 'function') {
+      window.selectPeriodicFrequency(frequency);
+    }
+  }
+
+  const targetLabel = frequency === 'Daily' ? 'Today\'s Daily Activities' : `${frequency} Maintenance Activities`;
+  if (window.SecurityEngine && typeof window.SecurityEngine.showToast === 'function') {
+    window.SecurityEngine.showToast(`Activity "${name}" saved to ${targetLabel}!`, 'success');
+  }
 };
 
 window.openEditTaskModalFromRegistry = function(activityId) {
@@ -7699,8 +8299,8 @@ function createTaskCardElement(task) {
   const header = document.createElement('div');
   header.className = 'task-card-header';
   header.innerHTML = `
-    <span class="task-name ${task.status === 'Completed' ? 'completed-text' : ''}">${task.name}</span>
-    <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px;">
+    <span class="task-name ${task.status === 'Completed' ? 'completed-text' : ''}" title="${(task.name || '').replace(/"/g, '&quot;')}">${task.name}</span>
+    <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 3px; flex-shrink: 0;">
       <span class="priority-tag tag-${(task.priority || 'Minor').toLowerCase()}">${task.priority || 'Minor'}</span>
       ${remainingHtml}
     </div>
@@ -7710,14 +8310,29 @@ function createTaskCardElement(task) {
   meta.className = 'task-card-meta';
   
   const sysInit = (typeof getSystemInitials === 'function') ? getSystemInitials(task.system) : 'AR';
-  
+  const timeOrStatus = task.timeSlot 
+    ? `<span style="font-size: 9.5px; color: #cbd5e1; font-weight: 500;">⏰ ${task.timeSlot}</span>`
+    : `<span style="font-size: 9px; color: #94a3b8; text-transform: uppercase; font-weight: 600;">${task.status || 'Pending'}</span>`;
+
   meta.innerHTML = `
-    <span class="sys-tag bg-sys-${sysClass}">${sysInit}</span>
-    <span>${task.assignedTo || 'Unassigned'}</span>
+    <div style="display: flex; align-items: center; gap: 6px;">
+      <span class="sys-tag bg-sys-${sysClass}" title="System: ${task.system || 'General'}">${sysInit}</span>
+      <span style="font-size: 9.5px; color: var(--text-muted);">${task.frequency || 'Daily'}</span>
+    </div>
+    ${timeOrStatus}
+  `;
+
+  const techRow = document.createElement('div');
+  techRow.className = 'task-card-tech-row';
+  techRow.innerHTML = `
+    <div class="card-technicians-wrap">
+      ${(typeof renderCardTechnicianBadges === 'function') ? renderCardTechnicianBadges(task.assignedTechnicians || task.assignedTo, 175) : `<span>${task.assignedTo || 'Unassigned'}</span>`}
+    </div>
   `;
 
   card.appendChild(header);
   card.appendChild(meta);
+  card.appendChild(techRow);
   return card;
 }
 
@@ -7813,6 +8428,117 @@ window.clearTimelineTasks = function() {
     if (typeof renderApp === 'function') renderApp();
   }
 };
+
+// ==================== RESET TIMELINE ACTIVITIES ====================
+window.promptResetTimelineActivities = function() {
+  const timelineTasks = (appState.tasks || []).filter(t => t.timeSlot && t.timeSlot.trim() !== '');
+  if (timelineTasks.length === 0) {
+    if (window.SecurityEngine && typeof window.SecurityEngine.showToast === 'function') {
+      window.SecurityEngine.showToast("No activities currently scheduled on the daily timeline.", "info");
+    } else {
+      alert("No activities currently scheduled on the daily timeline.");
+    }
+    return;
+  }
+
+  const modal = document.getElementById('modal-reset-timeline');
+  const countSpan = document.getElementById('reset-timeline-task-count');
+  if (countSpan) {
+    countSpan.innerText = `${timelineTasks.length} ${timelineTasks.length === 1 ? 'Activity' : 'Activities'}`;
+  }
+
+  if (modal) {
+    modal.style.display = 'flex';
+  } else {
+    // Fallback confirmation dialog
+    if (confirm(`WARNING: Reset Daily Timeline Activities?\n\nThis will reset ${timelineTasks.length} scheduled activities:\n• Operational status will be set to Pending\n• All attached before/after photos will be permanently deleted\n• All cards will remain in their designated timeline hours\n\nAre you sure you want to proceed?`)) {
+      window.executeResetTimelineActivities();
+    }
+  }
+};
+
+window.closeResetTimelineModal = function() {
+  const modal = document.getElementById('modal-reset-timeline');
+  if (modal) {
+    modal.style.display = 'none';
+  }
+};
+
+window.confirmResetTimelineActivities = function() {
+  window.closeResetTimelineModal();
+  window.executeResetTimelineActivities();
+};
+
+window.executeResetTimelineActivities = function() {
+  const timelineTasks = (appState.tasks || []).filter(t => t.timeSlot && t.timeSlot.trim() !== '');
+  if (timelineTasks.length === 0) {
+    return 0;
+  }
+
+  timelineTasks.forEach(task => {
+    // 1. Reset operational status to Pending
+    task.status = 'Pending';
+    if (task.dateCompleted) delete task.dateCompleted;
+
+    // 2. Delete all attached pictures
+    task.photosBefore = [];
+    task.photosAfter = [];
+    task.photo = '';
+    task.photoBefore = '';
+    task.photoAfter = '';
+    task.photoBefore1 = '';
+    task.photoBefore2 = '';
+    task.photoAfter1 = '';
+    task.photoAfter2 = '';
+    task.beforePhoto = '';
+    task.afterPhoto = '';
+
+    // 3. Reset subchecklist items if any
+    if (Array.isArray(task.subChecklist)) {
+      task.subChecklist.forEach(item => {
+        if (item) {
+          item.status = '';
+          item.notes = '';
+        }
+      });
+    }
+
+    // 4. Cards remain in their designated timeline (task.timeSlot is preserved!)
+
+    // 5. If matching registry item exists, synchronize operational status & photos
+    if (task.manualTaskId) {
+      const reg = (appState.registry || []).find(r => String(r.id) === String(task.manualTaskId));
+      if (reg) {
+        reg.status = 'Pending';
+        reg.photosBefore = [];
+        reg.photosAfter = [];
+        reg.photo = '';
+        reg.photoBefore = '';
+        reg.photoAfter = '';
+      }
+    }
+  });
+
+  // Clear modal upload temporary states if active
+  appState.currentTaskPhotosBefore = [];
+  appState.currentTaskPhotosAfter = [];
+
+  saveState();
+
+  if (typeof renderTimeline === 'function') renderTimeline();
+  if (typeof renderDashboardSynchronizedTimeline === 'function') renderDashboardSynchronizedTimeline();
+  if (typeof renderDashboard === 'function') renderDashboard();
+  if (typeof renderApp === 'function') renderApp();
+  if (typeof renderPeriodicMaintenance === 'function') renderPeriodicMaintenance();
+
+  if (window.SecurityEngine && typeof window.SecurityEngine.showToast === 'function') {
+    window.SecurityEngine.showToast(`Reset ${timelineTasks.length} timeline activities to Pending (photos cleared).`, "success");
+  }
+
+  return timelineTasks.length;
+};
+window.resetTimelineActivities = window.promptResetTimelineActivities;
+
 
 
 // ==================== EMPLOYEE WORK SCHEDULE & ROSTER ENGINE ====================
@@ -8116,16 +8842,23 @@ window.exportEmployeeScheduleCSV = function() {
 window.deleteCurrentTask = function() {
   if (!currentSelectedTaskId) return;
   
-  const task = appState.tasks.find(t => t.id === currentSelectedTaskId || t.manualTaskId === currentSelectedTaskId);
+  const task = (appState.tasks || []).find(t => t.id === currentSelectedTaskId || t.manualTaskId === currentSelectedTaskId)
+    || (appState.registry || []).find(r => r.id === currentSelectedTaskId);
   if (!task) return;
   
   if (confirm(`Are you sure you want to delete the task "${task.name}"?`)) {
-    appState.tasks = appState.tasks.filter(t => t.id !== task.id);
+    const targetId = task.id;
+    const manualId = task.manualTaskId;
+    appState.tasks = (appState.tasks || []).filter(t => t.id !== targetId && (!manualId || t.manualTaskId !== manualId) && t.id !== currentSelectedTaskId && t.manualTaskId !== currentSelectedTaskId);
+    appState.registry = (appState.registry || []).filter(r => r.id !== targetId && (!manualId || r.id !== manualId) && r.id !== currentSelectedTaskId);
     saveState();
     closeAddTaskModal();
     renderApp();
     if (typeof renderTimeline === 'function') renderTimeline();
     if (typeof renderDashboardSynchronizedTimeline === 'function') renderDashboardSynchronizedTimeline();
+    if (typeof renderPeriodicMaintenance === 'function') renderPeriodicMaintenance();
+    if (typeof renderRegistry === 'function') renderRegistry();
+    if (typeof renderPMCalendar === 'function') renderPMCalendar();
   }
 };
 
@@ -8182,6 +8915,7 @@ const MAIN_DEFAULT_ORG_STRUCTURE = [
     name: 'Engr. Roan Paul Gallegos',
     role: 'Building Emergency Coordinator (BEC)',
     tier: 'Incident Command',
+    subTier: 'leadership',
     phone: '09176598364',
     photo: 'assets/team/roan_paul_gallegos.jpeg',
     duties: 'Directs overall emergency response, primary Fire/Police/EMS liaison, authorizes evacuation/all-clear',
@@ -8192,6 +8926,7 @@ const MAIN_DEFAULT_ORG_STRUCTURE = [
     name: 'Mr. Elmer Esteban',
     role: 'Assistant BEC / Facilities Lead',
     tier: 'Incident Command',
+    subTier: 'leadership',
     phone: '09296233556',
     photo: 'assets/team/elmer_esteban.jpeg',
     duties: 'Assumes command if BEC unavailable; controls utility shutdowns, HVAC, and mechanical spaces',
@@ -8202,6 +8937,7 @@ const MAIN_DEFAULT_ORG_STRUCTURE = [
     name: 'Donald Geron',
     role: 'Property Management Officer / Assembly Area Marshal',
     tier: 'Incident Command',
+    subTier: 'officers',
     phone: '09175379173',
     photo: 'assets/team/donald_geron.jpeg',
     duties: 'Manages roll call at Assembly Area, accounts for occupants, prevents premature building re-entry',
@@ -8212,6 +8948,7 @@ const MAIN_DEFAULT_ORG_STRUCTURE = [
     name: 'Jojo Bennagen',
     role: 'Security Lead & Lockdown Officer',
     tier: 'Incident Command',
+    subTier: 'officers',
     phone: '09461817526',
     photo: 'assets/team/jojo_bennagen.png',
     duties: 'Controls building access & CCTV, guides arriving law enforcement, initiates perimeter lockdown',
@@ -8222,6 +8959,7 @@ const MAIN_DEFAULT_ORG_STRUCTURE = [
     name: 'Twinkle Domingo',
     role: 'Communications Officer / Admin',
     tier: 'Incident Command',
+    subTier: 'officers',
     phone: '09171599563',
     photo: 'assets/team/twinkle_domingo.jpeg',
     duties: 'Manages mass notification system, broadcasts tenant safety updates, sole authorized media spokesperson',
@@ -8232,6 +8970,7 @@ const MAIN_DEFAULT_ORG_STRUCTURE = [
     name: 'Martin Naimes',
     role: 'First Aid Coordinator / Medical Officer',
     tier: 'Incident Command',
+    subTier: 'officers',
     phone: '09071505202',
     photo: 'assets/team/martin_naimes.png',
     duties: 'Administers CPR/AED, manages first aid triage, maintains emergency medical kits until EMS arrives',
@@ -8242,6 +8981,7 @@ const MAIN_DEFAULT_ORG_STRUCTURE = [
     name: 'George Ybanez',
     role: 'Facilities Asst. Lead / Mechanical Liaison',
     tier: 'Incident Command',
+    subTier: 'officers',
     phone: '09485381602',
     photo: 'assets/team/george_ybanez.png',
     duties: 'Operates generator ATS, shuts gas/water mains, supervises elevator lockout and electrical panels',
@@ -8400,7 +9140,17 @@ function getMainActiveOrgStructure() {
   try {
     const stored = localStorage.getItem('onecorp_emergency_org_structure');
     if (stored) {
-      const list = JSON.parse(stored);
+      let list = JSON.parse(stored);
+      // Deduplicate if any duplicate IDs exist
+      const seenIds = new Set();
+      list = list.filter(m => {
+        if (!m || !m.id) return false;
+        if (seenIds.has(m.id)) return false;
+        seenIds.add(m.id);
+        return true;
+      });
+
+      // Migrate executive photos
       const ceo = list.find(m => m.id === 'org_ceo');
       if (ceo && (!ceo.photo || ceo.photo.includes('fernando_laranang'))) {
         ceo.photo = 'assets/team/lorraine_josue.jpg';
@@ -8413,6 +9163,23 @@ function getMainActiveOrgStructure() {
       if (fd && (!fd.photo || fd.photo.includes('lorraine_josue'))) {
         fd.photo = 'assets/team/marjorie_olivete.png';
       }
+
+      // Initialize subTier for Incident Command members if missing or corrupted
+      list.forEach(m => {
+        if (m.tier === 'Incident Command') {
+          if (!m.subTier) {
+            if (m.id === 'org_bec' || m.id === 'org_asst_bec' ||
+                (m.role && (m.role.toLowerCase().includes('building emergency coordinator') || m.role.toLowerCase().includes('assistant bec')))) {
+              m.subTier = 'leadership';
+            } else {
+              m.subTier = 'officers';
+            }
+          }
+        } else {
+          m.subTier = '';
+        }
+      });
+
       return list;
     }
   } catch (e) {
@@ -8468,9 +9235,18 @@ window.switchMainOrgView = function(viewType) {
   }
 };
 
-function createMainTreeNodeHtml(m, nodeClass = '', tierKey = '') {
+function isMainCommandLeadership(m) {
+  if (!m || m.tier !== 'Incident Command') return false;
+  if (m.subTier === 'leadership') return true;
+  if (m.subTier === 'officers') return false;
+  return m.id === 'org_bec' || m.id === 'org_asst_bec' || 
+    (m.role && (m.role.toLowerCase().includes('building emergency coordinator') || m.role.toLowerCase().includes('assistant bec')));
+}
+
+function createMainTreeNodeHtml(m, nodeClass = '', tierKey = '', subTierKey = '') {
   if (!m) return '';
   const tKey = tierKey || m.tier || 'Incident Command';
+  const subKey = subTierKey !== undefined && subTierKey !== '' ? subTierKey : (m.subTier || '');
   let avatarHtml = '';
   if (m.photo) {
     avatarHtml = `<img src="${m.photo}" alt="${m.name}" onerror="this.parentElement.innerHTML='<span class=\\'avatar-initials\\'>${m.name.charAt(0)}</span>'">`;
@@ -8488,7 +9264,7 @@ function createMainTreeNodeHtml(m, nodeClass = '', tierKey = '') {
          ondragstart="handleMainOrgDragStart(event, '${m.id}')"
          ondragover="handleMainTreeDragOver(event)"
          ondragleave="handleMainTreeDragLeave(event)"
-         ondrop="handleMainTreeDropOnNode(event, '${m.id}', '${tKey}')"
+         ondrop="handleMainTreeDropOnNode(event, '${m.id}', '${tKey}', '${subKey}')"
          ondragend="handleMainOrgDragEnd(event)"
          onclick="openEditOrgMemberModal('${m.id}')" 
          title="Drag up/down/left/right to reorder or change tier. Click to edit (${m.name})">
@@ -8519,7 +9295,7 @@ window.handleMainTreeLevelDragLeave = function(event) {
   if (target) target.classList.remove('drag-over-tree-level');
 };
 
-window.handleMainTreeLevelDrop = function(event, targetTier) {
+window.handleMainTreeLevelDrop = function(event, targetTier, targetSubTier = '') {
   event.preventDefault();
   event.stopPropagation();
   document.querySelectorAll('.drag-over-tree-level').forEach(el => el.classList.remove('drag-over-tree-level'));
@@ -8531,6 +9307,11 @@ window.handleMainTreeLevelDrop = function(event, targetTier) {
   const member = orgList.find(m => m.id === mainDraggedMemberId);
   if (member) {
     member.tier = targetTier;
+    if (targetTier === 'Incident Command') {
+      member.subTier = targetSubTier || 'officers';
+    } else {
+      member.subTier = '';
+    }
     saveMainActiveOrgStructure(orgList);
     renderMainEmergencyOrgStructure();
   }
@@ -8552,7 +9333,7 @@ window.handleMainTreeDragLeave = function(event) {
   if (targetNode) targetNode.classList.remove('drag-over-card');
 };
 
-window.handleMainTreeDropOnNode = function(event, targetMemberId, targetTier) {
+window.handleMainTreeDropOnNode = function(event, targetMemberId, targetTier, targetSubTier = '') {
   event.preventDefault();
   event.stopPropagation();
   document.querySelectorAll('.drag-over-card').forEach(el => el.classList.remove('drag-over-card'));
@@ -8562,11 +9343,16 @@ window.handleMainTreeDropOnNode = function(event, targetMemberId, targetTier) {
 
   const orgList = getMainActiveOrgStructure();
   const sourceIndex = orgList.findIndex(m => m.id === mainDraggedMemberId);
-  const targetIndex = orgList.findIndex(m => m.id === targetMemberId);
+  const targetItem = orgList.find(m => m.id === targetMemberId);
 
-  if (sourceIndex > -1 && targetIndex > -1) {
+  if (sourceIndex > -1 && targetItem) {
     const draggedItem = orgList.splice(sourceIndex, 1)[0];
-    draggedItem.tier = targetTier;
+    draggedItem.tier = targetTier || targetItem.tier;
+    if (draggedItem.tier === 'Incident Command') {
+      draggedItem.subTier = targetSubTier || targetItem.subTier || 'leadership';
+    } else {
+      draggedItem.subTier = '';
+    }
 
     const newTargetIndex = orgList.findIndex(m => m.id === targetMemberId);
     orgList.splice(newTargetIndex, 0, draggedItem);
@@ -8604,10 +9390,8 @@ window.renderMainHierarchicalOrgChart = function() {
   const orgList = getMainActiveOrgStructure();
 
   const executives = orgList.filter(m => m.tier === 'Executive Leadership');
-  const bec = orgList.find(m => m.id === 'org_bec' || (m.role && m.role.toLowerCase().includes('coordinator'))) || orgList.find(m => m.tier === 'Incident Command');
-  const asstBec = orgList.find(m => m.id === 'org_asst_bec' || (m.role && m.role.toLowerCase().includes('assistant bec')));
-  
-  const officers = orgList.filter(m => m.tier === 'Incident Command' && m !== bec && m !== asstBec);
+  const commandLeadership = orgList.filter(m => isMainCommandLeadership(m));
+  const officers = orgList.filter(m => m.tier === 'Incident Command' && !isMainCommandLeadership(m));
   const wardens = orgList.filter(m => m.tier === 'Floor Operations');
   const mobility = orgList.filter(m => m.tier === 'Specialized Rescue');
   const engineers = orgList.filter(m => m.tier === 'Technical Support');
@@ -8617,14 +9401,17 @@ window.renderMainHierarchicalOrgChart = function() {
       
       <!-- LEVEL 1: Executive Leadership -->
       <div style="font-size: 11px; font-weight: 800; color: #f59e0b; text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.5px;">
-        Level 1 • Executive Leadership & Corporate Governance
+        Level 1 • Executive Leadership & Corporate Governance (${executives.length})
       </div>
       <div class="tree-level" 
            ondragover="handleMainTreeLevelDragOver(event)" 
            ondragleave="handleMainTreeLevelDragLeave(event)" 
            ondrop="handleMainTreeLevelDrop(event, 'Executive Leadership')">
         <div class="tree-node-group">
-          ${executives.map(m => createMainTreeNodeHtml(m, 'node-executive', 'Executive Leadership')).join('')}
+          ${executives.length > 0
+            ? executives.map(m => createMainTreeNodeHtml(m, 'node-executive', 'Executive Leadership')).join('')
+            : '<div style="color: rgba(255,255,255,0.4); font-size: 11px; font-style: italic; padding: 8px;">Drag Executive Leadership here</div>'
+          }
         </div>
       </div>
 
@@ -8632,15 +9419,20 @@ window.renderMainHierarchicalOrgChart = function() {
 
       <!-- LEVEL 2: Incident Command Leadership -->
       <div style="font-size: 11px; font-weight: 800; color: #ef4444; text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.5px;">
-        Level 2 • Incident Command Leadership (BERT Core)
+        Level 2 • Incident Command Leadership (BERT Core) (${commandLeadership.length})
       </div>
       <div class="tree-level" 
            ondragover="handleMainTreeLevelDragOver(event)" 
            ondragleave="handleMainTreeLevelDragLeave(event)" 
-           ondrop="handleMainTreeLevelDrop(event, 'Incident Command')">
-        <div class="tree-node-group">
-          ${bec ? createMainTreeNodeHtml(bec, 'node-command', 'Incident Command') : ''}
-          ${asstBec ? createMainTreeNodeHtml(asstBec, 'node-command', 'Incident Command') : ''}
+           ondrop="handleMainTreeLevelDrop(event, 'Incident Command', 'leadership')">
+        <div class="tree-node-group"
+             ondragover="handleMainTreeLevelDragOver(event)" 
+             ondragleave="handleMainTreeLevelDragLeave(event)" 
+             ondrop="handleMainTreeLevelDrop(event, 'Incident Command', 'leadership')">
+          ${commandLeadership.length > 0
+            ? commandLeadership.map(m => createMainTreeNodeHtml(m, 'node-command', 'Incident Command', 'leadership')).join('')
+            : '<div style="color: rgba(255,255,255,0.4); font-size: 11px; font-style: italic; padding: 8px;">Drag Incident Commander / BEC here</div>'
+          }
         </div>
       </div>
 
@@ -8650,19 +9442,25 @@ window.renderMainHierarchicalOrgChart = function() {
       <!-- LEVEL 3: Functional Emergency Officers & Operational Leads -->
       <div style="width: 100%; text-align: center; margin-top: 10px;">
         <span style="font-size: 11px; font-weight: 800; color: #38bdf8; text-transform: uppercase; letter-spacing: 0.5px;">
-          Level 3 • Functional Coordinators & Operational Leads
+          Level 3 • Functional Coordinators & Operational Leads (${officers.length})
         </span>
       </div>
       <div class="tree-branch-grid"
            ondragover="handleMainTreeLevelDragOver(event)" 
            ondragleave="handleMainTreeLevelDragLeave(event)" 
-           ondrop="handleMainTreeLevelDrop(event, 'Incident Command')">
-        ${officers.map(m => `
-          <div class="tree-branch-col">
-            <span class="tree-category-tag">${m.role.split('/')[0].replace('(Primary)', '').trim()}</span>
-            ${createMainTreeNodeHtml(m, 'node-officer', 'Incident Command')}
-          </div>
-        `).join('')}
+           ondrop="handleMainTreeLevelDrop(event, 'Incident Command', 'officers')">
+        ${officers.length > 0
+          ? officers.map(m => `
+            <div class="tree-branch-col"
+                 ondragover="handleMainTreeLevelDragOver(event)" 
+                 ondragleave="handleMainTreeLevelDragLeave(event)" 
+                 ondrop="handleMainTreeLevelDrop(event, 'Incident Command', 'officers')">
+              <span class="tree-category-tag">${(m.role || '').split('/')[0].replace('(Primary)', '').trim()}</span>
+              ${createMainTreeNodeHtml(m, 'node-officer', 'Incident Command', 'officers')}
+            </div>
+          `).join('')
+          : '<div style="width: 100%; text-align: center; color: rgba(255,255,255,0.4); font-size: 11px; font-style: italic; padding: 8px;">Drag Functional Coordinators here</div>'
+        }
       </div>
 
       <div class="tree-stem-down" style="margin-top: 20px;"></div>
@@ -8679,7 +9477,10 @@ window.renderMainHierarchicalOrgChart = function() {
             Level 4A • Floor Wardens & Evacuation Sweepers (${wardens.length})
           </span>
           <div class="tree-node-group" style="justify-content: center;">
-            ${wardens.map(m => createMainTreeNodeHtml(m, 'node-warden', 'Floor Operations')).join('')}
+            ${wardens.length > 0
+              ? wardens.map(m => createMainTreeNodeHtml(m, 'node-warden', 'Floor Operations')).join('')
+              : '<div style="color: rgba(255,255,255,0.4); font-size: 11px; font-style: italic; padding: 8px;">Drag Floor Wardens here</div>'
+            }
           </div>
         </div>
 
@@ -8692,7 +9493,10 @@ window.renderMainHierarchicalOrgChart = function() {
             Level 4B • Mobility & Area of Refuge (${mobility.length})
           </span>
           <div class="tree-sub-list">
-            ${mobility.map(m => createMainTreeNodeHtml(m, 'node-rescue', 'Specialized Rescue')).join('')}
+            ${mobility.length > 0
+              ? mobility.map(m => createMainTreeNodeHtml(m, 'node-rescue', 'Specialized Rescue')).join('')
+              : '<div style="color: rgba(255,255,255,0.4); font-size: 11px; font-style: italic; padding: 8px;">Drag Mobility Officers here</div>'
+            }
           </div>
         </div>
       </div>
@@ -8710,7 +9514,10 @@ window.renderMainHierarchicalOrgChart = function() {
             Level 5 • In-House Engineering & Technical Support Response Team (${engineers.length})
           </span>
           <div class="tree-node-group" style="justify-content: center;">
-            ${engineers.map(m => createMainTreeNodeHtml(m, 'node-engineer', 'Technical Support')).join('')}
+            ${engineers.length > 0
+              ? engineers.map(m => createMainTreeNodeHtml(m, 'node-engineer', 'Technical Support')).join('')
+              : '<div style="color: rgba(255,255,255,0.4); font-size: 11px; font-style: italic; padding: 8px;">Drag Engineers / Support here</div>'
+            }
           </div>
         </div>
       </div>
@@ -8873,8 +9680,14 @@ window.handleMainTierCardDrop = function(event, targetMemberId, targetTier) {
   const targetIndex = orgList.findIndex(m => m.id === targetMemberId);
 
   if (sourceIndex > -1 && targetIndex > -1) {
+    const targetItem = orgList[targetIndex];
     const draggedItem = orgList.splice(sourceIndex, 1)[0];
-    draggedItem.tier = targetTier;
+    draggedItem.tier = targetTier || targetItem.tier;
+    if (draggedItem.tier === 'Incident Command') {
+      draggedItem.subTier = targetItem.subTier || 'leadership';
+    } else {
+      draggedItem.subTier = '';
+    }
 
     const newTargetIndex = orgList.findIndex(m => m.id === targetMemberId);
     orgList.splice(newTargetIndex, 0, draggedItem);
@@ -8909,6 +9722,11 @@ window.handleMainTierSectionDrop = function(event, tierKey) {
   const member = orgList.find(m => m.id === mainDraggedMemberId);
   if (member) {
     member.tier = tierKey;
+    if (tierKey === 'Incident Command') {
+      if (!member.subTier) member.subTier = 'officers';
+    } else {
+      member.subTier = '';
+    }
     saveMainActiveOrgStructure(orgList);
     renderMainEmergencyOrgStructure();
   }

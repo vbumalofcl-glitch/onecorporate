@@ -490,10 +490,10 @@ const PROCEDURE_DB = {
 // Equipment Specifications & Meter Database
 const EQUIPMENT_METER_DB = {
   genset: [
-    { id: 'eq_genset_1', name: 'Genset Cummins KTAA19-G6A Engine', initialHours: 1248.5, hasFuel: true, fuelCap: 500, currentFuel: 425, serviceInterval: 250, lastServiceHours: 1000.0, unit: 'Hrs' }
+    { id: 'eq_genset_1', name: 'Genset Cummins KTAA19-G6A Engine', initialHours: 1248.5, hasFuel: true, fuelCap: 1200, currentFuel: 1020, serviceInterval: 250, lastServiceHours: 1000.0, unit: 'Hrs' }
   ],
   firepump: [
-    { id: 'eq_fp_1', name: 'Main Fire Pump Diesel Engine', initialHours: 412.0, hasFuel: true, fuelCap: 250, currentFuel: 220, serviceInterval: 500, lastServiceHours: 0, unit: 'Hrs' },
+    { id: 'eq_fp_1', name: 'Main Fire Pump Electric Motor', initialHours: 412.0, hasFuel: false, serviceInterval: 500, lastServiceHours: 0, unit: 'Hrs' },
     { id: 'eq_fp_2', name: 'Jockey Pump Electric Motor', initialHours: 890.2, hasFuel: false, serviceInterval: 1000, lastServiceHours: 0, unit: 'Hrs' }
   ],
   stp: [
@@ -527,9 +527,9 @@ const DEFAULT_RUN_HOURS_LOGS = [
     startMeter: 1248.5,
     endMeter: 1256.0,
     runHours: 7.5,
-    fuelBefore: 425.0,
+    fuelBefore: 1020.0,
     fuelAdded: 0,
-    fuelAfter: 312.5,
+    fuelAfter: 907.5,
     fuelConsumed: 112.5,
     burnRate: 15.0,
     technician: 'Martin Naimes',
@@ -544,9 +544,9 @@ const DEFAULT_RUN_HOURS_LOGS = [
     startMeter: 1246.0,
     endMeter: 1248.5,
     runHours: 2.5,
-    fuelBefore: 460.0,
+    fuelBefore: 1055.0,
     fuelAdded: 0,
-    fuelAfter: 425.0,
+    fuelAfter: 1020.0,
     fuelConsumed: 35.0,
     burnRate: 14.0,
     technician: 'Martin Naimes',
@@ -556,16 +556,16 @@ const DEFAULT_RUN_HOURS_LOGS = [
     id: 'rh_2',
     procedureId: 'firepump',
     equipmentId: 'eq_fp_1',
-    equipmentName: 'Main Fire Pump Diesel Engine',
+    equipmentName: 'Main Fire Pump Electric Motor',
     dateTime: '2026-08-12 14:30',
     startMeter: 411.5,
     endMeter: 412.0,
     runHours: 0.5,
-    fuelBefore: 224.5,
+    fuelBefore: 0,
     fuelAdded: 0,
-    fuelAfter: 220.0,
-    fuelConsumed: 4.5,
-    burnRate: 9.0,
+    fuelAfter: 0,
+    fuelConsumed: 0,
+    burnRate: 0,
     technician: 'Mr. Crispin de Gracia',
     notes: 'Weekly churn test. Cut-in pressure verified at 100 PSI.'
   },
@@ -1465,6 +1465,27 @@ function loadRunHoursFromStorage() {
   if (saved) {
     try {
       runHoursLogs = JSON.parse(saved);
+      let dirty = false;
+      runHoursLogs = runHoursLogs.map(l => {
+        if (l.equipmentId === 'eq_fp_1' || l.equipmentName === 'Main Fire Pump Diesel Engine') {
+          if (l.equipmentName !== 'Main Fire Pump Electric Motor' || l.fuelBefore !== 0 || l.fuelAfter !== 0 || l.fuelConsumed !== 0 || l.burnRate !== 0) {
+            dirty = true;
+            return {
+              ...l,
+              equipmentName: 'Main Fire Pump Electric Motor',
+              fuelBefore: 0,
+              fuelAdded: 0,
+              fuelAfter: 0,
+              fuelConsumed: 0,
+              burnRate: 0
+            };
+          }
+        }
+        return l;
+      });
+      if (dirty) {
+        saveRunHoursToStorage();
+      }
     } catch(e) {
       console.error(e);
       runHoursLogs = [...DEFAULT_RUN_HOURS_LOGS];
@@ -1619,7 +1640,7 @@ window.updateRunHoursFormDefaults = function() {
   const fuelSection = document.getElementById('rh-fuel-section');
   if (eq.hasFuel) {
     fuelSection.style.display = 'grid';
-    const currentFuel = latestLog && latestLog.fuelAfter ? latestLog.fuelAfter : (eq.currentFuel || 400);
+    const currentFuel = latestLog && latestLog.fuelAfter ? latestLog.fuelAfter : (eq.currentFuel || 1000);
     document.getElementById('rh-fuel-before').value = currentFuel;
     document.getElementById('rh-fuel-added').value = 0;
     document.getElementById('rh-fuel-after').value = Math.max(0, currentFuel - 15);

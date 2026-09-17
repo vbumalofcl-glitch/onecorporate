@@ -1681,6 +1681,7 @@ const DEFAULT_ORG_STRUCTURE = [
     name: 'Engr. Roan Paul Gallegos',
     role: 'Building Emergency Coordinator (BEC)',
     tier: 'Incident Command',
+    subTier: 'leadership',
     phone: '09176598364',
     photo: 'assets/team/roan_paul_gallegos.jpeg',
     duties: 'Directs overall emergency response, primary Fire/Police/EMS liaison, authorizes evacuation/all-clear',
@@ -1691,6 +1692,7 @@ const DEFAULT_ORG_STRUCTURE = [
     name: 'Mr. Elmer Esteban',
     role: 'Assistant BEC / Facilities Lead',
     tier: 'Incident Command',
+    subTier: 'leadership',
     phone: '09296233556',
     photo: 'assets/team/elmer_esteban.jpeg',
     duties: 'Assumes command if BEC unavailable; controls utility shutdowns, HVAC, and mechanical spaces',
@@ -1701,6 +1703,7 @@ const DEFAULT_ORG_STRUCTURE = [
     name: 'Donald Geron',
     role: 'Property Management Officer / Assembly Area Marshal',
     tier: 'Incident Command',
+    subTier: 'officers',
     phone: '09175379173',
     photo: 'assets/team/donald_geron.jpeg',
     duties: 'Manages roll call at Assembly Area, accounts for occupants, prevents premature building re-entry',
@@ -1711,6 +1714,7 @@ const DEFAULT_ORG_STRUCTURE = [
     name: 'Jojo Bennagen',
     role: 'Security Lead & Lockdown Officer',
     tier: 'Incident Command',
+    subTier: 'officers',
     phone: '09461817526',
     photo: 'assets/team/jojo_bennagen.png',
     duties: 'Controls building access & CCTV, guides arriving law enforcement, initiates perimeter lockdown',
@@ -1721,6 +1725,7 @@ const DEFAULT_ORG_STRUCTURE = [
     name: 'Twinkle Domingo',
     role: 'Communications Officer / Admin',
     tier: 'Incident Command',
+    subTier: 'officers',
     phone: '09171599563',
     photo: 'assets/team/twinkle_domingo.jpeg',
     duties: 'Manages mass notification system, broadcasts tenant safety updates, sole authorized media spokesperson',
@@ -1731,6 +1736,7 @@ const DEFAULT_ORG_STRUCTURE = [
     name: 'Martin Naimes',
     role: 'First Aid Coordinator / Medical Officer',
     tier: 'Incident Command',
+    subTier: 'officers',
     phone: '09071505202',
     photo: 'assets/team/martin_naimes.png',
     duties: 'Administers CPR/AED, manages first aid triage, maintains emergency medical kits until EMS arrives',
@@ -1741,6 +1747,7 @@ const DEFAULT_ORG_STRUCTURE = [
     name: 'George Ybanez',
     role: 'Facilities Asst. Lead / Mechanical Liaison',
     tier: 'Incident Command',
+    subTier: 'officers',
     phone: '09485381602',
     photo: 'assets/team/george_ybanez.png',
     duties: 'Operates generator ATS, shuts gas/water mains, supervises elevator lockout and electrical panels',
@@ -1899,7 +1906,16 @@ function getActiveOrgStructure() {
   try {
     const stored = localStorage.getItem('onecorp_emergency_org_structure');
     if (stored) {
-      const list = JSON.parse(stored);
+      let list = JSON.parse(stored);
+      // Deduplicate if any duplicate IDs exist
+      const seenIds = new Set();
+      list = list.filter(m => {
+        if (!m || !m.id) return false;
+        if (seenIds.has(m.id)) return false;
+        seenIds.add(m.id);
+        return true;
+      });
+
       // Migrate executive photos
       const ceo = list.find(m => m.id === 'org_ceo');
       if (ceo && (!ceo.photo || ceo.photo.includes('fernando_laranang'))) {
@@ -1913,6 +1929,23 @@ function getActiveOrgStructure() {
       if (fd && (!fd.photo || fd.photo.includes('lorraine_josue'))) {
         fd.photo = 'assets/team/marjorie_olivete.png';
       }
+
+      // Initialize subTier for Incident Command members if missing
+      list.forEach(m => {
+        if (m.tier === 'Incident Command') {
+          if (!m.subTier) {
+            if (m.id === 'org_bec' || m.id === 'org_asst_bec' ||
+                (m.role && (m.role.toLowerCase().includes('building emergency coordinator') || m.role.toLowerCase().includes('assistant bec')))) {
+              m.subTier = 'leadership';
+            } else {
+              m.subTier = 'officers';
+            }
+          }
+        } else {
+          m.subTier = '';
+        }
+      });
+
       return list;
     }
   } catch (e) {
@@ -1952,9 +1985,18 @@ window.switchOrgView = function(viewType) {
   }
 };
 
-function createTreeNodeHtml(m, nodeClass = '', tierKey = '') {
+function isCommandLeadership(m) {
+  if (!m || m.tier !== 'Incident Command') return false;
+  if (m.subTier === 'leadership') return true;
+  if (m.subTier === 'officers') return false;
+  return m.id === 'org_bec' || m.id === 'org_asst_bec' || 
+    (m.role && (m.role.toLowerCase().includes('building emergency coordinator') || m.role.toLowerCase().includes('assistant bec')));
+}
+
+function createTreeNodeHtml(m, nodeClass = '', tierKey = '', subTierKey = '') {
   if (!m) return '';
   const tKey = tierKey || m.tier || 'Incident Command';
+  const subKey = subTierKey !== undefined && subTierKey !== '' ? subTierKey : (m.subTier || '');
   let avatarHtml = '';
   if (m.photo) {
     avatarHtml = `<img src="${m.photo}" alt="${escapeHtml(m.name)}" onerror="this.parentElement.innerHTML='<span class=\\'avatar-initials\\'>${escapeHtml(m.name.charAt(0))}</span>'">`;
@@ -1972,7 +2014,7 @@ function createTreeNodeHtml(m, nodeClass = '', tierKey = '') {
          ondragstart="handleOrgDragStart(event, '${m.id}')"
          ondragover="handleTreeDragOver(event)"
          ondragleave="handleTreeDragLeave(event)"
-         ondrop="handleTreeDropOnNode(event, '${m.id}', '${tKey}')"
+         ondrop="handleTreeDropOnNode(event, '${m.id}', '${tKey}', '${subKey}')"
          ondragend="handleOrgDragEnd(event)"
          onclick="openEditOrgMemberModal('${m.id}')" 
          title="Drag up/down/left/right to reorder or change tier. Click to edit (${escapeHtml(m.name)})">
@@ -2003,7 +2045,7 @@ window.handleTreeLevelDragLeave = function(event) {
   if (target) target.classList.remove('drag-over-tree-level');
 };
 
-window.handleTreeLevelDrop = function(event, targetTier) {
+window.handleTreeLevelDrop = function(event, targetTier, targetSubTier = '') {
   event.preventDefault();
   event.stopPropagation();
   document.querySelectorAll('.drag-over-tree-level').forEach(el => el.classList.remove('drag-over-tree-level'));
@@ -2015,6 +2057,11 @@ window.handleTreeLevelDrop = function(event, targetTier) {
   const member = orgList.find(m => m.id === draggedMemberId);
   if (member) {
     member.tier = targetTier;
+    if (targetTier === 'Incident Command') {
+      member.subTier = targetSubTier || 'officers';
+    } else {
+      member.subTier = '';
+    }
     saveActiveOrgStructure(orgList);
     renderEmergencyOrgStructure();
   }
@@ -2036,7 +2083,7 @@ window.handleTreeDragLeave = function(event) {
   if (targetNode) targetNode.classList.remove('drag-over-card');
 };
 
-window.handleTreeDropOnNode = function(event, targetMemberId, targetTier) {
+window.handleTreeDropOnNode = function(event, targetMemberId, targetTier, targetSubTier = '') {
   event.preventDefault();
   event.stopPropagation();
   document.querySelectorAll('.drag-over-card').forEach(el => el.classList.remove('drag-over-card'));
@@ -2046,11 +2093,16 @@ window.handleTreeDropOnNode = function(event, targetMemberId, targetTier) {
 
   const orgList = getActiveOrgStructure();
   const sourceIndex = orgList.findIndex(m => m.id === draggedMemberId);
-  const targetIndex = orgList.findIndex(m => m.id === targetMemberId);
+  const targetItem = orgList.find(m => m.id === targetMemberId);
 
-  if (sourceIndex > -1 && targetIndex > -1) {
+  if (sourceIndex > -1 && targetItem) {
     const draggedItem = orgList.splice(sourceIndex, 1)[0];
-    draggedItem.tier = targetTier;
+    draggedItem.tier = targetTier || targetItem.tier;
+    if (draggedItem.tier === 'Incident Command') {
+      draggedItem.subTier = targetSubTier || targetItem.subTier || 'leadership';
+    } else {
+      draggedItem.subTier = '';
+    }
 
     const newTargetIndex = orgList.findIndex(m => m.id === targetMemberId);
     orgList.splice(newTargetIndex, 0, draggedItem);
@@ -2070,10 +2122,8 @@ window.renderHierarchicalOrgChart = function() {
   const orgList = getActiveOrgStructure();
 
   const executives = orgList.filter(m => m.tier === 'Executive Leadership');
-  const bec = orgList.find(m => m.id === 'org_bec' || (m.role && m.role.toLowerCase().includes('coordinator'))) || orgList.find(m => m.tier === 'Incident Command');
-  const asstBec = orgList.find(m => m.id === 'org_asst_bec' || (m.role && m.role.toLowerCase().includes('assistant bec')));
-  
-  const officers = orgList.filter(m => m.tier === 'Incident Command' && m !== bec && m !== asstBec);
+  const commandLeadership = orgList.filter(m => isCommandLeadership(m));
+  const officers = orgList.filter(m => m.tier === 'Incident Command' && !isCommandLeadership(m));
   const wardens = orgList.filter(m => m.tier === 'Floor Operations');
   const mobility = orgList.filter(m => m.tier === 'Specialized Rescue');
   const engineers = orgList.filter(m => m.tier === 'Technical Support');
@@ -2083,14 +2133,16 @@ window.renderHierarchicalOrgChart = function() {
       
       <!-- LEVEL 1: Executive Leadership -->
       <div style="font-size: 11px; font-weight: 800; color: #f59e0b; text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.5px;">
-        Level 1 • Executive Leadership & Corporate Governance
+        Level 1 • Executive Leadership & Corporate Governance (${executives.length})
       </div>
       <div class="tree-level" 
            ondragover="handleTreeLevelDragOver(event)" 
            ondragleave="handleTreeLevelDragLeave(event)" 
            ondrop="handleTreeLevelDrop(event, 'Executive Leadership')">
         <div class="tree-node-group">
-          ${executives.map(m => createTreeNodeHtml(m, 'node-executive', 'Executive Leadership')).join('')}
+          ${executives.length > 0 
+            ? executives.map(m => createTreeNodeHtml(m, 'node-executive', 'Executive Leadership')).join('') 
+            : '<div style="color: rgba(255,255,255,0.4); font-size: 11px; font-style: italic; padding: 8px;">Drag Executive Leadership here</div>'}
         </div>
       </div>
 
@@ -2098,15 +2150,20 @@ window.renderHierarchicalOrgChart = function() {
 
       <!-- LEVEL 2: Incident Command Leadership -->
       <div style="font-size: 11px; font-weight: 800; color: #ef4444; text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.5px;">
-        Level 2 • Incident Command Leadership (BERT Core)
+        Level 2 • Incident Command Leadership (BERT Core) (${commandLeadership.length})
       </div>
       <div class="tree-level" 
            ondragover="handleTreeLevelDragOver(event)" 
            ondragleave="handleTreeLevelDragLeave(event)" 
-           ondrop="handleTreeLevelDrop(event, 'Incident Command')">
-        <div class="tree-node-group">
-          ${bec ? createTreeNodeHtml(bec, 'node-command', 'Incident Command') : ''}
-          ${asstBec ? createTreeNodeHtml(asstBec, 'node-command', 'Incident Command') : ''}
+           ondrop="handleTreeLevelDrop(event, 'Incident Command', 'leadership')">
+        <div class="tree-node-group"
+             ondragover="handleTreeLevelDragOver(event)" 
+             ondragleave="handleTreeLevelDragLeave(event)" 
+             ondrop="handleTreeLevelDrop(event, 'Incident Command', 'leadership')">
+          ${commandLeadership.length > 0
+            ? commandLeadership.map(m => createTreeNodeHtml(m, 'node-command', 'Incident Command', 'leadership')).join('')
+            : '<div style="color: rgba(255,255,255,0.4); font-size: 11px; font-style: italic; padding: 8px;">Drag Incident Commander / BEC here</div>'
+          }
         </div>
       </div>
 
@@ -2116,19 +2173,25 @@ window.renderHierarchicalOrgChart = function() {
       <!-- LEVEL 3: Functional Emergency Officers & Operational Leads -->
       <div style="width: 100%; text-align: center; margin-top: 10px;">
         <span style="font-size: 11px; font-weight: 800; color: #38bdf8; text-transform: uppercase; letter-spacing: 0.5px;">
-          Level 3 • Functional Coordinators & Operational Leads
+          Level 3 • Functional Coordinators & Operational Leads (${officers.length})
         </span>
       </div>
       <div class="tree-branch-grid"
            ondragover="handleTreeLevelDragOver(event)" 
            ondragleave="handleTreeLevelDragLeave(event)" 
-           ondrop="handleTreeLevelDrop(event, 'Incident Command')">
-        ${officers.map(m => `
-          <div class="tree-branch-col">
-            <span class="tree-category-tag">${escapeHtml(m.role.split('/')[0].replace('(Primary)', '').trim())}</span>
-            ${createTreeNodeHtml(m, 'node-officer', 'Incident Command')}
-          </div>
-        `).join('')}
+           ondrop="handleTreeLevelDrop(event, 'Incident Command', 'officers')">
+        ${officers.length > 0
+          ? officers.map(m => `
+            <div class="tree-branch-col"
+                 ondragover="handleTreeLevelDragOver(event)" 
+                 ondragleave="handleTreeLevelDragLeave(event)" 
+                 ondrop="handleTreeLevelDrop(event, 'Incident Command', 'officers')">
+              <span class="tree-category-tag">${escapeHtml((m.role || '').split('/')[0].replace('(Primary)', '').trim())}</span>
+              ${createTreeNodeHtml(m, 'node-officer', 'Incident Command', 'officers')}
+            </div>
+          `).join('')
+          : '<div style="width: 100%; text-align: center; color: rgba(255,255,255,0.4); font-size: 11px; font-style: italic; padding: 8px;">Drag Functional Coordinators here</div>'
+        }
       </div>
 
       <div class="tree-stem-down" style="margin-top: 20px;"></div>
@@ -2145,7 +2208,10 @@ window.renderHierarchicalOrgChart = function() {
             Level 4A • Floor Wardens & Evacuation Sweepers (${wardens.length})
           </span>
           <div class="tree-node-group" style="justify-content: center;">
-            ${wardens.map(m => createTreeNodeHtml(m, 'node-warden', 'Floor Operations')).join('')}
+            ${wardens.length > 0
+              ? wardens.map(m => createTreeNodeHtml(m, 'node-warden', 'Floor Operations')).join('')
+              : '<div style="color: rgba(255,255,255,0.4); font-size: 11px; font-style: italic; padding: 8px;">Drag Floor Wardens here</div>'
+            }
           </div>
         </div>
 
@@ -2158,7 +2224,10 @@ window.renderHierarchicalOrgChart = function() {
             Level 4B • Mobility & Area of Refuge (${mobility.length})
           </span>
           <div class="tree-sub-list">
-            ${mobility.map(m => createTreeNodeHtml(m, 'node-rescue', 'Specialized Rescue')).join('')}
+            ${mobility.length > 0
+              ? mobility.map(m => createTreeNodeHtml(m, 'node-rescue', 'Specialized Rescue')).join('')
+              : '<div style="color: rgba(255,255,255,0.4); font-size: 11px; font-style: italic; padding: 8px;">Drag Mobility Officers here</div>'
+            }
           </div>
         </div>
       </div>
@@ -2176,7 +2245,10 @@ window.renderHierarchicalOrgChart = function() {
             Level 5 • In-House Engineering & Technical Support Response Team (${engineers.length})
           </span>
           <div class="tree-node-group" style="justify-content: center;">
-            ${engineers.map(m => createTreeNodeHtml(m, 'node-engineer', 'Technical Support')).join('')}
+            ${engineers.length > 0
+              ? engineers.map(m => createTreeNodeHtml(m, 'node-engineer', 'Technical Support')).join('')
+              : '<div style="color: rgba(255,255,255,0.4); font-size: 11px; font-style: italic; padding: 8px;">Drag Engineers / Support here</div>'
+            }
           </div>
         </div>
       </div>
@@ -2325,6 +2397,10 @@ window.handleOrgDragStart = function(event, memberId) {
   if (el) {
     setTimeout(() => el.classList.add('dragging'), 0);
   }
+  const treeEl = document.getElementById(`tree-node-${memberId}`);
+  if (treeEl) {
+    setTimeout(() => treeEl.classList.add('dragging'), 0);
+  }
 };
 
 window.handleOrgDragOver = function(event) {
@@ -2377,6 +2453,11 @@ window.handleOrgDrop = function(event, targetMemberId, tierKey) {
   if (sourceIndex > -1 && targetIndex > -1) {
     const draggedItem = orgList.splice(sourceIndex, 1)[0];
     draggedItem.tier = tierKey; // update tier to target card's tier
+    if (tierKey === 'Incident Command') {
+      draggedItem.subTier = orgList[targetIndex]?.subTier || 'leadership';
+    } else {
+      draggedItem.subTier = '';
+    }
     
     // Insert relative to target
     const newTargetIndex = orgList.findIndex(m => m.id === targetMemberId);
@@ -2400,6 +2481,11 @@ window.handleTierDrop = function(event, tierKey) {
   const member = orgList.find(m => m.id === draggedMemberId);
   if (member) {
     member.tier = tierKey;
+    if (tierKey === 'Incident Command') {
+      if (!member.subTier) member.subTier = 'officers';
+    } else {
+      member.subTier = '';
+    }
     // Move to end of that tier
     saveActiveOrgStructure(orgList);
     renderEmergencyOrgStructure();
@@ -2408,11 +2494,12 @@ window.handleTierDrop = function(event, tierKey) {
 
 window.handleOrgDragEnd = function(event) {
   draggedMemberId = null;
-  document.querySelectorAll('.org-member-card').forEach(el => {
+  document.querySelectorAll('.org-member-card, .tree-node-box').forEach(el => {
     el.classList.remove('dragging');
     el.classList.remove('drag-over-card');
   });
   document.querySelectorAll('.org-tier-section').forEach(el => el.classList.remove('drag-over-tier'));
+  document.querySelectorAll('.tree-level, .tree-branch-col, .tree-branch-grid').forEach(el => el.classList.remove('drag-over-tree-level'));
 };
 
 // Org Member Modal Handlers
@@ -2536,6 +2623,11 @@ window.saveOrgMemberModal = function() {
       member.name = name;
       member.role = role;
       member.tier = tier;
+      if (tier === 'Incident Command') {
+        if (!member.subTier) member.subTier = 'officers';
+      } else {
+        member.subTier = '';
+      }
       member.phone = phone;
       member.duties = duties;
       if (modalTempPhotoData !== null) {
@@ -2549,6 +2641,7 @@ window.saveOrgMemberModal = function() {
       name: name,
       role: role,
       tier: tier,
+      subTier: tier === 'Incident Command' ? 'officers' : '',
       phone: phone,
       photo: modalTempPhotoData || '',
       duties: duties,

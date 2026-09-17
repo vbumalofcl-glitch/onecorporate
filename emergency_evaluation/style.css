@@ -1507,6 +1507,27 @@ body {
   box-shadow: 0 6px 20px rgba(56, 189, 248, 0.3);
 }
 
+.tree-node-box.dragging {
+  opacity: 0.4;
+  transform: scale(0.96);
+  border: 2px dashed #38bdf8;
+}
+
+.tree-node-box.drag-over-card {
+  border-color: #38bdf8;
+  box-shadow: 0 0 16px rgba(56, 189, 248, 0.5);
+  transform: scale(1.03);
+}
+
+.tree-level.drag-over-tree-level,
+.tree-branch-col.drag-over-tree-level,
+.tree-branch-grid.drag-over-tree-level {
+  outline: 2px dashed #38bdf8;
+  outline-offset: 4px;
+  background: rgba(56, 189, 248, 0.06);
+  border-radius: 8px;
+}
+
 .tree-node-box.node-executive {
   border-left: 4px solid #f59e0b;
 }

@@ -898,6 +898,19 @@ body {
   color: #fff;
 }
 
+.btn-warning {
+  background-color: rgba(245, 158, 11, 0.15);
+  border-color: rgba(245, 158, 11, 0.35);
+  color: #fbbf24;
+}
+
+.btn-warning:hover {
+  background-color: #d97706;
+  border-color: #f59e0b;
+  color: #fff;
+  box-shadow: 0 4px 10px rgba(245, 158, 11, 0.3);
+}
+
 .btn-success {
   background-color: var(--status-completed);
   color: #fff;
@@ -1141,13 +1154,24 @@ body {
   border: 1px solid var(--border-color);
   border-left: 3.5px solid var(--accent-primary);
   border-radius: 6px;
-  padding: 6px 9px;
+  padding: 6px 8px;
   width: 220px;
   cursor: grab;
   position: relative;
   transition: all var(--transition-speed);
   user-select: none;
   box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.task-card-tech-row {
+  margin-top: 5px;
+  padding-top: 4px;
+  border-top: 1px dashed rgba(255, 255, 255, 0.08);
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .task-card:active {
@@ -2867,35 +2891,81 @@ body {
 }
 
 .periodic-activity-card {
-  background: rgba(15, 23, 42, 0.7);
+  background: rgba(15, 23, 42, 0.75);
   border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
+  border-left: 3.5px solid #38bdf8;
   border-radius: 8px;
-  padding: 16px;
+  padding: 12px 14px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  gap: 12px;
+  gap: 8px;
   transition: all 0.2s ease;
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
 .periodic-activity-card:hover {
-  border-color: rgba(59, 130, 246, 0.4);
+  border-color: rgba(56, 189, 248, 0.4);
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
 }
 
 .periodic-card-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  gap: 10px;
+  gap: 8px;
 }
 
 .periodic-card-title {
   font-weight: 700;
-  font-size: 13px;
-  color: #e2e8f0;
+  font-size: 12.5px;
+  color: #f1f5f9;
+  line-height: 1.35;
+  word-break: break-word;
+}
+
+.periodic-card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  margin-top: 6px;
+}
+
+.periodic-pill-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #cbd5e1;
   line-height: 1.3;
+}
+
+.periodic-card-tech-section {
+  margin-top: 8px;
+  padding-top: 6px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.periodic-tech-label {
+  font-size: 9px;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .periodic-card-meta {
@@ -2910,8 +2980,137 @@ body {
   justify-content: space-between;
   align-items: center;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
-  padding-top: 10px;
+  padding-top: 8px;
   margin-top: 4px;
+  gap: 6px;
+}
+
+/* ==================== TECHNICIAN MULTI-SELECT & BADGES ==================== */
+.tech-multiselect {
+  position: relative;
+  width: 100%;
+}
+
+.tech-multiselect-trigger:hover,
+.tech-multiselect-trigger:focus {
+  border-color: rgba(56, 189, 248, 0.5) !important;
+  outline: none;
+}
+
+.tech-multiselect-menu {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.tech-option-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.tech-option-row:hover {
+  background: rgba(56, 189, 248, 0.1);
+}
+
+.tech-option-row.selected {
+  background: rgba(56, 189, 248, 0.15);
+}
+
+.tech-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(56, 189, 248, 0.15);
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  color: #7dd3fc;
+  font-size: 11px;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: 4px;
+  line-height: 1.3;
+}
+
+.tech-chip-remove {
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 3px;
+  font-size: 12px;
+  color: #94a3b8;
+  font-weight: bold;
+  border-radius: 50%;
+  width: 14px;
+  height: 14px;
+  line-height: 1;
+}
+
+.tech-chip-remove:hover {
+  background: rgba(239, 68, 68, 0.2);
+  color: #f87171;
+}
+
+/* Card Technician Badges */
+.card-technicians-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+  align-items: center;
+}
+
+.tech-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 1.5px 6px;
+  border-radius: 4px;
+  background: rgba(56, 189, 248, 0.12);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  color: #7dd3fc;
+  font-size: 9.5px;
+  font-weight: 500;
+  max-width: 100%;
+  box-sizing: border-box;
+  line-height: 1.25;
+  overflow: hidden;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.tech-badge:hover {
+  background: rgba(56, 189, 248, 0.2);
+  border-color: rgba(56, 189, 248, 0.45);
+}
+
+.tech-badge .tech-badge-icon {
+  flex-shrink: 0;
+  font-size: 9.5px;
+  line-height: 1;
+}
+
+.tech-badge .tech-badge-name {
+  display: inline-block;
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+.tech-badge.unassigned {
+  background: rgba(148, 163, 184, 0.08);
+  border-color: rgba(148, 163, 184, 0.2);
+  color: #94a3b8;
+  font-style: italic;
 }
 
 
@@ -3291,7 +3490,9 @@ body {
 }
 
 .tree-level.drag-over-tree-level,
-.tree-branch-col.drag-over-tree-level {
+.tree-node-group.drag-over-tree-level,
+.tree-branch-col.drag-over-tree-level,
+.tree-branch-grid.drag-over-tree-level {
   background: rgba(56, 189, 248, 0.12);
   outline: 2px dashed #38bdf8;
 }
@@ -3327,6 +3528,18 @@ body {
 
 .tree-node-box:active {
   cursor: grabbing;
+}
+
+.tree-node-box.dragging {
+  opacity: 0.4;
+  transform: scale(0.96);
+  border: 2px dashed #38bdf8;
+}
+
+.tree-node-box.drag-over-card {
+  border-color: #38bdf8;
+  box-shadow: 0 0 16px rgba(56, 189, 248, 0.5);
+  transform: scale(1.03);
 }
 
 .tree-node-box.node-executive { border-left: 4px solid #f59e0b; }

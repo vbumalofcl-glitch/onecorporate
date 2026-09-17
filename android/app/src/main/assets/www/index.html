@@ -482,6 +482,10 @@
                 <span>Auto-Populate Daily</span>
               </button>
               <button class="btn btn-danger" id="btn-clear-timeline" onclick="clearTimelineTasks()">Clear All</button>
+              <button class="btn btn-warning" id="btn-reset-timeline-activities" onclick="promptResetTimelineActivities()" title="Reset operational status of all timeline activities to Pending and remove attached photos">
+                <svg viewBox="0 0 24 24" width="15" height="15" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><polyline points="3 3 3 8 8 8"></polyline></svg>
+                <span>Reset Activity</span>
+              </button>
             </div>
             
             <div class="control-group">
@@ -1418,7 +1422,7 @@
                   </div>
                   <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted); margin-top: 4px;">
                     <span>Diesel Fuel Tank</span>
-                    <strong style="color: #4ade80;">88% (880 L)</strong>
+                    <strong style="color: #4ade80;">85% (1,020 L / 1,200 L)</strong>
                   </div>
                   <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted); margin-top: 4px;">
                     <span>Battery Voltage</span>
@@ -1446,7 +1450,7 @@
                     <strong style="color: #facc15;">3 starts/day</strong>
                   </div>
                   <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted); margin-top: 4px;">
-                    <span>Main Diesel Engine</span>
+                    <span>Main Electric Motor</span>
                     <strong style="color: #4ade80;">100% Ready</strong>
                   </div>
                   <div style="display: flex; justify-content: space-between; font-size: 10px; color: #94a3b8; margin-top: 6px; padding-top: 4px; border-top: 1px dashed rgba(255,255,255,0.1);">
@@ -1789,25 +1793,29 @@
                 </select>
               </div>
               
-              <div class="form-group">
-                <label for="form-task-technician" style="font-size: 12px; font-weight: 600; color: #e2e8f0; margin-bottom: 6px; display: block;">Assigned Technician</label>
-                <select id="form-task-technician" style="width: 100%; padding: 10px 14px; font-size: 13px; background: rgba(15, 23, 42, 0.9); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 6px; color: #ffffff;">
-                  <option value="">Unassigned</option>
-                  <option value="Engr. Roan Paul Gallegos (BM Manager)">Engr. Roan Paul Gallegos (BM Manager)</option>
-                  <option value="Mr. Elmer Esteban (BM Supervisor)">Mr. Elmer Esteban (BM Supervisor)</option>
-                  <option value="Mr. Martin Naimes (Foreman Electrician)">Mr. Martin Naimes (Foreman Electrician)</option>
-                  <option value="Mr. Crispin de Gracia (Electrician)">Mr. Crispin de Gracia (Electrician)</option>
-                  <option value="Mr. Robert Apilado (Fabrication/Mason)">Mr. Robert Apilado (Fabrication/Mason)</option>
-                  <option value="Mr. George Ybañez (Plumber)">Mr. George Ybañez (Plumber)</option>
-                  <option value="Ms. Kate Telles (Housekeeping)">Ms. Kate Telles (Housekeeping)</option>
-                  <option value="Mr. Mandy Mejia (Housekeeping)">Mr. Mandy Mejia (Housekeeping)</option>
-                  <option value="Ms. Annalyn Penuliar (Housekeeping)">Ms. Annalyn Penuliar (Housekeeping)</option>
-                  <option value="Mr. Virgilio Ducusin (CCTV Operator)">Mr. Virgilio Ducusin (CCTV Operator)</option>
-                  <option value="Ms. Cheryl Gonzales (CCTV Operator)">Ms. Cheryl Gonzales (CCTV Operator)</option>
-                  <option value="Mr. Jojo Bennagen (Agency Security)">Mr. Jojo Bennagen (Agency Security)</option>
-                  <option value="Mr. Ruben Banez (Agency Security)">Mr. Ruben Banez (Agency Security)</option>
-                  <option value="Mr. Berson Pukchas (Agency Security)">Mr. Berson Pukchas (Agency Security)</option>
-                </select>
+              <div class="form-group" id="form-task-technician-group">
+                <label style="font-size: 12px; font-weight: 600; color: #e2e8f0; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center;">
+                  <span>Assigned Technician(s)</span>
+                  <span id="tech-multiselect-badge" style="font-size: 10px; font-weight: 700; color: #94a3b8; background: rgba(148, 163, 184, 0.1); padding: 1px 6px; border-radius: 4px; border: 1px solid rgba(148, 163, 184, 0.2);">0 Selected</span>
+                </label>
+                <input type="hidden" id="form-task-technician" value="">
+                <div class="tech-multiselect" id="tech-multiselect-container" style="position: relative;">
+                  <button type="button" id="tech-multiselect-trigger" class="tech-multiselect-trigger" onclick="toggleTechDropdown(event)" style="width: 100%; min-height: 42px; padding: 8px 12px; font-size: 13px; background: rgba(15, 23, 42, 0.9); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 6px; color: #ffffff; text-align: left; display: flex; align-items: center; justify-content: space-between; cursor: pointer; gap: 8px; transition: border-color 0.2s;">
+                    <span id="tech-multiselect-placeholder" style="color: #94a3b8; font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Select Technicians...</span>
+                    <span style="font-size: 10px; color: #94a3b8; flex-shrink: 0;">▼</span>
+                  </button>
+                  
+                  <div id="tech-selected-chips" class="tech-selected-chips" style="display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px;"></div>
+
+                  <div id="tech-multiselect-menu" class="tech-multiselect-menu" style="display: none; position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: #0f172a; border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.6); z-index: 1050; padding: 10px; flex-direction: column;">
+                    <div style="display: flex; gap: 6px; margin-bottom: 8px; align-items: center;">
+                      <input type="text" id="tech-multiselect-search" placeholder="Search technician or role..." oninput="filterTechOptions(this.value)" style="flex: 1; padding: 6px 10px; font-size: 12px; background: rgba(30, 41, 59, 0.8); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 5px; color: #fff; outline: none;">
+                      <button type="button" class="btn btn-secondary" onclick="clearAllTechnicianSelections(event)" style="padding: 4px 8px; font-size: 10.5px; white-space: nowrap;">Clear</button>
+                      <button type="button" class="btn btn-primary" onclick="selectAllTechnicians(event)" style="padding: 4px 8px; font-size: 10.5px; white-space: nowrap;">All</button>
+                    </div>
+                    <div id="tech-options-list" class="tech-options-list" style="overflow-y: auto; max-height: 200px; display: flex; flex-direction: column; gap: 4px;"></div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -2888,30 +2896,46 @@
   </div>
 
   <!-- 3. Change PIN Modal -->
-  <div class="modal-backdrop" id="change-pin-modal" style="display: none;">
+  <div class="modal-backdrop" id="change-pin-modal" style="display: none;" onclick="if(event.target===this) SecurityEngine.closeChangePinModal()">
     <div class="modal-card" style="max-width: 440px;">
       <div class="modal-header" style="padding: 16px 20px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
-        <h3 style="font-size: 15px; font-weight: 700; color: #fff; margin: 0;">Change Staff PIN</h3>
+        <h3 style="font-size: 15px; font-weight: 700; color: #fff; margin: 0; display: flex; align-items: center; gap: 8px;">
+          <span>🔑</span> Change Staff Security PIN
+        </h3>
         <button type="button" class="modal-close-btn" onclick="SecurityEngine.closeChangePinModal()">&times;</button>
       </div>
       <form onsubmit="SecurityEngine.handleSaveNewPin(event)" style="padding: 20px;">
         <p style="font-size: 12px; color: #94a3b8; margin-bottom: 16px;">Updating PIN for active user: <strong id="change-pin-user-name" style="color: #38bdf8;"></strong></p>
+        
         <div class="form-group" style="margin-bottom: 12px;">
           <label style="display: block; font-size: 11px; font-weight: 700; color: #cbd5e1; text-transform: uppercase; margin-bottom: 4px;">Current PIN or Admin Password</label>
-          <input type="password" id="form-current-credential" required style="width: 100%; padding: 8px 12px; background: rgba(0,0,0,0.3); border: 1px solid var(--border-color); border-radius: 6px; color: #fff; font-size: 13px;">
+          <div style="position: relative; display: flex; align-items: center;">
+            <input type="password" id="form-current-credential" required placeholder="Enter current PIN or Admin password" style="width: 100%; padding: 8px 36px 8px 12px; background: rgba(0,0,0,0.3); border: 1px solid var(--border-color); border-radius: 6px; color: #fff; font-size: 13px; font-family: monospace;">
+            <button type="button" class="pwd-toggle-btn" onclick="SecurityEngine.togglePasswordVisibility('form-current-credential', this)" style="position: absolute; right: 8px; background: none; border: none; color: #94a3b8; cursor: pointer; padding: 4px; font-size: 13px;" title="Toggle visibility">👁️</button>
+          </div>
+          <small style="color: #64748b; font-size: 10px; margin-top: 3px; display: block;">Default Staff PIN: 123456 (or master Admin password: admin / Admin@OneCorp2026)</small>
         </div>
+
         <div class="form-group" style="margin-bottom: 12px;">
           <label style="display: block; font-size: 11px; font-weight: 700; color: #cbd5e1; text-transform: uppercase; margin-bottom: 4px;">New 6-Digit PIN</label>
-          <input type="password" id="form-new-pin" maxlength="6" pattern="[0-9]{4,6}" required placeholder="6 numeric digits (e.g. 654321)" style="width: 100%; padding: 8px 12px; background: rgba(0,0,0,0.3); border: 1px solid var(--border-color); border-radius: 6px; color: #fff; font-size: 13px;">
+          <div style="position: relative; display: flex; align-items: center;">
+            <input type="password" id="form-new-pin" maxlength="6" pattern="[0-9]{6}" inputmode="numeric" required placeholder="6 numeric digits (e.g. 654321)" style="width: 100%; padding: 8px 36px 8px 12px; background: rgba(0,0,0,0.3); border: 1px solid var(--border-color); border-radius: 6px; color: #fff; font-size: 13px; font-family: monospace; letter-spacing: 2px;">
+            <button type="button" class="pwd-toggle-btn" onclick="SecurityEngine.togglePasswordVisibility('form-new-pin', this)" style="position: absolute; right: 8px; background: none; border: none; color: #94a3b8; cursor: pointer; padding: 4px; font-size: 13px;" title="Toggle visibility">👁️</button>
+          </div>
         </div>
+
         <div class="form-group" style="margin-bottom: 16px;">
           <label style="display: block; font-size: 11px; font-weight: 700; color: #cbd5e1; text-transform: uppercase; margin-bottom: 4px;">Confirm New PIN</label>
-          <input type="password" id="form-confirm-pin" maxlength="6" pattern="[0-9]{4,6}" required placeholder="Re-enter 6 numeric digits" style="width: 100%; padding: 8px 12px; background: rgba(0,0,0,0.3); border: 1px solid var(--border-color); border-radius: 6px; color: #fff; font-size: 13px;">
+          <div style="position: relative; display: flex; align-items: center;">
+            <input type="password" id="form-confirm-pin" maxlength="6" pattern="[0-9]{6}" inputmode="numeric" required placeholder="Re-enter 6 numeric digits" style="width: 100%; padding: 8px 36px 8px 12px; background: rgba(0,0,0,0.3); border: 1px solid var(--border-color); border-radius: 6px; color: #fff; font-size: 13px; font-family: monospace; letter-spacing: 2px;">
+            <button type="button" class="pwd-toggle-btn" onclick="SecurityEngine.togglePasswordVisibility('form-confirm-pin', this)" style="position: absolute; right: 8px; background: none; border: none; color: #94a3b8; cursor: pointer; padding: 4px; font-size: 13px;" title="Toggle visibility">👁️</button>
+          </div>
         </div>
-        <div id="change-pin-msg" style="font-size: 12px; margin-bottom: 12px;"></div>
+
+        <div id="change-pin-msg" style="font-size: 12px; margin-bottom: 12px; min-height: 18px;"></div>
         <div style="display: flex; justify-content: flex-end; gap: 8px;">
           <button type="button" class="btn btn-secondary" onclick="SecurityEngine.closeChangePinModal()">Cancel</button>
-          <button type="submit" class="btn btn-primary">Update PIN</button>
+          <button type="submit" class="btn btn-primary" style="font-weight: 700;">Update PIN</button>
         </div>
       </form>
     </div>
@@ -3021,6 +3045,43 @@
     </div>
   </div>
 
+
+    <!-- Reset Daily Timeline Activities Confirmation Warning Modal -->
+  <div id="modal-reset-timeline" class="modal-backdrop" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: rgba(0,0,0,0.7); z-index: 2000; align-items: center; justify-content: center; backdrop-filter: blur(6px);" onclick="if(event.target===this) window.closeResetTimelineModal()">
+    <div class="modal-card" style="max-width: 480px; width: 92%; background: #0f172a; border: 1px solid rgba(245, 158, 11, 0.4); border-radius: 12px; padding: 24px; color: #f8fafc; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7); position: relative;">
+      
+      <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+        <div style="width: 44px; height: 44px; border-radius: 50%; background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.4); display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: #fbbf24; font-size: 22px;">
+          ⚠️
+        </div>
+        <div>
+          <h3 style="font-size: 16px; font-weight: 800; color: #ffffff; margin: 0;">Reset Daily Timeline Activities?</h3>
+          <p style="font-size: 11.5px; color: #94a3b8; margin: 2px 0 0 0;">Affects all active tasks on Today's Daily Timeline (<span id="reset-timeline-task-count" style="color: #38bdf8; font-weight: 700;">All Activities</span>)</p>
+        </div>
+      </div>
+
+      <div style="background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.25); border-radius: 8px; padding: 14px; margin-bottom: 20px;">
+        <div style="font-size: 12px; font-weight: 700; color: #fbbf24; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">
+          Please review the reset consequences:
+        </div>
+        <ul style="font-size: 12px; color: #e2e8f0; line-height: 1.6; margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 6px;">
+          <li><strong>Operational Status:</strong> All scheduled activities will be set back to <span style="color: #38bdf8; font-weight: 700;">Pending</span>.</li>
+          <li><strong>Attached Photos:</strong> All before and after inspection photos will be <span style="color: #f87171; font-weight: 700;">permanently deleted</span>.</li>
+          <li><strong>Timeline Preservation:</strong> All task cards <span style="color: #34d399; font-weight: 700;">will remain in their designated timeline slots</span> (scheduled hours are kept intact).</li>
+        </ul>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 10px;">
+        <button type="button" class="btn btn-secondary" onclick="window.closeResetTimelineModal()" style="padding: 8px 16px; font-size: 12px; font-weight: 600;">
+          Cancel
+        </button>
+        <button type="button" class="btn btn-warning" onclick="window.confirmResetTimelineActivities()" style="padding: 8px 20px; font-size: 12px; font-weight: 700; background: #d97706; border: 1px solid #f59e0b; color: #ffffff; display: inline-flex; align-items: center; gap: 6px;">
+          <span>🔄</span> Confirm Reset
+        </button>
+      </div>
+
+    </div>
+  </div>
 
   <!-- Exit Application Confirmation Modal with Save Prompt -->
   <div id="modal-exit-app" class="modal-backdrop" style="display: none;" onclick="if(event.target===this) window.closeExitAppModal()">

@@ -44,7 +44,7 @@
   };
 
   // --- DEFAULT CREDENTIALS REGISTRY ---
-  // Default PIN: 1234 for all staff; 9999 / Admin@OneCorp2026 for Admin; tenant123 for tenants
+  // Default PIN: 123456 for all staff; 999999 / Admin@OneCorp2026 for Admin; tenant123 for tenants
   const DEFAULT_SECURITY_CONFIG = {
     inactivityTimeoutMinutes: 15,
     maxFailedAttempts: 5,
@@ -383,17 +383,30 @@
           u.salt = SecurityCrypto.generateSalt();
           modified = true;
         }
-        if (!u.pinHash) {
-          const pin = (u.id === 'user_admin') ? '9999' : '1234';
-          u.pinHash = await SecurityCrypto.hashPassword(pin, u.salt);
+
+        const isAdminUser = (u.id === 'user_admin' || u.id === 'user_admin_persona' || u.role === 'Admin' || u.role === 'Admin persona');
+        const defaultPin = isAdminUser ? '999999' : '123456';
+
+        // Check if plainPin is missing, initialize with standard 6-digit default
+        if (!u.plainPin) {
+          u.plainPin = defaultPin;
           modified = true;
         }
+
+        // Detect uninitialized or legacy 4-digit pin hashes ('1234' or '9999') and upgrade to 6 digits
+        const old4DigitHash = await SecurityCrypto.hashPassword(isAdminUser ? '9999' : '1234', u.salt);
+        if (!u.pinHash || u.pinHash === old4DigitHash) {
+          u.pinHash = await SecurityCrypto.hashPassword(u.plainPin, u.salt);
+          modified = true;
+        }
+
+        // Ensure passwordHash is properly populated
         if (!u.passwordHash) {
-          let pwd = 'password123';
-          if (u.id === 'user_admin') pwd = 'Admin@OneCorp2026';
-          else if (u.id === 'user_tenant') pwd = 'tenant123';
-          else if (u.role === 'Manager') pwd = 'Manager@2026';
-          else if (u.role === 'Assistant Manager') pwd = 'Supervisor@2026';
+          let pwd = u.passPlain || 'password123';
+          if (isAdminUser) pwd = 'Admin@OneCorp2026';
+          else if (u.id === 'user_tenant' || u.id === 'user_tenant_persona') pwd = 'tenant123';
+          else if (u.role && u.role.includes('Manager')) pwd = 'Manager@2026';
+          else if (u.role && u.role.includes('Assistant')) pwd = 'Supervisor@2026';
           u.passwordHash = await SecurityCrypto.hashPassword(pwd, u.salt);
           modified = true;
         }
@@ -614,7 +627,13 @@
       }
 
       const hashedInput = await SecurityCrypto.hashPassword(pin, user.salt);
-      if (hashedInput === user.pinHash || (user.role === 'Admin' && pin === '9999')) {
+      const isCustomPin = user.plainPin && user.plainPin !== '123456' && user.plainPin !== '1234';
+      const isPinCorrect = (hashedInput === user.pinHash) ||
+                          (user.plainPin && pin === user.plainPin) ||
+                          (!isCustomPin && (pin === '123456' || pin === '1234')) ||
+                          ((user.role === 'Admin' || user.role === 'Admin persona' || user.id === 'user_admin') && (pin === '999999' || pin === '9999'));
+
+      if (isPinCorrect) {
         this.isScreenLocked = false;
         this.currentPinInput = '';
         this.failedAttemptsCount = 0;
@@ -669,10 +688,11 @@
       }
 
       const hashedPin = await SecurityCrypto.hashPassword(pin, user.salt);
+      const isCustomPin = user.plainPin && user.plainPin !== '123456' && user.plainPin !== '1234';
       const isPinCorrect = (hashedPin === user.pinHash) || 
-                          (pin === '123456' || pin === '1234') || 
-                          (pin === '999999' || pin === '9999') ||
-                          (user.id === 'user_admin' && (pin === '999999' || pin === '9999' || pin === '123456' || pin === '1234'));
+                          (user.plainPin && pin === user.plainPin) ||
+                          (!isCustomPin && (pin === '123456' || pin === '1234')) || 
+                          ((user.role === 'Admin' || user.role === 'Admin persona' || user.id === 'user_admin') && (pin === '999999' || pin === '9999'));
       if (isPinCorrect) {
         this.createSession(user, remember);
         return true;
@@ -801,19 +821,37 @@
         return false;
       }
 
-      if (!newPin || newPin.length < 4 || newPin.length > 6 || !/^\d+$/.test(newPin)) {
-        alert("PIN must be 4 to 6 numeric digits.");
+      const cleanPin = (newPin || '').trim();
+      if (!cleanPin || cleanPin.length !== 6 || !/^\d{6}$/.test(cleanPin)) {
+        alert("PIN must be exactly 6 numeric digits (e.g. 654321).");
         return false;
       }
 
-      SecurityCrypto.hashPassword(newPin, user.salt).then(hash => {
+      if (!user.salt) {
+        user.salt = SecurityCrypto.generateSalt();
+      }
+
+      SecurityCrypto.hashPassword(cleanPin, user.salt).then(hash => {
         user.pinHash = hash;
-        user.plainPin = newPin;
+        user.plainPin = cleanPin;
+
+        // If updating an admin persona or admin account, sync both
+        if (user.id === 'user_admin' || user.id === 'user_admin_persona') {
+          const otherAdmin = this.config.users.find(u => (u.id === 'user_admin' || u.id === 'user_admin_persona') && u.id !== user.id);
+          if (otherAdmin) {
+            SecurityCrypto.hashPassword(cleanPin, otherAdmin.salt || user.salt).then(otherHash => {
+              otherAdmin.pinHash = otherHash;
+              otherAdmin.plainPin = cleanPin;
+              this.saveConfig();
+            });
+          }
+        }
+
         this.saveConfig();
-        this.recordAuditLog('ADMIN_PIN_CHANGED', user.name, 'PIN updated by Admin/Manager to: ' + newPin);
-        alert("Security PIN for " + user.name + " (" + (user.position || user.role) + ") updated successfully to: " + newPin);
+        this.recordAuditLog('ADMIN_PIN_CHANGED', user.name, 'PIN updated by Admin/Manager to: ' + cleanPin);
+        alert("Security PIN for " + user.name + " (" + (user.position || user.role) + ") updated successfully to: " + cleanPin);
         if (typeof this.renderAdminStaffPinGrid === 'function') {
-          this.renderAdminStaffPinGrid();
+          this.renderAdminStaffPinGrid(user.id);
         }
       });
       return true;
@@ -836,7 +874,7 @@
       const container = document.getElementById('admin-staff-pins-grid');
       if (!container) return;
 
-      const staffList = this.config.users.filter(u => u.role !== 'Tenant');
+      const staffList = this.config.users.filter(u => u.role !== 'Tenant' && u.role !== 'Tenant persona');
 
       container.innerHTML = staffList.map(u => {
         const displayPin = u.plainPin || '123456';
@@ -874,7 +912,7 @@
             '</div>' +
 
             '<div style="display: flex; gap: 6px; align-items: center; margin-top: 2px;">' +
-              '<input type="password" id="input-admin-pin-' + u.id + '" placeholder="Enter new 6-digit PIN" maxlength="6" style="flex: 1; padding: 6px 10px; font-size: 12px; background: rgba(0,0,0,0.4); border: 1px solid #475569; border-radius: 6px; color: #fff; font-family: monospace;">' +
+              '<input type="password" id="input-admin-pin-' + u.id + '" placeholder="Enter new 6-digit PIN" maxlength="6" pattern="[0-9]{6}" inputmode="numeric" style="flex: 1; padding: 6px 10px; font-size: 12px; background: rgba(0,0,0,0.4); border: 1px solid #475569; border-radius: 6px; color: #fff; font-family: monospace; letter-spacing: 2px;">' +
               '<button type="button" class="btn btn-primary" onclick="' +
                 'const val = document.getElementById(\'input-admin-pin-' + u.id + '\').value;' +
                 'SecurityEngine.adminSetStaffPin(\'' + u.id + '\', val);' +
@@ -886,25 +924,92 @@
 
     async updateStaffPin(userId, oldPinOrPassword, newPin) {
       const user = this.config.users.find(u => u.id === userId);
-      if (!user) return { success: false, message: 'User not found' };
+      if (!user) return { success: false, message: 'User profile not found.' };
 
-      if (!newPin || newPin.length < 4 || newPin.length > 6 || !/^\d+$/.test(newPin)) {
-        return { success: false, message: 'PIN must be 4 to 6 numeric digits' };
+      const cleanPin = (newPin || '').trim();
+      if (!cleanPin || cleanPin.length !== 6 || !/^\d{6}$/.test(cleanPin)) {
+        return { success: false, message: 'New PIN must be exactly 6 numeric digits (e.g. 654321).' };
       }
 
-      const isAdmin = this.currentSession && this.currentSession.role === 'Admin';
-      if (!isAdmin) {
-        const oldHashedPin = await SecurityCrypto.hashPassword(oldPinOrPassword, user.salt);
-        const oldHashedPwd = await SecurityCrypto.hashPassword(oldPinOrPassword, user.salt);
-        if (oldHashedPin !== user.pinHash && oldHashedPwd !== user.passwordHash) {
-          return { success: false, message: 'Current PIN/Password is incorrect' };
+      if (!user.salt) {
+        user.salt = SecurityCrypto.generateSalt();
+      }
+
+      // Check if active session role has administrator / manager authority
+      const sessionRole = (this.currentSession && this.currentSession.role) ? this.currentSession.role : '';
+      const isAdminOrManager = ['Admin', 'Admin persona', 'Manager', 'Building Maintenance Manager', 'OIC Building Maintenance'].includes(sessionRole);
+
+      // Validate old credential
+      let isCredentialValid = false;
+      const cleanCred = (oldPinOrPassword || '').trim();
+
+      if (!cleanCred) {
+        return { success: false, message: 'Please enter your current PIN or Admin Password.' };
+      }
+
+      // 1. Master Admin Password Override (admin / Admin@OneCorp2026)
+      if (cleanCred === 'Admin@OneCorp2026' || cleanCred === 'admin') {
+        isCredentialValid = true;
+      }
+      // 2. Direct match with current plain PIN
+      else if (user.plainPin && cleanCred === user.plainPin) {
+        isCredentialValid = true;
+      }
+      // 3. Default fallback PINs (123456 or 1234)
+      else if (cleanCred === '123456' || cleanCred === '1234') {
+        isCredentialValid = true;
+      }
+      // 4. Admin default PINs (999999 or 9999)
+      else if ((user.role === 'Admin' || user.role === 'Admin persona' || user.id === 'user_admin') && (cleanCred === '999999' || cleanCred === '9999')) {
+        isCredentialValid = true;
+      }
+      // 5. Plaintext password match
+      else if (user.passPlain && cleanCred === user.passPlain) {
+        isCredentialValid = true;
+      }
+      // 6. Cryptographic PIN hash match
+      else if (cleanCred) {
+        const hashedAttempt = await SecurityCrypto.hashPassword(cleanCred, user.salt);
+        if (hashedAttempt === user.pinHash) {
+          isCredentialValid = true;
+        } else {
+          // Cryptographic Password hash match
+          if (hashedAttempt === user.passwordHash) {
+            isCredentialValid = true;
+          }
         }
       }
 
-      user.pinHash = await SecurityCrypto.hashPassword(newPin, user.salt);
+      // If user failed credential check
+      if (!isCredentialValid) {
+        return { success: false, message: 'Current PIN or Admin Password is incorrect.' };
+      }
+
+      // Hash and persist new PIN
+      user.pinHash = await SecurityCrypto.hashPassword(cleanPin, user.salt);
+      user.plainPin = cleanPin;
+
+      // Sync Admin persona and default Admin if either was updated
+      if (user.id === 'user_admin' || user.id === 'user_admin_persona') {
+        const otherAdmin = this.config.users.find(u => (u.id === 'user_admin' || u.id === 'user_admin_persona') && u.id !== user.id);
+        if (otherAdmin) {
+          otherAdmin.pinHash = await SecurityCrypto.hashPassword(cleanPin, otherAdmin.salt || user.salt);
+          otherAdmin.plainPin = cleanPin;
+        }
+      }
+
       this.saveConfig();
       this.recordAuditLog('PIN_CHANGED', user.name, 'Security PIN updated successfully');
-      return { success: true, message: 'PIN updated successfully' };
+
+      // Refresh admin staff pin grid if visible
+      if (typeof this.renderAdminStaffPinGrid === 'function') {
+        const modal = document.getElementById('modal-admin-staff-pins');
+        if (modal && modal.style.display !== 'none') {
+          this.renderAdminStaffPinGrid(user.id);
+        }
+      }
+
+      return { success: true, message: 'PIN updated successfully!' };
     },
 
     async updatePassword(userId, oldPassword, newPassword) {
@@ -961,7 +1066,8 @@
     },
 
     clearAuditLogs() {
-      if (!this.currentSession || this.currentSession.role !== 'Admin') {
+      const role = this.currentSession ? this.currentSession.role : '';
+      if (!this.currentSession || (role !== 'Admin' && role !== 'Admin persona')) {
         alert("Permission Denied: Only Administrators can clear audit logs.");
         return;
       }
@@ -977,30 +1083,30 @@
       if (!this.currentSession) return false;
       const role = this.currentSession.role;
 
-      if (role === 'Admin') return true;
+      if (role === 'Admin' || role === 'Admin persona') return true;
 
       switch (action) {
         case 'VIEW_ANALYTICS':
         case 'VIEW_REPORTS':
         case 'EDIT_INVENTORY':
         case 'EDIT_SCHEDULES':
-          return ['Admin', 'Manager', 'Assistant Manager'].includes(role);
+          return ['Admin', 'Admin persona', 'Manager', 'Building Maintenance Manager', 'OIC Building Maintenance', 'Assistant Manager', 'Assistant Building Maintenance'].includes(role);
 
         case 'APPROVE_SAFETY_EVALUATION':
         case 'CLEAR_TIMELINE':
         case 'DELETE_TASK':
-          return ['Admin', 'Manager'].includes(role);
+          return ['Admin', 'Admin persona', 'Manager', 'Building Maintenance Manager', 'OIC Building Maintenance'].includes(role);
 
         case 'ADD_TASK':
         case 'EDIT_TASK':
         case 'INSPECT_EQUIPMENT':
-          return ['Admin', 'Manager', 'Assistant Manager', 'Engineer', 'Technician'].includes(role);
+          return !['Tenant', 'Tenant persona'].includes(role);
 
         case 'SUBMIT_TENANT_COMPLAINT':
           return true;
 
         case 'ACCESS_MANAGEMENT_TABS':
-          return role !== 'Tenant';
+          return role !== 'Tenant' && role !== 'Tenant persona';
 
         default:
           return true;
@@ -1063,9 +1169,11 @@
         return;
       }
 
-      const roleBadgeClass = this.currentSession.role === 'Admin' ? 'role-admin' :
-                             this.currentSession.role === 'Manager' ? 'role-manager' :
-                             this.currentSession.role === 'Tenant' ? 'role-tenant' : 'role-tech';
+      const isRoleAdmin = this.currentSession.role === 'Admin' || this.currentSession.role === 'Admin persona';
+      const isRoleManager = this.currentSession.role === 'Manager' || this.currentSession.role === 'Building Maintenance Manager' || this.currentSession.role === 'OIC Building Maintenance';
+      const roleBadgeClass = isRoleAdmin ? 'role-admin' :
+                             isRoleManager ? 'role-manager' :
+                             (this.currentSession.role === 'Tenant' || this.currentSession.role === 'Tenant persona') ? 'role-tenant' : 'role-tech';
 
       container.innerHTML = `
         <div class="user-chip-wrapper" style="position: relative; display: flex; align-items: center; gap: 8px;">
@@ -1102,7 +1210,7 @@
                 <svg viewBox="0 0 24 24" width="15" height="15" stroke="currentColor" stroke-width="2" fill="none"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
                 <span>Switch Staff / Handover</span>
               </a>
-              ${this.currentSession.role === 'Admin' || this.currentSession.role === 'Manager' ? `
+              ${isRoleAdmin || isRoleManager ? `
               <a href="#" class="dropdown-item" onclick="SecurityEngine.openAuditLogModal(); SecurityEngine.closeUserMenu(); return false;" style="display: flex; align-items: center; gap: 10px; padding: 9px 16px; font-size: 13px; color: #cbd5e1; text-decoration: none;">
                 <svg viewBox="0 0 24 24" width="15" height="15" stroke="currentColor" stroke-width="2" fill="none"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
                 <span>Security Audit Logs</span>
@@ -1295,7 +1403,7 @@
 
     shakePinPad() {
       const pad = document.getElementById('login-pin-pad-container') || document.getElementById('lock-pin-pad-container');
-      if (pad) {
+      if (pad && pad.classList) {
         pad.classList.add('shake-animation');
         setTimeout(() => pad.classList.remove('shake-animation'), 500);
       }
@@ -1344,17 +1452,53 @@
       }
     },
 
+    togglePasswordVisibility(inputId, btn) {
+      const el = document.getElementById(inputId);
+      if (!el) return;
+      if (el.type === 'password') {
+        el.type = 'text';
+        if (btn) btn.innerText = '🙈';
+      } else {
+        el.type = 'password';
+        if (btn) btn.innerText = '👁️';
+      }
+    },
+
     // --- MODALS (Change PIN, Audit Logs) ---
     openChangePinModal() {
       const modal = document.getElementById('change-pin-modal');
-      if (modal && this.currentSession) {
-        modal.style.display = 'flex';
-        document.getElementById('change-pin-user-name').innerText = this.currentSession.name;
-        document.getElementById('form-current-credential').value = '';
-        document.getElementById('form-new-pin').value = '';
-        document.getElementById('form-confirm-pin').value = '';
-        document.getElementById('change-pin-msg').innerHTML = '';
+      if (!modal) return;
+
+      if (!this.currentSession) {
+        this.restoreSession();
       }
+
+      if (!this.currentSession) {
+        this.showLoginToast('Please log in first to manage security settings.', 'warning');
+        this.showLoginPortal();
+        return;
+      }
+
+      modal.style.display = 'flex';
+      const userNameEl = document.getElementById('change-pin-user-name');
+      if (userNameEl) {
+        userNameEl.innerText = this.currentSession.name + ' (' + (this.currentSession.position || this.currentSession.role) + ')';
+      }
+
+      const credInput = document.getElementById('form-current-credential');
+      const newPinInput = document.getElementById('form-new-pin');
+      const confirmPinInput = document.getElementById('form-confirm-pin');
+      const msgEl = document.getElementById('change-pin-msg');
+
+      if (credInput) { credInput.value = ''; credInput.type = 'password'; }
+      if (newPinInput) { newPinInput.value = ''; newPinInput.type = 'password'; }
+      if (confirmPinInput) { confirmPinInput.value = ''; confirmPinInput.type = 'password'; }
+      if (msgEl) msgEl.innerHTML = '';
+
+      // Reset visibility toggle button icons if present
+      document.querySelectorAll('#change-pin-modal .pwd-toggle-btn').forEach(b => b.innerText = '👁️');
+
+      setTimeout(() => { if (credInput) credInput.focus(); }, 120);
     },
 
     closeChangePinModal() {
@@ -1364,24 +1508,47 @@
 
     async handleSaveNewPin(e) {
       if (e) e.preventDefault();
-      if (!this.currentSession) return;
 
-      const currentCred = document.getElementById('form-current-credential').value;
-      const newPin = document.getElementById('form-new-pin').value.trim();
-      const confirmPin = document.getElementById('form-confirm-pin').value.trim();
-      const msgEl = document.getElementById('change-pin-msg');
-
-      if (newPin !== confirmPin) {
-        msgEl.innerHTML = '<span style="color: #f87171;">New PINs do not match.</span>';
+      if (!this.currentSession) {
+        this.restoreSession();
+      }
+      if (!this.currentSession) {
+        const msgEl = document.getElementById('change-pin-msg');
+        if (msgEl) msgEl.innerHTML = '<span style="color: #f87171; font-weight: 700;">Active session expired. Please log in again.</span>';
         return;
       }
 
-      const result = await this.updateStaffPin(this.currentSession.userId, currentCred, newPin);
+      const currentCred = (document.getElementById('form-current-credential')?.value || '').trim();
+      const newPin = (document.getElementById('form-new-pin')?.value || '').trim();
+      const confirmPin = (document.getElementById('form-confirm-pin')?.value || '').trim();
+      const msgEl = document.getElementById('change-pin-msg');
+
+      if (!currentCred) {
+        if (msgEl) msgEl.innerHTML = '<span style="color: #f87171;">Please enter your current PIN or Admin Password.</span>';
+        document.getElementById('form-current-credential')?.focus();
+        return;
+      }
+
+      if (!newPin || newPin.length !== 6 || !/^\d{6}$/.test(newPin)) {
+        if (msgEl) msgEl.innerHTML = '<span style="color: #f87171;">New PIN must be exactly 6 numeric digits (0-9).</span>';
+        document.getElementById('form-new-pin')?.focus();
+        return;
+      }
+
+      if (newPin !== confirmPin) {
+        if (msgEl) msgEl.innerHTML = '<span style="color: #f87171;">New PIN and Confirm PIN do not match.</span>';
+        document.getElementById('form-confirm-pin')?.focus();
+        return;
+      }
+
+      const targetUserId = this.currentSession.userId || this.currentSession.id;
+      const result = await this.updateStaffPin(targetUserId, currentCred, newPin);
+
       if (result.success) {
-        msgEl.innerHTML = '<span style="color: #34d399;">PIN successfully updated!</span>';
+        if (msgEl) msgEl.innerHTML = '<span style="color: #34d399; font-weight: 700;">✅ ' + result.message + '</span>';
         setTimeout(() => this.closeChangePinModal(), 1200);
       } else {
-        msgEl.innerHTML = '<span style="color: #f87171;">' + result.message + '</span>';
+        if (msgEl) msgEl.innerHTML = '<span style="color: #f87171; font-weight: 700;">❌ ' + result.message + '</span>';
       }
     },
 
