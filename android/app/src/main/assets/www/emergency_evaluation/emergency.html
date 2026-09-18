@@ -34,6 +34,13 @@
           <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="menu-icon"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
           <span>Reassurance Reports</span>
         </a>
+        <a href="#" class="menu-item" id="nav-critical-evaluation" onclick="switchSection('critical-evaluation')">
+          <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="menu-icon">
+            <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path>
+            <path d="M12 9l-1.5 3.5 3 2-1.5 3.5"></path>
+          </svg>
+          <span>Critical Evaluation</span>
+        </a>
         <a href="#" class="menu-item" id="nav-guidelines" onclick="switchSection('guidelines')">
           <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="menu-icon"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
           <span>Preparedness Plan (ERP)</span>
@@ -525,6 +532,213 @@
           </div>
         </section>
 
+        <!-- ==================== CRITICAL EVALUATION PANEL ==================== -->
+        <section id="panel-critical-evaluation" class="tab-panel">
+          <div class="reports-control-card critical-eval-desk-header">
+            <div class="desk-title-group">
+              <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 6px;">
+                <span class="desk-icon-badge">💧⚡</span>
+                <h2 style="margin: 0; font-size: 22px;">Critical Evaluation: Dynamic Leak & Crack Tracing Desk</h2>
+              </div>
+              <p style="margin: 0; color: var(--text-muted); font-size: 13px;">
+                Dynamic post-disaster defect tracking system for water leaks, curtain wall seepage, and structural/non-structural cracks during <strong>Typhoon severe weather</strong> or <strong>Earthquake seismic events</strong>. Features real-time comparison of previous baseline audits vs. current events, field photo attachments, and adapted official engineering reports.
+              </p>
+            </div>
+
+            <!-- Controls & Event Filters -->
+            <div class="critical-control-toolbar mt-15">
+              <div class="toolbar-group">
+                <label for="critical-filter-event" style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Disaster Event</label>
+                <select id="critical-filter-event" onchange="applyCriticalFilters()" class="filter-select">
+                  <option value="all">🌐 All Hazard Events (Typhoon & Quake)</option>
+                  <option value="Typhoon">🌀 Typhoon & Severe Wind-Driven Rain</option>
+                  <option value="Earthquake">⚠️ Earthquake & Seismic Micro-Cracks</option>
+                </select>
+              </div>
+
+              <div class="toolbar-group">
+                <label for="critical-filter-zone" style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Floor / Building Zone</label>
+                <select id="critical-filter-zone" onchange="applyCriticalFilters()" class="filter-select">
+                  <option value="all">🏢 All Zones & Floors</option>
+                  <option value="Basement">🚗 Basement Levels (1B, 2B, 3B, Ramps)</option>
+                  <option value="Podium">🏪 Ground, Podium & 2F</option>
+                  <option value="Mid-Rise">🏢 Mid-Rise Office Floors (3F - 6F)</option>
+                  <option value="Roof">☀️ Roof Deck & Upper Terraces (7F, 8F, RD)</option>
+                </select>
+              </div>
+
+              <div class="toolbar-actions ml-auto" style="display: flex; gap: 8px; flex-wrap: wrap; align-items: flex-end;">
+                <button class="btn btn-primary" onclick="openAddCriticalLeakModal()" style="font-weight: 700; background: linear-gradient(135deg, #0284c7, #0369a1); border: none;">
+                  ➕ Log New Leak / Crack
+                </button>
+                <button class="btn btn-secondary" onclick="generateCriticalReport()" style="border-color: #38bdf8; color: #38bdf8; font-weight: 600;">
+                  📄 Generate Tracing Report
+                </button>
+                <button class="btn btn-secondary" onclick="printCriticalReport()">
+                  🖨️ Print Report
+                </button>
+                <button class="btn btn-secondary" onclick="exportCriticalEvaluationCSV()" title="Download CSV Spreadsheet">
+                  📥 Export CSV
+                </button>
+                <button class="btn btn-secondary" onclick="resetCriticalEvaluationToBaseline()" style="opacity: 0.75; font-size: 11px;" title="Reset back to the 70 reference log items from August 31, 2026">
+                  🔄 Reset Reference Log
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Dynamic Comparison Analytics KPI Cards -->
+          <div class="critical-kpi-grid">
+            <div class="critical-kpi-card total-card" onclick="filterCriticalByStatus('all')">
+              <div class="kpi-icon">📊</div>
+              <div class="kpi-details">
+                <span class="kpi-value" id="kpi-total-defects">70</span>
+                <span class="kpi-title">Total Tracked Defects</span>
+                <span class="kpi-subtext">Cumulative Leak & Crack Log</span>
+              </div>
+            </div>
+
+            <div class="critical-kpi-card new-leak-card active-filter" onclick="filterCriticalByStatus('new_leak')">
+              <div class="kpi-icon">🔥</div>
+              <div class="kpi-details">
+                <span class="kpi-value" id="kpi-new-defects">27</span>
+                <span class="kpi-title">Current & New Leaks</span>
+                <span class="kpi-subtext">Recent Typhoon / Quake Ingress</span>
+              </div>
+            </div>
+
+            <div class="critical-kpi-card reopened-card" onclick="filterCriticalByStatus('reopened')">
+              <div class="kpi-icon">⚠️</div>
+              <div class="kpi-details">
+                <span class="kpi-value" id="kpi-reopened-defects">25</span>
+                <span class="kpi-title">Reopened Recurrent Leaks</span>
+                <span class="kpi-subtext">Post-Event Sealant / Crack Failure</span>
+              </div>
+            </div>
+
+            <div class="critical-kpi-card ongoing-card" onclick="filterCriticalByStatus('ongoing')">
+              <div class="kpi-icon">🔧</div>
+              <div class="kpi-details">
+                <span class="kpi-value" id="kpi-ongoing-defects">10</span>
+                <span class="kpi-title">Ongoing Rectifications</span>
+                <span class="kpi-subtext">PU Foam & Epoxy Injection</span>
+              </div>
+            </div>
+
+            <div class="critical-kpi-card closed-card" onclick="filterCriticalByStatus('closed')">
+              <div class="kpi-icon">✅</div>
+              <div class="kpi-details">
+                <span class="kpi-value" id="kpi-closed-defects">8</span>
+                <span class="kpi-title">Weather-Tight & Closed</span>
+                <span class="kpi-subtext">Water Pressure Tested & Validated</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tracing Matrix Card -->
+          <div class="section-card mt-20">
+            <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
+              <div>
+                <h3 style="margin: 0 0 4px 0; font-size: 16px; font-weight: 700; color: #fff;">
+                  Comparative Defect Tracing Matrix (Previous Baseline vs. Current Event)
+                </h3>
+                <span class="header-badge" id="table-filter-indicator">Displaying: All 70 Leaks & Cracks</span>
+              </div>
+
+              <!-- Quick Search Input -->
+              <div class="search-input-wrap" style="min-width: 280px;">
+                <input type="text" id="critical-search-input" placeholder="🔍 Search ID, floor, finding, source..." oninput="applyCriticalFilters()" class="critical-search-box">
+              </div>
+            </div>
+
+            <!-- Comparison Filter Chips -->
+            <div class="comparison-filter-chips mt-15">
+              <button class="filter-chip active" id="chip-status-all" onclick="filterCriticalByStatus('all')">
+                All Records (<span id="count-chip-all">70</span>)
+              </button>
+              <button class="filter-chip chip-highlight-new" id="chip-status-new_leak" onclick="filterCriticalByStatus('new_leak')">
+                🔥 Current & New Leaks Only (<span id="count-chip-new">27</span>)
+              </button>
+              <button class="filter-chip chip-highlight-reopened" id="chip-status-reopened" onclick="filterCriticalByStatus('reopened')">
+                ⚠️ Reopened / Recurrent (<span id="count-chip-reopened">25</span>)
+              </button>
+              <button class="filter-chip" id="chip-status-ongoing" onclick="filterCriticalByStatus('ongoing')">
+                🔧 Active Rectification (<span id="count-chip-ongoing">10</span>)
+              </button>
+              <button class="filter-chip" id="chip-status-under_monitoring" onclick="filterCriticalByStatus('under_monitoring')">
+                👁️ Under Monitoring (<span id="count-chip-monitoring">4</span>)
+              </button>
+              <button class="filter-chip" id="chip-status-closed" onclick="filterCriticalByStatus('closed')">
+                ✅ Closed & Tested (<span id="count-chip-closed">4</span>)
+              </button>
+            </div>
+
+            <!-- Main Data Table Container (Smooth Vertical & Horizontal Scrolling) -->
+            <div class="critical-table-scroll-container mt-15">
+              <table class="data-table critical-table" id="critical-eval-table">
+                <thead>
+                  <tr>
+                    <th style="width: 45px; text-align: center;">No.</th>
+                    <th style="width: 90px;">Date</th>
+                    <th style="width: 100px;">Leak ID</th>
+                    <th style="width: 110px; text-align: center;">Photo</th>
+                    <th style="width: 130px;">Event Hazard</th>
+                    <th style="width: 130px;">Current Status</th>
+                    <th style="min-width: 180px;">Identified Finding / Observation</th>
+                    <th style="min-width: 180px;">Possible / Identified Source</th>
+                    <th style="min-width: 180px;">Required Rectification Procedure</th>
+                    <th style="min-width: 180px;">Rectification / Corrective Action</th>
+                    <th style="width: 130px;">Responsible</th>
+                    <th style="min-width: 160px;">Remarks & Recurrence</th>
+                    <th style="width: 80px; text-align: center;">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="critical-eval-tbody">
+                  <!-- Dynamically populated from state -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- ==================== ADAPTED OFFICIAL REPORT PREVIEW SECTION ==================== -->
+          <div class="section-card report-preview-card mt-25" id="critical-preview-section" style="display: none;">
+            <div class="report-preview-header">
+              <div>
+                <h2 style="margin: 0 0 6px 0; font-size: 18px;">Adapted Report: Leak Inspection & Tracing Report Preview</h2>
+                <div class="report-filter-toggle-wrap" style="display: flex; align-items: center; gap: 8px;">
+                  <span style="font-size: 12px; color: var(--text-muted); font-weight: 600;">Report Scope:</span>
+                  <button type="button" class="btn btn-sm btn-primary" id="btn-report-scope-new" onclick="setCriticalReportFilter('current_new')" style="font-weight: 700;">
+                    🔥 Current & New Leaks Only
+                  </button>
+                  <button type="button" class="btn btn-sm btn-secondary" id="btn-report-scope-all" onclick="setCriticalReportFilter('all')">
+                    📋 Complete Tracking Matrix (70 Items)
+                  </button>
+                </div>
+              </div>
+
+              <div class="control-group" style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+                <button type="button" class="btn btn-secondary" onclick="openSignatoriesEditorModal()" style="border-color: #38bdf8; color: #38bdf8; font-weight: 700;">
+                  ✍️ Edit Signatories & Sign-Off
+                </button>
+                <button type="button" class="btn btn-secondary" onclick="copyCriticalReportSummary()">
+                  📋 Copy Summary
+                </button>
+                <button type="button" class="btn btn-primary" onclick="printStandardCriticalReport()" title="Print standard multi-page A4 document with repeating header">
+                  🖨️ Print Standard (A4)
+                </button>
+                <button type="button" class="btn btn-primary" onclick="printContinuousCriticalReport()" style="background: #059669; border-color: #059669; font-weight: 700;" title="Calculate exact report length and print as a continuous single-page PDF / roll">
+                  📜 Print Continuous Length
+                </button>
+              </div>
+            </div>
+
+            <!-- The Official Printable Report Canvas Replicating LEAK INSPECTION & TRACING REPORT.pdf -->
+            <div class="report-canvas critical-report-canvas" id="critical-report-printable-area">
+              <!-- Dynamically populated report content -->
+            </div>
+          </div>
+        </section>
+
         <!-- ==================== EMERGENCY PREPAREDNESS PLAN & GUIDELINES PANEL ==================== -->
         <section id="panel-guidelines" class="tab-panel">
           
@@ -844,6 +1058,134 @@
     </div>
   </div>
 
+  <!-- ==================== CRITICAL LEAK LOGGING / EDITING MODAL ==================== -->
+  <div class="modal" id="modal-critical-leak" style="display: none;">
+    <div class="modal-content" style="max-width: 780px; max-height: 90vh; display: flex; flex-direction: column;">
+      <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 12px;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <span style="font-size: 20px;">💧🔍</span>
+          <h3 id="critical-modal-title" style="margin: 0; font-size: 17px; font-weight: 700; color: #fff;">Log New Critical Leak / Crack</h3>
+        </div>
+        <button type="button" class="btn-close" onclick="closeCriticalLeakModal()" style="background: none; border: none; font-size: 22px; color: var(--text-muted); cursor: pointer;">&times;</button>
+      </div>
+
+      <div class="modal-body" style="overflow-y: auto; padding: 18px 0;">
+        <input type="hidden" id="edit-leak-original-id" value="">
+
+        <!-- Photo Attachment Dropzone & Preview -->
+        <div class="leak-modal-photo-section" style="background: rgba(15, 23, 42, 0.6); border: 1px dashed #38bdf8; border-radius: 8px; padding: 14px; margin-bottom: 16px; display: flex; gap: 16px; align-items: center; flex-wrap: wrap;">
+          <div class="leak-photo-dropzone-preview" style="width: 140px; height: 105px; border-radius: 6px; overflow: hidden; background: #0b1329; border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: center; position: relative;">
+            <img id="modal-leak-photo-preview-img" src="" alt="Leak Preview" style="display: none; width: 100%; height: 100%; object-fit: cover;">
+            <span id="modal-leak-photo-placeholder" style="font-size: 11px; color: var(--text-muted); text-align: center; padding: 6px;">No Photo Attached</span>
+          </div>
+
+          <div style="flex: 1; min-width: 220px;">
+            <label style="font-size: 12px; font-weight: 700; color: #38bdf8; display: block; margin-bottom: 4px;">Attach Defect Photo Evidence</label>
+            <p style="font-size: 11px; color: var(--text-muted); margin: 0 0 10px 0;">
+              Attach high-resolution field photos showing the water ingress, crack pattern, or silicone sealant failure. Images are automatically compressed.
+            </p>
+            <input type="file" id="modal-leak-photo-input" accept="image/*" style="display: none;" onchange="handleModalLeakPhotoUpload(event)">
+            <div style="display: flex; gap: 8px;">
+              <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('modal-leak-photo-input').click()">
+                📷 Choose / Take Photo
+              </button>
+              <button type="button" class="btn btn-secondary btn-sm" id="btn-remove-modal-photo" onclick="removeModalLeakPhoto()" style="display: none; color: #f87171; border-color: #ef4444;">
+                🗑️ Remove
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="edit-leak-id">Leak / Defect ID *</label>
+            <input type="text" id="edit-leak-id" placeholder="e.g. L71-301 or L72-2B" required>
+          </div>
+
+          <div class="form-group">
+            <label for="edit-leak-date">Date Detected / Logged *</label>
+            <input type="text" id="edit-leak-date" placeholder="e.g. 8/15/2026" required>
+          </div>
+
+          <div class="form-group">
+            <label for="edit-leak-area">Specific Area / Location *</label>
+            <input type="text" id="edit-leak-area" placeholder="e.g. Unit 301 Big Mullion Frame Tip, 3B Main Stair Wall">
+          </div>
+
+          <div class="form-group">
+            <label for="edit-leak-zone">Floor Zone *</label>
+            <select id="edit-leak-zone" style="background: var(--bg-dark); color: #fff; border: 1px solid var(--border-color); padding: 9px; border-radius: 6px;">
+              <option value="Basement Levels (1B - 3B)">Basement Levels (1B - 3B)</option>
+              <option value="Ground / Podium / 2F">Ground / Podium / 2F</option>
+              <option value="Mid-Rise Floors (3F - 6F)" selected>Mid-Rise Floors (3F - 6F)</option>
+              <option value="Roof Deck & Upper Terraces">Roof Deck & Upper Terraces</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="edit-leak-event">Hazard Event Category *</label>
+            <select id="edit-leak-event" style="background: var(--bg-dark); color: #fff; border: 1px solid var(--border-color); padding: 9px; border-radius: 6px;">
+              <option value="Typhoon & Wind-Driven Rain">Typhoon & Wind-Driven Rain</option>
+              <option value="Earthquake & Seismic Activity">Earthquake & Seismic Activity</option>
+              <option value="Multi-Hazard (Quake Cracks + Rain Ingress)">Multi-Hazard (Quake Cracks + Rain Ingress)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="edit-leak-status">Comparison Status *</label>
+            <select id="edit-leak-status" style="background: var(--bg-dark); color: #fff; border: 1px solid var(--border-color); padding: 9px; border-radius: 6px;">
+              <option value="Open - New Leak">🔥 Open - New Leak (Current Event)</option>
+              <option value="Reopened">⚠️ Reopened / Recurrent Defect</option>
+              <option value="Ongoing">🔧 Ongoing Rectification</option>
+              <option value="Under monitoring">👁️ Under Monitoring</option>
+              <option value="Closed">✅ Closed & Verified</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="edit-leak-recurrence">Recurrence Date / Prior Event Status</label>
+            <input type="text" id="edit-leak-recurrence" placeholder="e.g. Reopened 8/10/2026 or N/A">
+          </div>
+
+          <div class="form-group">
+            <label for="edit-leak-responsible">Responsible Verification Team *</label>
+            <input type="text" id="edit-leak-responsible" value="DEV.CORP/ QAQC/BM" placeholder="e.g. DEV.CORP/ QAQC/BM or RFJ/ QAQC/BM">
+          </div>
+
+          <div class="form-group font-group-large" style="grid-column: span 2;">
+            <label for="edit-leak-finding">Identified Finding / Observation *</label>
+            <textarea id="edit-leak-finding" rows="2" placeholder="Describe the leak droplets, water ingress path, wall cracking or dampness..."></textarea>
+          </div>
+
+          <div class="form-group font-group-large" style="grid-column: span 2;">
+            <label for="edit-leak-source">Possible / Identified Source *</label>
+            <textarea id="edit-leak-source" rows="2" placeholder="e.g. Past quake micro-cracks on concrete wall, curtain wall sealant failure, unsealed aluminum corner..."></textarea>
+          </div>
+
+          <div class="form-group font-group-large" style="grid-column: span 2;">
+            <label for="edit-leak-procedure">Required Rectification Procedure *</label>
+            <textarea id="edit-leak-procedure" rows="2" placeholder="e.g. Inject PU foam into cracks; replace defective silicone sealant; apply waterproofing..."></textarea>
+          </div>
+
+          <div class="form-group font-group-large" style="grid-column: span 2;">
+            <label for="edit-leak-action">Rectification / Corrective Action Conducted</label>
+            <textarea id="edit-leak-action" rows="2" placeholder="e.g. Injection packer installed; PU foam applied; ACP panels dismantled & reinstalled..."></textarea>
+          </div>
+
+          <div class="form-group font-group-large" style="grid-column: span 2;">
+            <label for="edit-leak-remarks">Remarks & Leak Testing Verification</label>
+            <input type="text" id="edit-leak-remarks" placeholder="e.g. Under continuous monitoring; water pressure spray test conducted with zero ingress.">
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid var(--border-color); padding-top: 14px;">
+        <button type="button" class="btn btn-secondary" onclick="closeCriticalLeakModal()">Cancel</button>
+        <button type="button" class="btn btn-primary" onclick="saveCriticalLeakModal()">Save Defect Record</button>
+      </div>
+    </div>
+  </div>
+
   <!-- ==================== EMERGENCY IMAGE LIGHTBOX MODAL ==================== -->
   <div class="lightbox-modal" id="emergency-image-lightbox" onclick="closeEmergencyLightbox(event)" style="display: none;">
     <div class="lightbox-content" onclick="event.stopPropagation()">
@@ -853,6 +1195,196 @@
     </div>
   </div>
 
+  <!-- ==================== CRITICAL DEFECT PHOTO ANNOTATOR & MARKING STUDIO ==================== -->
+  <div class="modal" id="modal-critical-photo-annotator" style="display: none;">
+    <div class="modal-content annotator-modal-content">
+      <div class="modal-header annotator-header">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <span style="font-size: 22px;">🎯</span>
+          <div>
+            <h3 id="annotator-modal-title" style="margin: 0; font-size: 16px; font-weight: 700; color: #fff;">Mark Defect / Ingress Point</h3>
+            <div id="annotator-modal-subtitle" style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">
+              Draw a circle or rectangle around the crack, seepage, or sealant defect.
+            </div>
+          </div>
+        </div>
+        <button type="button" class="btn-close" onclick="closeCriticalPhotoAnnotator()" style="background:none; border:none; color:var(--text-muted); font-size:24px; cursor:pointer;">&times;</button>
+      </div>
+
+      <!-- Annotation Toolbar -->
+      <div class="annotator-toolbar">
+        <div class="toolbar-group">
+          <label style="font-size: 11px; font-weight: 700; color: #cbd5e1; margin-right: 4px;">Shape:</label>
+          <button type="button" class="annotator-tool-btn active" id="tool-circle" onclick="setAnnotatorTool('circle')" title="Circle / Ellipse Mark">
+            ⭕ Circle Mark
+          </button>
+          <button type="button" class="annotator-tool-btn" id="tool-rectangle" onclick="setAnnotatorTool('rectangle')" title="Rectangle / Box Mark">
+            ⬜ Rectangle Mark
+          </button>
+        </div>
+
+        <div class="toolbar-group">
+          <label style="font-size: 11px; font-weight: 700; color: #cbd5e1; margin-right: 4px;">Color:</label>
+          <button type="button" class="color-btn active" data-color="#ef4444" style="background: #ef4444;" onclick="setAnnotatorColor('#ef4444')" title="Red Mark"></button>
+          <button type="button" class="color-btn" data-color="#f59e0b" style="background: #f59e0b;" onclick="setAnnotatorColor('#f59e0b')" title="Yellow / Amber"></button>
+          <button type="button" class="color-btn" data-color="#06b6d4" style="background: #06b6d4;" onclick="setAnnotatorColor('#06b6d4')" title="Cyan / Blue"></button>
+          <button type="button" class="color-btn" data-color="#10b981" style="background: #10b981;" onclick="setAnnotatorColor('#10b981')" title="Green"></button>
+        </div>
+
+        <div class="toolbar-group">
+          <label style="font-size: 11px; font-weight: 700; color: #cbd5e1; margin-right: 4px;">Stroke:</label>
+          <select id="annotator-stroke-width" onchange="setAnnotatorStroke(this.value)">
+            <option value="1">1px (Hairline)</option>
+            <option value="3">3px (Thin)</option>
+            <option value="5" selected>5px (Medium)</option>
+            <option value="8">8px (Thick)</option>
+          </select>
+        </div>
+
+        <div class="toolbar-group">
+          <label style="font-size: 11px; font-weight: 700; color: #cbd5e1; margin-right: 4px;">Photo Size:</label>
+          <button type="button" class="annotator-tool-btn active" id="btn-annotator-zoom" onclick="toggleAnnotatorZoom()" title="Click to toggle between 200% (+100% Enlarged) and 100% (Original Size)">
+            🔍 200% (+100% Enlarge)
+          </button>
+        </div>
+
+        <div class="toolbar-group" style="margin-left: auto; display: flex; gap: 6px;">
+          <button type="button" class="btn btn-secondary btn-sm" onclick="undoAnnotatorMark()" title="Undo last shape">
+            ↩️ Undo
+          </button>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="clearAnnotatorMarks()" title="Reset to original photo">
+            🗑️ Clear Marks
+          </button>
+        </div>
+      </div>
+
+      <!-- Canvas Drawing Viewport -->
+      <div class="annotator-viewport-wrap" id="annotator-viewport-wrap">
+        <div class="annotator-canvas-container" id="annotator-canvas-container">
+          <canvas id="annotator-canvas"></canvas>
+          <div id="annotator-hint" class="annotator-hint">
+            💡 Click and drag across the photo to draw a mark around the leak or crack
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer Actions -->
+      <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-color); padding-top: 12px; margin-top: 10px;">
+        <div style="font-size: 11.5px; color: var(--text-muted);">
+          Marks drawn on this photo will automatically be saved and applied to the live preview and print report.
+        </div>
+        <div style="display: flex; gap: 8px;">
+          <button type="button" class="btn btn-secondary" onclick="closeCriticalPhotoAnnotator()">Cancel</button>
+          <button type="button" class="btn btn-primary" onclick="saveCriticalPhotoAnnotation()" style="background: #0284c7; border-color: #0284c7; font-weight: 700;">
+            💾 Save Mark & Apply to Preview
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== CRITICAL REPORT SIGNATORIES MANAGER MODAL ==================== -->
+  <div class="modal" id="modal-critical-signatories-editor" style="display: none;" onclick="if(event.target===this) closeSignatoriesEditorModal()">
+    <div class="modal-content signatories-modal-content">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <span style="font-size: 24px;">✍️</span>
+          <div>
+            <h3 style="margin: 0; font-size: 17px; font-weight: 800;">Edit Official Report Signatories</h3>
+            <p style="margin: 2px 0 0 0; font-size: 11.5px; color: var(--text-muted);">
+              Customize the 4 official audit signatories: roles, names, designations, and signatures.
+            </p>
+          </div>
+        </div>
+        <button type="button" class="modal-close" onclick="closeSignatoriesEditorModal()">&times;</button>
+      </div>
+
+      <div class="signatories-editor-grid" id="signatories-editor-cards-container">
+        <!-- Dynamically rendered via renderSignatoriesEditorCards() -->
+      </div>
+
+      <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-color); padding-top: 14px; margin-top: 16px;">
+        <button type="button" class="btn btn-secondary btn-sm" onclick="resetSignatoriesToDefault()" title="Reset to Page 10 Baseline Signatories">
+          🔄 Reset to Defaults
+        </button>
+        <div style="display: flex; gap: 8px;">
+          <button type="button" class="btn btn-secondary" onclick="closeSignatoriesEditorModal()">Cancel</button>
+          <button type="button" class="btn btn-primary" onclick="saveSignatoriesEditor()" style="background: #0284c7; border-color: #0284c7; font-weight: 700;">
+            💾 Save Signatories & Update Report
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== INTERACTIVE SIGNATURE DRAWING PAD & UPLOAD MODAL ==================== -->
+  <div class="modal" id="modal-critical-signature-pad" style="display: none;" onclick="if(event.target===this) closeSignaturePad()">
+    <div class="modal-content sigpad-modal-content">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <span style="font-size: 22px;">🖋️</span>
+          <div>
+            <h3 style="margin: 0; font-size: 16px; font-weight: 800;" id="sigpad-modal-title">Sign Off: Signatory Signature</h3>
+            <p style="margin: 2px 0 0 0; font-size: 11px; color: var(--text-muted);" id="sigpad-modal-subtitle">
+              Draw your signature smoothly below using mouse, stylus, or touch, or upload an image file.
+            </p>
+          </div>
+        </div>
+        <button type="button" class="modal-close" onclick="closeSignaturePad()">&times;</button>
+      </div>
+
+      <!-- Pad Toolbar -->
+      <div class="sigpad-toolbar">
+        <div class="toolbar-group">
+          <label style="font-size: 11px; font-weight: 700; color: #cbd5e1; margin-right: 4px;">Ink Color:</label>
+          <button type="button" class="color-btn active" data-color="#0f172a" style="background: #0f172a; border-color: #38bdf8;" onclick="setSigPadColor('#0f172a')" title="Black Ink"></button>
+          <button type="button" class="color-btn" data-color="#1e40af" style="background: #1e40af;" onclick="setSigPadColor('#1e40af')" title="Blue Ink"></button>
+        </div>
+
+        <div class="toolbar-group">
+          <label style="font-size: 11px; font-weight: 700; color: #cbd5e1; margin-right: 4px;">Pen Width:</label>
+          <select id="sigpad-stroke-width" onchange="setSigPadStroke(this.value)">
+            <option value="2">Fine (2px)</option>
+            <option value="3" selected>Medium (3px)</option>
+            <option value="5">Broad (5px)</option>
+          </select>
+        </div>
+
+        <div class="toolbar-group" style="margin-left: auto; display: flex; gap: 6px;">
+          <input type="file" id="sigpad-file-input" accept="image/*" style="display:none;" onchange="handleSignatureFileUpload(event)">
+          <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('sigpad-file-input').click()" title="Insert image of signature">
+            📁 Upload Image
+          </button>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="clearSignaturePad()" title="Clear drawing pad">
+            🗑️ Clear Pad
+          </button>
+        </div>
+      </div>
+
+      <!-- Signature Drawing Canvas Box -->
+      <div class="sigpad-canvas-wrap">
+        <canvas id="sigpad-canvas" width="640" height="220"></canvas>
+        <div class="sigpad-baseline"></div>
+        <div class="sigpad-baseline-hint">Sign above this line</div>
+      </div>
+
+      <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-color); padding-top: 12px; margin-top: 12px;">
+        <div style="font-size: 11px; color: var(--text-muted);">
+          Touch screens, stylus, and mouse drawing supported.
+        </div>
+        <div style="display: flex; gap: 8px;">
+          <button type="button" class="btn btn-secondary" onclick="closeSignaturePad()">Cancel</button>
+          <button type="button" class="btn btn-primary" onclick="saveSignaturePad()" style="background: #0284c7; border-color: #0284c7; font-weight: 700;">
+            💾 Apply Signature
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Baseline Reference Data & Main Application Script -->
+  <script src="assets/default_critical_leaks.js"></script>
+  <script src="assets/default_signatures.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

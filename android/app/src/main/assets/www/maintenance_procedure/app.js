@@ -1,3 +1,5 @@
+let editingRunHourLogId = null;
+let editingInspectionLogId = null;
 // Dynamic Maintenance Procedures & Checklists Module - One Corporate Building
 
 // Procedures & Checklists Database
@@ -516,6 +518,23 @@ const EQUIPMENT_METER_DB = {
 
 // Seed Data for Run Hours & Fuel Logs
 const DEFAULT_RUN_HOURS_LOGS = [
+  {
+    id: 'rh_genset_latest',
+    procedureId: 'genset',
+    equipmentId: 'eq_genset_1',
+    equipmentName: 'Genset Cummins KTAA19-G6A Engine',
+    dateTime: '2026-09-03 06:33',
+    startMeter: 1248.5,
+    endMeter: 1256.0,
+    runHours: 7.5,
+    fuelBefore: 1020.0,
+    fuelAdded: 0,
+    fuelAfter: 907.5,
+    fuelConsumed: 112.5,
+    burnRate: 15.0,
+    technician: 'Martin Naimes',
+    notes: 'Regular weekly test run & utility grid outage duty log.'
+  },
   {
     id: 'rh_1',
     procedureId: 'genset',
@@ -1382,6 +1401,32 @@ window.handleChecklistSubmit = function(event) {
     chkPart
   };
 
+  if (editingInspectionLogId) {
+    const idx = historyLogs.findIndex(l => l.id === editingInspectionLogId);
+    if (idx !== -1) {
+      historyLogs[idx] = {
+        ...historyLogs[idx],
+        date: dateVal,
+        preparedBy,
+        inspectedBy,
+        score,
+        items: responses,
+        images: [...activeChecklistImages],
+        chkRunHours,
+        chkFuel,
+        chkPart
+      };
+    }
+    editingInspectionLogId = null;
+    saveHistoryToStorage();
+    alert("Compliance inspection log updated successfully!");
+    switchSubTab('logs');
+    renderLogsHistory();
+    const submitBtn = document.getElementById('btn-submit-checklist');
+    if (submitBtn) submitBtn.textContent = 'Submit Inspection Report';
+    return;
+  }
+
   historyLogs.unshift(newLog);
   saveHistoryToStorage();
   
@@ -1564,7 +1609,10 @@ window.renderRunHoursTab = function() {
       <td>${log.burnRate > 0 ? `<span style="color:#fbbf24; font-family:monospace;">${log.burnRate.toFixed(1)} L/Hr</span>` : '<span style="color:#64748b;">N/A</span>'}</td>
       <td>${log.technician}</td>
       <td>
-        <button class="btn btn-secondary" style="font-size:11px; padding:3px 8px; color:#ef4444; border-color:rgba(239,68,68,0.4);" onclick="deleteRunHourLog('${log.id}')">Delete</button>
+        <div style="display: flex; gap: 6px; align-items: center;">
+          <button class="btn btn-secondary" style="font-size:11px; padding:3px 8px; color:#38bdf8; border-color:rgba(56,189,248,0.4);" onclick="editRunHourLog('${log.id}')">✏️ Edit</button>
+          <button class="btn btn-secondary" style="font-size:11px; padding:3px 8px; color:#ef4444; border-color:rgba(239,68,68,0.4);" onclick="deleteRunHourLog('${log.id}')">🗑️ Delete</button>
+        </div>
       </td>
     `;
     tbody.appendChild(tr);
@@ -1682,6 +1730,38 @@ window.handleRunHoursSubmit = function(event) {
     technician,
     notes
   };
+
+  if (editingRunHourLogId) {
+    const idx = runHoursLogs.findIndex(l => l.id === editingRunHourLogId);
+    if (idx !== -1) {
+      runHoursLogs[idx] = {
+        ...runHoursLogs[idx],
+        equipmentId: eqId,
+        equipmentName: eqName,
+        dateTime,
+        startMeter,
+        endMeter,
+        runHours,
+        fuelBefore,
+        fuelAdded,
+        fuelAfter,
+        fuelConsumed,
+        burnRate,
+        technician,
+        notes
+      };
+    }
+    editingRunHourLogId = null;
+    saveRunHoursToStorage();
+    renderRunHoursTab();
+    alert("Run Hours & Fuel log entry updated successfully!");
+    const form = document.getElementById('runhours-form');
+    if (form) {
+      const submitBtn = form.querySelector('button[type="submit"]');
+      if (submitBtn) submitBtn.textContent = 'Log Reading & Update Operating Meters';
+    }
+    return;
+  }
 
   runHoursLogs.unshift(newLog);
   saveRunHoursToStorage();
@@ -1911,10 +1991,11 @@ function renderLogsHistory() {
       <td>${log.preparedBy}</td>
       <td>${log.inspectedBy}</td>
       <td>
-        <div style="display: flex; gap: 8px;">
+        <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
           <button class="btn btn-secondary" style="font-size:11px; padding:4px 10px;" onclick="viewSavedLog('${log.id}')">View Details</button>
+          <button class="btn btn-secondary" style="font-size:11px; padding:4px 10px; color:#38bdf8; border-color:rgba(56,189,248,0.4);" onclick="editSavedLog('${log.id}')">✏️ Edit</button>
           <button class="btn btn-primary" style="font-size:11px; padding:4px 10px;" onclick="printComplianceReport('${log.id}')">Print Report</button>
-          <button class="btn btn-secondary" style="font-size:11px; padding:4px 10px; border:1px solid #ef4444; color:#ef4444; background:none;" onclick="deleteSavedLog('${log.id}')">Delete</button>
+          <button class="btn btn-secondary" style="font-size:11px; padding:4px 10px; border:1px solid #ef4444; color:#ef4444; background:none;" onclick="deleteSavedLog('${log.id}')">🗑️ Delete</button>
         </div>
       </td>
     `;
@@ -2180,3 +2261,70 @@ window.exitToMainDashboard = function(event) {
   return false;
 };
 
+
+// Edit Run Hour Log Entry
+window.editRunHourLog = function(id) {
+  const log = runHoursLogs.find(l => l.id === id);
+  if (!log) return;
+
+  editingRunHourLogId = log.id;
+  
+  if (log.procedureId) {
+    switchProcedure(log.procedureId);
+  }
+  
+  switchSubTab('runhours');
+
+  const eqSelect = document.getElementById('rh-equipment-select');
+  if (eqSelect) eqSelect.value = log.equipmentId || '';
+
+  const dateInput = document.getElementById('rh-date');
+  if (dateInput) dateInput.value = (log.dateTime || '').replace(' ', 'T');
+
+  const startInput = document.getElementById('rh-meter-start');
+  if (startInput) startInput.value = log.startMeter;
+
+  const endInput = document.getElementById('rh-meter-end');
+  if (endInput) endInput.value = log.endMeter;
+
+  const fuelBefore = document.getElementById('rh-fuel-before');
+  if (fuelBefore) fuelBefore.value = log.fuelBefore || 0;
+
+  const fuelAdded = document.getElementById('rh-fuel-added');
+  if (fuelAdded) fuelAdded.value = log.fuelAdded || 0;
+
+  const fuelAfter = document.getElementById('rh-fuel-after');
+  if (fuelAfter) fuelAfter.value = log.fuelAfter || 0;
+
+  const techInput = document.getElementById('rh-technician');
+  if (techInput) techInput.value = log.technician || '';
+
+  const notesInput = document.getElementById('rh-notes');
+  if (notesInput) notesInput.value = log.notes || '';
+
+  calculateRunHoursDiff();
+  calculateFuelConsumed();
+
+  const form = document.getElementById('runhours-form');
+  if (form) {
+    form.scrollIntoView({ behavior: 'smooth' });
+    const submitBtn = form.querySelector('button[type="submit"]');
+    if (submitBtn) submitBtn.textContent = '💾 Update Run Hour Log Entry';
+  }
+};
+
+// Edit Inspection History Log Entry
+window.editSavedLog = function(logId) {
+  const log = historyLogs.find(l => l.id === logId);
+  if (!log) return;
+
+  editingInspectionLogId = log.id;
+
+  viewSavedLog(logId);
+
+  const header = document.querySelector('.procedure-header');
+  if (header) header.scrollIntoView({ behavior: 'smooth' });
+
+  const submitBtn = document.getElementById('btn-submit-checklist');
+  if (submitBtn) submitBtn.textContent = '💾 Update Inspection Report';
+};

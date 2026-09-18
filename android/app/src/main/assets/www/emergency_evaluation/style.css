@@ -2276,12 +2276,27 @@ body {
 }
 
 /* ==================== PRINT STYLES ==================== */
+@page {
+  size: landscape;
+  margin: 10mm;
+}
+
+@page reportLandscape {
+  size: landscape;
+  margin: 10mm;
+}
+
 @media print {
-  body {
+  html, body {
     background-color: #fff !important;
     color: #000 !important;
     overflow: visible !important;
     height: auto !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
   
   .sidebar, 
@@ -2302,18 +2317,31 @@ body {
   .app-container {
     display: block !important;
     height: auto !important;
-    width: auto !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-sizing: border-box !important;
   }
 
   .main-content {
     display: block !important;
     overflow: visible !important;
     height: auto !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-sizing: border-box !important;
   }
 
   .tabs-container {
     padding: 0 !important;
+    margin: 0 !important;
     overflow: visible !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
   }
 
   .tab-panel {
@@ -2323,6 +2351,11 @@ body {
   /* Show only active tab content in print */
   .tab-panel.active {
     display: block !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
   }
 
   .guideline-pane {
@@ -2363,6 +2396,7 @@ body {
     margin: 0 !important;
     background-color: #fff !important;
     color: #000 !important;
+    box-sizing: border-box !important;
   }
   
   .letter-box {
@@ -2380,13 +2414,141 @@ body {
     margin: 0 !important;
   }
 
+  /* Critical Evaluation Print Alignment matching Live Preview */
+  #panel-critical-evaluation {
+    page: reportLandscape;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  #critical-preview-section {
+    display: block !important;
+    border: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    page: reportLandscape;
+  }
+
+  .critical-report-canvas {
+    display: block !important;
+    box-shadow: none !important;
+    border: none !important;
+    border-radius: 0 !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    background-color: #fff !important;
+    color: #0f172a !important;
+    box-sizing: border-box !important;
+    page: reportLandscape;
+  }
+
+  .critical-report-header-table {
+    width: 100% !important;
+    margin: 0 0 12px 0 !important;
+    border-collapse: collapse !important;
+    box-sizing: border-box !important;
+    page-break-inside: avoid !important;
+  }
+
+  .critical-report-title-box {
+    width: 100% !important;
+    margin: 0 0 12px 0 !important;
+    padding: 8px 0 !important;
+    box-sizing: border-box !important;
+    page-break-inside: avoid !important;
+  }
+
+  .critical-official-table {
+    page-break-inside: auto;
+    width: 100% !important;
+    max-width: 100% !important;
+    table-layout: fixed !important;
+    border-collapse: collapse !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  .critical-official-table thead {
+    display: table-header-group !important;
+  }
+
+  .critical-official-table th {
+    background: #1e293b !important;
+    color: #ffffff !important;
+    padding: 5px 3px !important;
+    font-size: 9px !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    overflow-wrap: break-word;
+    word-break: break-word;
+  }
+
+  .critical-official-table td {
+    padding: 4px 4px !important;
+    font-size: 9.5px !important;
+    line-height: 1.25 !important;
+    overflow-wrap: break-word;
+    word-break: break-word;
+  }
+
+  .critical-official-table tr {
+    page-break-inside: avoid !important;
+  }
+
+  .critical-official-table .report-leak-img {
+    width: 100% !important;
+    max-width: 95px !important;
+    height: 68px !important;
+    object-fit: cover !important;
+    display: block !important;
+    margin: 2px auto !important;
+  }
+
+  .critical-report-photo-matrix {
+    width: 100% !important;
+    box-sizing: border-box !important;
+    page-break-inside: avoid !important;
+  }
+
+  .critical-photo-card {
+    page-break-inside: avoid !important;
+  }
+
+  .critical-signatories-grid {
+    width: 100% !important;
+    box-sizing: border-box !important;
+    margin-top: 24px !important;
+    page-break-inside: avoid !important;
+  }
+
+  /* Prevent duplication when printing: hide interactive desk cards and table */
+  #panel-critical-evaluation > .critical-eval-desk-header,
+  #panel-critical-evaluation > .critical-kpi-grid,
+  #panel-critical-evaluation > .section-card:not(#critical-preview-section),
+  #panel-critical-evaluation .comparison-filter-chips,
+  #panel-critical-evaluation .critical-control-toolbar,
+  #panel-critical-evaluation .critical-table-scroll-container,
+  #critical-eval-table {
+    display: none !important;
+  }
+
   .report-photo-thumb {
     height: 1.25in !important;
     max-height: 1.25in !important;
     width: auto !important;
     min-width: 1.25in !important;
     object-fit: cover !important;
-    page-break-inside: avoid !important;
+  }  page-break-inside: avoid !important;
   }
 }
 
@@ -2937,4 +3099,1176 @@ body.light-theme {
   border-color: #fca5a5 !important;
 }
 
+/* ==========================================================================
+   CRITICAL EVALUATION: LEAK & CRACK TRACING & TRACKING SYSTEM
+   ========================================================================== */
+
+.critical-eval-desk-header {
+  border-left: 4px solid #0284c7;
+  padding: 20px 24px;
+}
+
+.desk-icon-badge {
+  font-size: 24px;
+  background: rgba(2, 132, 199, 0.15);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  padding: 6px 12px;
+  border-radius: 8px;
+}
+
+.critical-control-toolbar {
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+  flex-wrap: wrap;
+  background: rgba(15, 23, 42, 0.45);
+  padding: 14px 18px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+}
+
+.critical-control-toolbar .filter-select {
+  background: var(--bg-dark);
+  color: #fff;
+  border: 1px solid var(--border-color);
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  min-width: 220px;
+  cursor: pointer;
+}
+
+/* KPI Summary Cards */
+.critical-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.critical-kpi-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 18px;
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-card);
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.critical-kpi-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+  border-color: #38bdf8;
+}
+
+.critical-kpi-card.active-filter {
+  outline: 2px solid #38bdf8;
+  box-shadow: 0 0 14px rgba(56, 189, 248, 0.3);
+}
+
+.critical-kpi-card .kpi-icon {
+  font-size: 28px;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.critical-kpi-card .kpi-details {
+  display: flex;
+  flex-direction: column;
+}
+
+.critical-kpi-card .kpi-value {
+  font-size: 24px;
+  font-weight: 800;
+  line-height: 1.1;
+  color: #fff;
+}
+
+.critical-kpi-card .kpi-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-main);
+  margin-top: 2px;
+}
+
+.critical-kpi-card .kpi-subtext {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 1px;
+}
+
+/* Card Specific Themes */
+.critical-kpi-card.new-leak-card {
+  border-left: 4px solid #ef4444;
+}
+.critical-kpi-card.new-leak-card .kpi-value {
+  color: #f87171;
+}
+
+.critical-kpi-card.reopened-card {
+  border-left: 4px solid #f59e0b;
+}
+.critical-kpi-card.reopened-card .kpi-value {
+  color: #fbbf24;
+}
+
+.critical-kpi-card.ongoing-card {
+  border-left: 4px solid #3b82f6;
+}
+.critical-kpi-card.ongoing-card .kpi-value {
+  color: #60a5fa;
+}
+
+.critical-kpi-card.closed-card {
+  border-left: 4px solid #10b981;
+}
+.critical-kpi-card.closed-card .kpi-value {
+  color: #34d399;
+}
+
+/* Filter Chips */
+.comparison-filter-chips {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.filter-chip {
+  background: var(--bg-dark);
+  color: var(--text-muted);
+  border: 1px solid var(--border-color);
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.filter-chip:hover {
+  background: var(--bg-card-hover);
+  color: #fff;
+}
+
+.filter-chip.active {
+  background: #0284c7;
+  color: #fff;
+  border-color: #0284c7;
+}
+
+.filter-chip.chip-highlight-new {
+  border-color: rgba(239, 68, 68, 0.4);
+}
+.filter-chip.chip-highlight-new.active {
+  background: #dc2626;
+  border-color: #dc2626;
+  color: #fff;
+}
+
+.filter-chip.chip-highlight-reopened {
+  border-color: rgba(245, 158, 11, 0.4);
+}
+.filter-chip.chip-highlight-reopened.active {
+  background: #d97706;
+  border-color: #d97706;
+  color: #fff;
+}
+
+.critical-search-box {
+  width: 100%;
+  background: var(--bg-dark);
+  color: #fff;
+  border: 1px solid var(--border-color);
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+}
+
+/* Status Badges in Table */
+.badge-leak-status {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.badge-leak-new {
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.4);
+}
+
+.badge-leak-reopened {
+  background: rgba(245, 158, 11, 0.15);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.4);
+}
+
+.badge-leak-ongoing {
+  background: rgba(59, 130, 246, 0.15);
+  color: #60a5fa;
+  border: 1px solid rgba(59, 130, 246, 0.4);
+}
+
+.badge-leak-monitoring {
+  background: rgba(6, 182, 212, 0.15);
+  color: #22d3ee;
+  border: 1px solid rgba(6, 182, 212, 0.4);
+}
+
+.badge-leak-closed {
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.4);
+}
+
+/* Table Photo Cell & Upload */
+.leak-table-photo-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.leak-thumb-wrapper {
+  width: 84px;
+  height: 60px;
+  border-radius: 4px;
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+  background: #000;
+  cursor: pointer;
+  position: relative;
+}
+
+.leak-thumb-wrapper img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.2s ease;
+}
+
+.leak-thumb-wrapper:hover img {
+  transform: scale(1.1);
+}
+
+.leak-photo-btn {
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.leak-photo-btn:hover {
+  background: #0284c7;
+  color: #fff;
+  border-color: #0284c7;
+}
+
+/* ==================== ADAPTED OFFICIAL REPORT PRINTABLE CANVAS ==================== */
+.critical-report-canvas {
+  background: #ffffff;
+  color: #0f172a;
+  padding: 24px 30px;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  font-family: 'Inter', sans-serif;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.critical-report-header-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+}
+
+.critical-report-header-table td {
+  border: 1px solid #94a3b8;
+  padding: 6px 12px;
+  font-size: 11px;
+  vertical-align: middle;
+}
+
+.critical-report-header-table .doc-ctrl-label {
+  font-weight: 700;
+  color: #475569;
+  width: 90px;
+}
+
+.critical-report-title-box {
+  text-align: center;
+  padding: 12px 0;
+  border-bottom: 2px solid #0f172a;
+  margin-bottom: 20px;
+}
+
+.critical-report-title-box h1 {
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  margin: 0 0 4px 0;
+  color: #0f172a;
+  text-transform: uppercase;
+}
+
+.critical-report-title-box .subtitle {
+  font-size: 12px;
+  font-weight: 600;
+  color: #334155;
+  margin: 0;
+}
+
+.critical-report-scope-tag {
+  display: inline-block;
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #f87171;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 4px 12px;
+  border-radius: 4px;
+  margin-top: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.critical-report-scope-tag.tag-all {
+  background: #e0f2fe;
+  color: #0369a1;
+  border-color: #38bdf8;
+}
+
+/* Formal Adapted Table */
+.critical-official-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 16px;
+  font-size: 10px;
+}
+
+.critical-official-table th {
+  background: #1e293b !important;
+  color: #ffffff !important;
+  border: 1px solid #475569;
+  padding: 6px 5px;
+  font-weight: 700;
+  text-align: center;
+  font-size: 10px;
+}
+
+.critical-official-table td {
+  border: 1px solid #cbd5e1;
+  padding: 6px 6px;
+  vertical-align: top;
+  color: #1e293b;
+  font-size: 10.5px;
+  line-height: 1.35;
+}
+
+.critical-official-table tr:nth-child(even) {
+  background-color: #f8fafc;
+}
+
+.critical-official-table .report-leak-img {
+  width: 128px;
+  height: 92px;
+  object-fit: cover;
+  border-radius: 4px;
+  border: 1px solid #94a3b8;
+  display: block;
+  margin: 4px auto 0 auto;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.critical-official-table .report-leak-img:hover {
+  transform: scale(1.05);
+}
+
+/* Photo Gallery in Report (+15% size enhancement) */
+.critical-report-photo-matrix {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(248px, 1fr));
+  gap: 16px;
+  margin-top: 18px;
+  page-break-inside: avoid;
+}
+
+.critical-photo-card {
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  overflow: hidden;
+  background: #f8fafc;
+  display: flex;
+  flex-direction: column;
+}
+
+.critical-photo-card img {
+  width: 100%;
+  height: 166px;
+  object-fit: cover;
+  cursor: pointer;
+}
+
+.critical-photo-card .photo-caption {
+  padding: 8px 10px;
+  font-size: 10px;
+  color: #334155;
+  border-top: 1px solid #e2e8f0;
+}
+
+/* Official 4-Column Signatories Block matching Page 10 */
+.critical-signatories-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-top: 36px;
+  border-top: 2px solid #0f172a;
+  padding-top: 18px;
+  page-break-inside: avoid;
+}
+
+.critical-sig-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.critical-sig-role {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #475569;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+}
+
+.critical-sig-img-wrap {
+  height: 55px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 4px;
+}
+
+.critical-sig-img {
+  max-height: 48px;
+  max-width: 120px;
+  object-fit: contain;
+}
+
+.critical-sig-name {
+  font-size: 11.5px;
+  font-weight: 800;
+  color: #0f172a;
+  border-top: 1px solid #0f172a;
+  width: 90%;
+  padding-top: 4px;
+}
+
+.critical-sig-title {
+  font-size: 10px;
+  color: #64748b;
+  margin-top: 1px;
+}
+
+/* Light Theme Overrides for Critical Evaluation */
+.light-theme .critical-eval-desk-header {
+  background: #ffffff !important;
+  border-color: #0284c7 !important;
+}
+
+.light-theme .critical-control-toolbar {
+  background: #f1f5f9 !important;
+  border-color: #cbd5e1 !important;
+}
+
+.light-theme .critical-control-toolbar .filter-select {
+  background: #ffffff !important;
+  color: #0f172a !important;
+  border-color: #cbd5e1 !important;
+}
+
+.light-theme .critical-kpi-card {
+  background: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
+}
+
+.light-theme .critical-kpi-card .kpi-value {
+  color: #0f172a !important;
+}
+
+.light-theme .critical-kpi-card .kpi-title {
+  color: #1e293b !important;
+}
+
+.light-theme .filter-chip {
+  background: #f1f5f9 !important;
+  color: #475569 !important;
+  border-color: #cbd5e1 !important;
+}
+
+.light-theme .filter-chip.active {
+  background: #0284c7 !important;
+  color: #ffffff !important;
+}
+
+.light-theme .critical-search-box {
+  background: #ffffff !important;
+  color: #0f172a !important;
+  border-color: #cbd5e1 !important;
+}
+
+.light-theme #modal-critical-leak .modal-content {
+  background: #ffffff !important;
+  color: #0f172a !important;
+}
+
+.light-theme #modal-critical-leak input,
+.light-theme #modal-critical-leak select,
+.light-theme #modal-critical-leak textarea {
+  background: #ffffff !important;
+  color: #0f172a !important;
+  border-color: #cbd5e1 !important;
+}
+
+/* ==================== CRITICAL LEAK MODAL FIXED BACKDROP & DIALOG ==================== */
+#modal-critical-leak {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  background: rgba(0, 0, 0, 0.78) !important;
+  backdrop-filter: blur(5px);
+  z-index: 10005 !important;
+  display: none;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 20px !important;
+  box-sizing: border-box;
+}
+
+#modal-critical-leak .modal-content {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  width: 100%;
+  max-width: 780px;
+  max-height: 90vh;
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.75);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  animation: modalScale 0.2s ease;
+  padding: 24px;
+  box-sizing: border-box;
+}
+
+#modal-critical-leak .form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px 16px;
+}
+
+#modal-critical-leak input,
+#modal-critical-leak select,
+#modal-critical-leak textarea {
+  width: 100%;
+  box-sizing: border-box;
+  background: var(--bg-dark);
+  color: #fff;
+  border: 1px solid var(--border-color);
+  padding: 9px 12px;
+  border-radius: 6px;
+  font-size: 12.5px;
+  font-family: inherit;
+}
+
+#modal-critical-leak input:focus,
+#modal-critical-leak select:focus,
+#modal-critical-leak textarea:focus {
+  border-color: #38bdf8;
+  outline: none;
+}
+
+/* ==================== CRITICAL TABLE SCROLL CONTAINER & STICKY HEADER ==================== */
+.critical-table-scroll-container {
+  max-height: 560px;
+  overflow-y: auto !important;
+  overflow-x: auto !important;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  margin-bottom: 20px;
+  position: relative;
+  background: var(--bg-card);
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-color) transparent;
+}
+
+.critical-table-scroll-container::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.critical-table-scroll-container::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.4);
+  border-radius: 4px;
+}
+
+.critical-table-scroll-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.critical-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: #0b1329 !important;
+  border-bottom: 2px solid var(--border-color);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
+}
+
+.light-theme .critical-table thead th {
+  background: #f1f5f9 !important;
+  color: #0f172a !important;
+}
+
+/* ==================== CRITICAL PHOTO ANNOTATOR & DEFECT MARKER MODAL ==================== */
+#modal-critical-photo-annotator {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  background: rgba(0, 0, 0, 0.85) !important;
+  backdrop-filter: blur(8px);
+  z-index: 10010 !important;
+  display: none;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 16px !important;
+  box-sizing: border-box;
+}
+
+.annotator-modal-content {
+  background: #0f172a;
+  border: 1px solid #38bdf8;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 1080px;
+  max-height: 94vh;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.85);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 18px 24px;
+  box-sizing: border-box;
+  animation: modalScale 0.2s ease;
+}
+
+.annotator-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 12px;
+  margin-bottom: 12px;
+}
+
+.annotator-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  background: #1e293b;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 8px 14px;
+  margin-bottom: 12px;
+}
+
+.annotator-toolbar .toolbar-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.annotator-tool-btn {
+  background: #0f172a;
+  color: #cbd5e1;
+  border: 1px solid var(--border-color);
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.annotator-tool-btn:hover {
+  border-color: #38bdf8;
+  color: #fff;
+}
+
+.annotator-tool-btn.active {
+  background: #0284c7;
+  color: #fff;
+  border-color: #38bdf8;
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.4);
+}
+
+.annotator-toolbar .color-btn {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  cursor: pointer;
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+
+.annotator-toolbar .color-btn:hover {
+  transform: scale(1.15);
+}
+
+.annotator-toolbar .color-btn.active {
+  border-color: #ffffff;
+  transform: scale(1.2);
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.6);
+}
+
+#annotator-stroke-width {
+  background: #0f172a;
+  color: #fff;
+  border: 1px solid var(--border-color);
+  padding: 5px 8px;
+  border-radius: 4px;
+  font-size: 11.5px;
+}
+
+.annotator-viewport-wrap {
+  flex: 1;
+  min-height: 400px;
+  max-height: 70vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #020617;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  overflow: auto;
+  position: relative;
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+.annotator-canvas-container {
+  position: relative;
+  display: inline-block;
+  max-width: 100%;
+  max-height: 100%;
+}
+
+#annotator-canvas {
+  display: block;
+  max-width: 100%;
+  max-height: 65vh;
+  object-fit: contain;
+  cursor: crosshair;
+  border-radius: 4px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+
+.annotator-hint {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(15, 23, 42, 0.88);
+  color: #f8fafc;
+  border: 1px solid #38bdf8;
+  font-size: 11px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  pointer-events: none;
+  backdrop-filter: blur(4px);
+  white-space: nowrap;
+}
+
+.light-theme .annotator-modal-content {
+  background: #ffffff;
+  border-color: #0284c7;
+}
+
+.light-theme .annotator-toolbar {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+}
+
+.light-theme .annotator-tool-btn {
+  background: #ffffff;
+  color: #0f172a;
+  border-color: #cbd5e1;
+}
+
+.light-theme .annotator-tool-btn.active {
+  background: #0284c7;
+  color: #ffffff;
+}
+
+.light-theme .annotator-viewport-wrap {
+  background: #e2e8f0;
+}
+
+/* ==================== SIGNATORIES MANAGER & SIGNATURE PAD MODALS ==================== */
+
+#modal-critical-signatories-editor {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  background: rgba(0, 0, 0, 0.82) !important;
+  backdrop-filter: blur(8px);
+  z-index: 10020 !important;
+  display: none;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 20px !important;
+  box-sizing: border-box;
+}
+
+#modal-critical-signature-pad {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  background: rgba(0, 0, 0, 0.88) !important;
+  backdrop-filter: blur(8px);
+  z-index: 10030 !important;
+  display: none;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 20px !important;
+  box-sizing: border-box;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 24px;
+  cursor: pointer;
+  line-height: 1;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.modal-close:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.signatories-modal-content {
+  background: #0f172a;
+  border: 1px solid #38bdf8;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 980px;
+  max-height: 92vh;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.85);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 20px 24px;
+  box-sizing: border-box;
+  animation: modalScale 0.2s ease;
+}
+
+.signatories-editor-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  overflow-y: auto;
+  max-height: 62vh;
+  padding: 6px 4px 12px 4px;
+}
+
+@media (max-width: 768px) {
+  .signatories-editor-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.signatory-edit-card {
+  background: #1e293b;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  position: relative;
+  transition: border-color 0.2s ease;
+}
+
+.signatory-edit-card:hover {
+  border-color: #38bdf8;
+}
+
+.signatory-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding-bottom: 6px;
+}
+
+.signatory-card-header strong {
+  font-size: 12.5px;
+  color: #38bdf8;
+}
+
+.sig-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.sig-input-group label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #94a3b8;
+}
+
+.sig-input-group input {
+  background: #0f172a;
+  color: #fff;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 6px 10px;
+  font-size: 12px;
+  font-family: inherit;
+}
+
+.sig-input-group input:focus {
+  outline: none;
+  border-color: #38bdf8;
+}
+
+.sig-card-preview-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  background: #0f172a;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 8px 10px;
+}
+
+.sig-preview-thumb-box {
+  height: 48px;
+  width: 120px;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.sig-preview-thumb-box img {
+  max-height: 42px;
+  max-width: 110px;
+  object-fit: contain;
+}
+
+.sig-preview-thumb-box .no-sig-text {
+  font-size: 10px;
+  color: #94a3b8;
+  font-style: italic;
+}
+
+.sig-card-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* ==================== SIGNATURE PAD MODAL STYLES ==================== */
+.sigpad-modal-content {
+  background: #0f172a;
+  border: 1px solid #38bdf8;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 680px;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.85);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 18px 22px;
+  box-sizing: border-box;
+  animation: modalScale 0.2s ease;
+}
+
+.sigpad-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  background: #1e293b;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin-bottom: 12px;
+}
+
+.sigpad-toolbar .toolbar-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.sigpad-canvas-wrap {
+  background: #ffffff;
+  border: 2px dashed #94a3b8;
+  border-radius: 8px;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  touch-action: none;
+}
+
+#sigpad-canvas {
+  display: block;
+  width: 100%;
+  height: 220px;
+  cursor: crosshair;
+}
+
+.sigpad-baseline {
+  position: absolute;
+  bottom: 44px;
+  left: 30px;
+  right: 30px;
+  border-bottom: 1px solid #cbd5e1;
+  pointer-events: none;
+}
+
+.sigpad-baseline-hint {
+  position: absolute;
+  bottom: 22px;
+  left: 30px;
+  font-size: 10.5px;
+  color: #94a3b8;
+  pointer-events: none;
+}
+
+/* Interactive Signature Hover In Live Preview */
+.critical-sig-box {
+  cursor: pointer;
+  border-radius: 6px;
+  padding: 6px 8px;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.critical-sig-box:hover {
+  background: rgba(2, 132, 199, 0.08);
+}
+
+.critical-sig-box:hover .critical-sig-img-wrap {
+  transform: scale(1.04);
+}
+
+/* Continuous Length Print Mode */
+body.print-mode-continuous .critical-report-canvas {
+  page-break-after: avoid !important;
+  page-break-before: avoid !important;
+  page-break-inside: auto !important;
+}
+
+body.print-mode-continuous .critical-official-table,
+body.print-mode-continuous .critical-official-table tr,
+body.print-mode-continuous .critical-signatories-grid {
+  page-break-inside: auto !important;
+}
+
+.light-theme #modal-critical-signatories-editor,
+.light-theme #modal-critical-signature-pad {
+  background: rgba(15, 23, 42, 0.6) !important;
+}
+
+.light-theme .signatories-modal-content,
+.light-theme .sigpad-modal-content {
+  background: #ffffff;
+  border-color: #0284c7;
+  color: #0f172a;
+}
+
+.light-theme .signatories-modal-content h3,
+.light-theme .sigpad-modal-content h3 {
+  color: #0f172a !important;
+}
+
+.light-theme .signatory-card-header strong {
+  color: #0284c7;
+}
+
+.light-theme .signatory-edit-card,
+.light-theme .sigpad-toolbar {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+}
+
+.light-theme .sig-card-preview-row {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+}
+
+.light-theme .sig-input-group input {
+  background: #ffffff;
+  color: #0f172a;
+  border-color: #cbd5e1;
+}
+
+.light-theme .modal-close {
+  color: #64748b;
+}
+
+.light-theme .modal-close:hover {
+  color: #0f172a;
+  background: rgba(0, 0, 0, 0.05);
+}
 
