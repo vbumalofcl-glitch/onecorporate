@@ -7,6 +7,8 @@ android/.gradle/
 *.log
 *.tmp
 node_modules/
+local.properties
+**/local.properties
 
 # Local OS files
 .DS_Store
