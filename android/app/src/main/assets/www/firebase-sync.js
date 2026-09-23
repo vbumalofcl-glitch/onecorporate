@@ -93,14 +93,11 @@
     },
 
     getInventoryItems: function() {
-      if (window.inventoryItems && Array.isArray(window.inventoryItems) && window.inventoryItems.length > 0) {
-        return window.inventoryItems;
-      }
       try {
         const raw = localStorage.getItem('onecorporate_inventory_data');
         if (raw) {
           const parsed = JSON.parse(raw);
-          if (Array.isArray(parsed) && parsed.length > 0) {
+          if (Array.isArray(parsed)) {
             window.inventoryItems = parsed;
             return parsed;
           }
@@ -108,7 +105,10 @@
       } catch (e) {
         console.warn('getInventoryItems error:', e);
       }
-      return Array.isArray(window.inventoryItems) ? window.inventoryItems : [];
+      if (window.inventoryItems && Array.isArray(window.inventoryItems)) {
+        return window.inventoryItems;
+      }
+      return [];
     },
 
     getEmergencyState: function() {
@@ -125,7 +125,21 @@
 
       try {
         const rawOrg = localStorage.getItem('onecorp_emergency_org_structure');
-        if (rawOrg) emergencyOrgStructure = JSON.parse(rawOrg);
+        if (rawOrg) {
+          const parsed = JSON.parse(rawOrg);
+          if (Array.isArray(parsed) && parsed.length > 0) emergencyOrgStructure = parsed;
+        }
+        if (emergencyOrgStructure.length === 0) {
+          if (typeof window.getMainActiveOrgStructure === 'function') {
+            emergencyOrgStructure = window.getMainActiveOrgStructure();
+          } else if (typeof window.getActiveOrgStructure === 'function') {
+            emergencyOrgStructure = window.getActiveOrgStructure();
+          } else if (window.MAIN_DEFAULT_ORG_STRUCTURE) {
+            emergencyOrgStructure = window.MAIN_DEFAULT_ORG_STRUCTURE;
+          } else if (window.DEFAULT_ORG_STRUCTURE) {
+            emergencyOrgStructure = window.DEFAULT_ORG_STRUCTURE;
+          }
+        }
       } catch (e) {}
 
       return {
@@ -301,6 +315,7 @@
       if (!CloudSync.isInitialized) return;
       if (isOnline) {
         CloudSync.setStatus('online', 'Connected to Cloud Firestore (Real-time sync active)');
+        CloudSync.performDeltaSync();
       } else {
         CloudSync.setStatus('offline', 'Offline Mode: Local changes will sync when reconnected');
       }
@@ -487,6 +502,9 @@
         if (!window.appState) window.appState = {};
         if (!Array.isArray(window.appState.tasks)) window.appState.tasks = [];
 
+        const remoteTaskIds = new Set();
+        snapshot.docs.forEach(doc => remoteTaskIds.add(String(doc.id)));
+
         snapshot.docChanges().forEach(change => {
           const docData = change.doc.data();
           const docId = change.doc.id;
@@ -515,6 +533,22 @@
           }
         });
 
+        // Reconcile remote deletions against local tasks
+        if (!snapshot.empty) {
+          const beforeLen = window.appState.tasks.length;
+          window.appState.tasks = window.appState.tasks.filter(t => {
+            const tid = String(t.id);
+            if (!remoteTaskIds.has(tid)) {
+              delete CloudSync.lastSyncedTasks[tid];
+              return false;
+            }
+            return true;
+          });
+          if (window.appState.tasks.length !== beforeLen) {
+            changed = true;
+          }
+        }
+
         if (changed) {
           CloudSync.persistLocalBackup();
           CloudSync.safeRefreshUI('tasks');
@@ -533,6 +567,9 @@
       try {
         if (!window.appState) window.appState = {};
         if (!Array.isArray(window.appState.complaints)) window.appState.complaints = [];
+
+        const remoteCompIds = new Set();
+        snapshot.docs.forEach(doc => remoteCompIds.add(String(doc.id)));
 
         snapshot.docChanges().forEach(change => {
           const docData = change.doc.data();
@@ -562,6 +599,22 @@
           }
         });
 
+        // Reconcile remote deletions against local complaints
+        if (!snapshot.empty) {
+          const beforeLen = window.appState.complaints.length;
+          window.appState.complaints = window.appState.complaints.filter(c => {
+            const cid = String(c.id);
+            if (!remoteCompIds.has(cid)) {
+              delete CloudSync.lastSyncedComplaints[cid];
+              return false;
+            }
+            return true;
+          });
+          if (window.appState.complaints.length !== beforeLen) {
+            changed = true;
+          }
+        }
+
         if (changed) {
           CloudSync.persistLocalBackup();
           CloudSync.safeRefreshUI('complaints');
@@ -580,6 +633,9 @@
       try {
         if (!window.appState) window.appState = {};
         if (!Array.isArray(window.appState.jobOrders)) window.appState.jobOrders = [];
+
+        const remoteJoIds = new Set();
+        snapshot.docs.forEach(doc => remoteJoIds.add(String(doc.id)));
 
         snapshot.docChanges().forEach(change => {
           const docData = change.doc.data();
@@ -609,6 +665,22 @@
           }
         });
 
+        // Reconcile remote deletions against local job orders
+        if (!snapshot.empty) {
+          const beforeLen = window.appState.jobOrders.length;
+          window.appState.jobOrders = window.appState.jobOrders.filter(j => {
+            const jid = String(j.id);
+            if (!remoteJoIds.has(jid)) {
+              delete CloudSync.lastSyncedJobOrders[jid];
+              return false;
+            }
+            return true;
+          });
+          if (window.appState.jobOrders.length !== beforeLen) {
+            changed = true;
+          }
+        }
+
         if (changed) {
           CloudSync.persistLocalBackup();
           CloudSync.safeRefreshUI('jobOrders');
@@ -629,6 +701,9 @@
       try {
         if (!window.appState) window.appState = {};
         if (!Array.isArray(window.appState.registry)) window.appState.registry = [];
+
+        const remoteRegIds = new Set();
+        snapshot.docs.forEach(doc => remoteRegIds.add(String(doc.id)));
 
         snapshot.docChanges().forEach(change => {
           const docData = change.doc.data();
@@ -657,6 +732,22 @@
             }
           }
         });
+
+        // Reconcile remote deletions against local registry
+        if (!snapshot.empty) {
+          const beforeLen = window.appState.registry.length;
+          window.appState.registry = window.appState.registry.filter(r => {
+            const rid = String(r.id);
+            if (!remoteRegIds.has(rid)) {
+              delete CloudSync.lastSyncedRegistry[rid];
+              return false;
+            }
+            return true;
+          });
+          if (window.appState.registry.length !== beforeLen) {
+            changed = true;
+          }
+        }
 
         if (changed) {
           CloudSync.persistLocalBackup();
@@ -737,6 +828,9 @@
         let items = CloudSync.getInventoryItems();
         if (!Array.isArray(items)) items = [];
 
+        const remoteInvIds = new Set();
+        snapshot.docs.forEach(doc => remoteInvIds.add(String(doc.id)));
+
         snapshot.docChanges().forEach(change => {
           const docData = change.doc.data();
           const docId = change.doc.id;
@@ -765,34 +859,62 @@
           }
         });
 
+        // Reconcile remote deletions against local inventory items
+        if (!snapshot.empty) {
+          const beforeLen = items.length;
+          items = items.filter(localItem => {
+            const iid = String(localItem.id);
+            if (!remoteInvIds.has(iid)) {
+              delete CloudSync.lastSyncedInventory[iid];
+              return false;
+            }
+            return true;
+          });
+          if (items.length !== beforeLen) {
+            changed = true;
+          }
+        }
+
         if (changed) {
           window.inventoryItems = items;
           try {
             localStorage.setItem('onecorporate_inventory_data', JSON.stringify(items));
           } catch (e) {}
 
-          // Refresh if running on the inventory page
-          if (typeof window.renderApp === 'function') {
-            window.renderApp();
+          // Refresh if running on the inventory page directly
+          if (typeof window.setInventoryItems === 'function') {
+            window.setInventoryItems(items);
+          } else if (typeof window.loadInventoryData === 'function') {
+            window.loadInventoryData();
           }
           if (typeof window.populateLocationFilterOptions === 'function') {
             window.populateLocationFilterOptions();
+          }
+          if (typeof window.renderApp === 'function') {
+            window.renderApp();
           }
 
           // If in parent window, notify embedded inventory iframe
           const iframe = document.querySelector('iframe[src*="inventory"]');
           if (iframe && iframe.contentWindow) {
             try {
-              if (typeof iframe.contentWindow.loadInventoryData === 'function') {
+              if (typeof iframe.contentWindow.setInventoryItems === 'function') {
+                iframe.contentWindow.setInventoryItems(items);
+              } else if (typeof iframe.contentWindow.loadInventoryData === 'function') {
                 iframe.contentWindow.loadInventoryData();
-              }
-              if (typeof iframe.contentWindow.renderApp === 'function') {
-                iframe.contentWindow.renderApp();
               }
               if (typeof iframe.contentWindow.populateLocationFilterOptions === 'function') {
                 iframe.contentWindow.populateLocationFilterOptions();
               }
+              if (typeof iframe.contentWindow.renderApp === 'function') {
+                iframe.contentWindow.renderApp();
+              }
             } catch (err) {}
+          }
+
+          // If running inside iframe, notify parent window
+          if (window.parent && window.parent !== window) {
+            window.parent.inventoryItems = items;
           }
         }
       } catch (e) {
@@ -850,7 +972,7 @@
         }
 
         // 4. BERT Emergency Org Structure
-        if (Array.isArray(data.emergencyOrgStructure)) {
+        if (Array.isArray(data.emergencyOrgStructure) && data.emergencyOrgStructure.length > 0) {
           const serializedOrg = JSON.stringify(data.emergencyOrgStructure);
           const rawOrg = localStorage.getItem('onecorp_emergency_org_structure');
           if (rawOrg !== serializedOrg) {
@@ -869,15 +991,46 @@
 
           CloudSync.persistLocalBackup();
 
-          // Refresh emergency UI functions if currently active
+          // Refresh emergency UI functions across dashboard and standalone module
+          if (typeof window.renderMainEmergencyOrgStructure === 'function') window.renderMainEmergencyOrgStructure();
+          if (typeof window.renderMainHierarchicalOrgChart === 'function') window.renderMainHierarchicalOrgChart();
+          if (typeof window.renderMainOrgCardsView === 'function') window.renderMainOrgCardsView();
+          if (typeof window.renderEmergencyOrgStructure === 'function') window.renderEmergencyOrgStructure();
+          if (typeof window.renderActiveOrgStructure === 'function') window.renderActiveOrgStructure();
+          if (typeof window.renderHierarchicalOrgChart === 'function') window.renderHierarchicalOrgChart();
+          if (typeof window.renderOrgCardsView === 'function') window.renderOrgCardsView();
           if (typeof window.renderInspectionLogsTable === 'function') window.renderInspectionLogsTable();
           if (typeof window.renderLogsTable === 'function') window.renderLogsTable();
           if (typeof window.populateReassuranceLogsDropdown === 'function') window.populateReassuranceLogsDropdown();
           if (typeof window.populateReassuranceSelect === 'function') window.populateReassuranceSelect();
           if (typeof window.generateComprehensiveReport === 'function') window.generateComprehensiveReport();
           if (typeof window.renderReassuranceReport === 'function') window.renderReassuranceReport();
-          if (typeof window.renderEmergencyOrgStructure === 'function') window.renderEmergencyOrgStructure();
-          if (typeof window.renderActiveOrgStructure === 'function') window.renderActiveOrgStructure();
+
+          // Notify iframe if present in parent window
+          const emergencyIframe = document.querySelector('iframe[src*="emergency"]');
+          if (emergencyIframe && emergencyIframe.contentWindow) {
+            try {
+              if (typeof emergencyIframe.contentWindow.renderEmergencyOrgStructure === 'function') {
+                emergencyIframe.contentWindow.renderEmergencyOrgStructure();
+              }
+            } catch (e) {}
+          }
+
+          // If in iframe/popup, notify parent or opener
+          if (window.parent && window.parent !== window) {
+            try {
+              if (typeof window.parent.renderMainEmergencyOrgStructure === 'function') {
+                window.parent.renderMainEmergencyOrgStructure();
+              }
+            } catch (e) {}
+          }
+          if (window.opener && !window.opener.closed) {
+            try {
+              if (typeof window.opener.renderMainEmergencyOrgStructure === 'function') {
+                window.opener.renderMainEmergencyOrgStructure();
+              }
+            } catch (e) {}
+          }
         }
       } catch (e) {
         console.error('Error handling emergency state snapshot:', e);
@@ -895,6 +1048,9 @@
       try {
         let items = CloudSync.getCriticalLeaks();
         if (!Array.isArray(items)) items = [];
+
+        const remoteLeakIds = new Set();
+        snapshot.docs.forEach(doc => remoteLeakIds.add(String(doc.id)));
 
         snapshot.docChanges().forEach(change => {
           const docData = change.doc.data();
@@ -923,6 +1079,22 @@
             }
           }
         });
+
+        // Reconcile remote deletions against local critical leaks
+        if (!snapshot.empty) {
+          const beforeLen = items.length;
+          items = items.filter(l => {
+            const lid = String(l.id);
+            if (!remoteLeakIds.has(lid)) {
+              delete CloudSync.lastSyncedCriticalLeaks[lid];
+              return false;
+            }
+            return true;
+          });
+          if (items.length !== beforeLen) {
+            changed = true;
+          }
+        }
 
         if (changed) {
           if (window.criticalState) window.criticalState.items = items;
@@ -1300,7 +1472,7 @@
     // -------------------------------------------------------------
     // FULL UPLOAD / INITIAL SEED TO CLOUD (Batch Write)
     // -------------------------------------------------------------
-    uploadAllCurrentData: function() {
+    uploadAllCurrentData: async function() {
       if (!CloudSync.isInitialized || !CloudSync.db) {
         alert('Please connect to Firebase Cloud Firestore first.');
         return Promise.reject(new Error('Not connected'));
@@ -1327,8 +1499,37 @@
         return Promise.resolve();
       }
 
-      if (!confirm(`Upload all current local data (${totalItems} items: ${tasks.length} tasks, ${complaints.length} complaints, ${jobOrders.length} job orders, ${registry.length} equipment, ${inventory.length} inventory assets, ${criticalLeaks.length} leak tracing records, ${pastEvals.length} safety evaluations) to Cloud Firestore?`)) {
+      if (!confirm(`Upload all current local data (${totalItems} items: ${tasks.length} tasks, ${complaints.length} complaints, ${jobOrders.length} job orders, ${registry.length} equipment, ${inventory.length} inventory assets, ${criticalLeaks.length} leak tracing records, ${pastEvals.length} safety evaluations) to Cloud Firestore? Any documents previously in the cloud that you have deleted locally will also be removed.`)) {
         return Promise.resolve();
+      }
+
+      CloudSync.setStatus('connecting', 'Uploading and synchronizing with Cloud Firestore...');
+
+      // Query existing documents from Firestore to identify and clean up orphaned / locally deleted documents
+      let remoteTaskDocs = [];
+      let remoteComplaintDocs = [];
+      let remoteJobOrderDocs = [];
+      let remoteRegistryDocs = [];
+      let remoteInventoryDocs = [];
+      let remoteLeakDocs = [];
+
+      try {
+        const [taskSnap, compSnap, joSnap, regSnap, invSnap, leakSnap] = await Promise.all([
+          CloudSync.db.collection(COLLECTION_TASKS).get(),
+          CloudSync.db.collection(COLLECTION_COMPLAINTS).get(),
+          CloudSync.db.collection(COLLECTION_JOB_ORDERS).get(),
+          CloudSync.db.collection(COLLECTION_REGISTRY).get(),
+          CloudSync.db.collection(COLLECTION_INVENTORY).get(),
+          CloudSync.db.collection(COLLECTION_CRITICAL_LEAKS).get()
+        ]);
+        remoteTaskDocs = taskSnap.docs || [];
+        remoteComplaintDocs = compSnap.docs || [];
+        remoteJobOrderDocs = joSnap.docs || [];
+        remoteRegistryDocs = regSnap.docs || [];
+        remoteInventoryDocs = invSnap.docs || [];
+        remoteLeakDocs = leakSnap.docs || [];
+      } catch (e) {
+        console.warn('Could not query existing documents for orphan cleanup:', e);
       }
 
       const batches = [];
@@ -1345,54 +1546,109 @@
         }
       }
 
-      // Tasks
+      function addToBatchDelete(ref) {
+        currentBatch.delete(ref);
+        count++;
+        if (count >= 400) {
+          batches.push(currentBatch.commit());
+          currentBatch = CloudSync.db.batch();
+          count = 0;
+        }
+      }
+
+      // 1. Tasks: Clean up deleted + upload current
+      const localTaskIds = new Set(tasks.map(t => String(t.id)));
+      remoteTaskDocs.forEach(doc => {
+        if (!localTaskIds.has(doc.id)) {
+          addToBatchDelete(doc.ref);
+          delete CloudSync.lastSyncedTasks[doc.id];
+        }
+      });
       tasks.forEach(t => {
         if (!t.id) return;
         const copy = { ...t };
         delete copy.id;
         addToBatch(CloudSync.db.collection(COLLECTION_TASKS).doc(String(t.id)), copy);
+        CloudSync.lastSyncedTasks[String(t.id)] = JSON.stringify(t);
       });
 
-      // Complaints
+      // 2. Complaints: Clean up deleted + upload current
+      const localComplaintIds = new Set(complaints.map(c => String(c.id)));
+      remoteComplaintDocs.forEach(doc => {
+        if (!localComplaintIds.has(doc.id)) {
+          addToBatchDelete(doc.ref);
+          delete CloudSync.lastSyncedComplaints[doc.id];
+        }
+      });
       complaints.forEach(c => {
         if (!c.id) return;
         const copy = { ...c };
         delete copy.id;
         addToBatch(CloudSync.db.collection(COLLECTION_COMPLAINTS).doc(String(c.id)), copy);
+        CloudSync.lastSyncedComplaints[String(c.id)] = JSON.stringify(c);
       });
 
-      // Job Orders
+      // 3. Job Orders: Clean up deleted + upload current
+      const localJobOrderIds = new Set(jobOrders.map(j => String(j.id)));
+      remoteJobOrderDocs.forEach(doc => {
+        if (!localJobOrderIds.has(doc.id)) {
+          addToBatchDelete(doc.ref);
+          delete CloudSync.lastSyncedJobOrders[doc.id];
+        }
+      });
       jobOrders.forEach(j => {
         if (!j.id) return;
         const copy = { ...j };
         delete copy.id;
         addToBatch(CloudSync.db.collection(COLLECTION_JOB_ORDERS).doc(String(j.id)), copy);
+        CloudSync.lastSyncedJobOrders[String(j.id)] = JSON.stringify(j);
       });
 
-      // Registry
+      // 4. Registry: Clean up deleted + upload current
+      const localRegistryIds = new Set(registry.map(r => String(r.id)));
+      remoteRegistryDocs.forEach(doc => {
+        if (!localRegistryIds.has(doc.id)) {
+          addToBatchDelete(doc.ref);
+          delete CloudSync.lastSyncedRegistry[doc.id];
+        }
+      });
       registry.forEach(r => {
         if (!r.id) return;
         const copy = { ...r };
         delete copy.id;
         addToBatch(CloudSync.db.collection(COLLECTION_REGISTRY).doc(String(r.id)), copy);
+        CloudSync.lastSyncedRegistry[String(r.id)] = JSON.stringify(r);
       });
 
-      // Inventory Assets
+      // 5. Inventory: Clean up deleted + upload current
+      const localInvIds = new Set(inventory.map(inv => String(inv.id)));
+      remoteInventoryDocs.forEach(doc => {
+        if (!localInvIds.has(doc.id)) {
+          addToBatchDelete(doc.ref);
+          delete CloudSync.lastSyncedInventory[doc.id];
+        }
+      });
       inventory.forEach(inv => {
         if (!inv || !inv.id) return;
         const copy = { ...inv };
         delete copy.id;
         addToBatch(CloudSync.db.collection(COLLECTION_INVENTORY).doc(String(inv.id)), copy);
+        CloudSync.lastSyncedInventory[String(inv.id)] = JSON.stringify(inv);
       });
 
-      // Operational State (Manager Oversight Schedule Checklists, Absence, Schedules)
+      // 6. Operational State (Manager Oversight Schedule Checklists, Absence, Schedules)
       addToBatch(CloudSync.db.collection(COLLECTION_META).doc('operational_state'), {
         managerCheckedActivities: state.managerCheckedActivities || {},
         isManagerAbsent: state.isManagerAbsent || false,
         employeeSchedules: state.employeeSchedules || []
       });
+      CloudSync.lastSyncedOperationalStr = JSON.stringify({
+        managerCheckedActivities: state.managerCheckedActivities || {},
+        isManagerAbsent: state.isManagerAbsent || false,
+        employeeSchedules: state.employeeSchedules || []
+      });
 
-      // Emergency State (Past Safety Evaluations, Current Wizard, Signatories, BERT Org Structure)
+      // 7. Emergency State (Past Safety Evaluations, Current Wizard, Signatories, BERT Org Structure)
       addToBatch(CloudSync.db.collection(COLLECTION_META).doc('emergency_state'), {
         pastSafetyEvaluations: emergency.pastSafetyEvaluations || [],
         currentSafetyEvaluation: emergency.currentSafetyEvaluation || null,
@@ -1400,27 +1656,37 @@
         emergencyOrgStructure: emergency.emergencyOrgStructure || [],
         updatedAt: new Date().toISOString()
       });
+      CloudSync.lastSyncedEmergencyStr = JSON.stringify(emergency);
 
-      // Critical Leak & Crack Tracing Logs
+      // 8. Critical Leak & Crack Tracing Logs: Clean up deleted + upload current
+      const localLeakIds = new Set(criticalLeaks.map(leak => String(leak.id)));
+      remoteLeakDocs.forEach(doc => {
+        if (!localLeakIds.has(doc.id)) {
+          addToBatchDelete(doc.ref);
+          delete CloudSync.lastSyncedCriticalLeaks[doc.id];
+        }
+      });
       criticalLeaks.forEach(leak => {
         if (!leak || !leak.id) return;
         const copy = { ...leak };
         delete copy.id;
         addToBatch(CloudSync.db.collection(COLLECTION_CRITICAL_LEAKS).doc(String(leak.id)), copy);
+        CloudSync.lastSyncedCriticalLeaks[String(leak.id)] = JSON.stringify(leak);
       });
 
       if (count > 0) {
         batches.push(currentBatch.commit());
       }
 
-      return Promise.all(batches)
-        .then(() => {
-          alert(`Successfully synchronized ${totalItems} items to Google Cloud Firestore! All connected users will now see this data.`);
-        })
-        .catch(err => {
-          console.error('Batch upload error:', err);
-          alert('Failed to upload data to cloud: ' + (err.message || err));
-        });
+      try {
+        await Promise.all(batches);
+        CloudSync.setStatus('online', 'Connected to Cloud Firestore (Real-time sync active)');
+        alert(`Successfully synchronized ${totalItems} items to Google Cloud Firestore! All connected devices will now see this updated data.`);
+      } catch (err) {
+        console.error('Batch upload error:', err);
+        CloudSync.setStatus('error', 'Batch upload failed');
+        alert('Failed to upload data to cloud: ' + (err.message || err));
+      }
     },
 
     // -------------------------------------------------------------

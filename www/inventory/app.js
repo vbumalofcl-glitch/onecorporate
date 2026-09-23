@@ -740,12 +740,16 @@ function loadInventoryData() {
 function saveInventoryData() {
   try {
     window.inventoryItems = inventoryItems;
+    if (window.parent && window.parent !== window) {
+      window.parent.inventoryItems = inventoryItems;
+    }
     localStorage.setItem('onecorporate_inventory_data', JSON.stringify(inventoryItems));
 
     // Real-time Cloud Sync trigger
     if (window.CloudSync && typeof window.CloudSync.queueSync === 'function') {
       window.CloudSync.queueSync();
-    } else if (window.parent && window.parent.CloudSync && typeof window.parent.CloudSync.queueSync === 'function') {
+    }
+    if (window.parent && window.parent !== window && window.parent.CloudSync && typeof window.parent.CloudSync.queueSync === 'function') {
       window.parent.CloudSync.queueSync();
     }
   } catch (err) {
@@ -757,6 +761,12 @@ function saveInventoryData() {
 window.loadInventoryData = loadInventoryData;
 window.renderApp = renderApp;
 window.populateLocationFilterOptions = populateLocationFilterOptions;
+window.setInventoryItems = function(items) {
+  if (Array.isArray(items)) {
+    inventoryItems = items;
+    window.inventoryItems = items;
+  }
+};
 
 // Reset to standard initial catalog
 window.resetToDefaultCatalog = function() {
@@ -1382,11 +1392,22 @@ window.deleteSelectedItems = function() {
   }
 
   if (confirm(`Are you sure you want to delete ${selectedItemIds.size} selected inventory items?`)) {
+    const idsToDelete = Array.from(selectedItemIds);
     inventoryItems = inventoryItems.filter(item => !selectedItemIds.has(item.id));
     selectedItemIds.clear();
     saveInventoryData();
     populateLocationFilterOptions();
     renderApp();
+
+    // Directly delete each document in Cloud Firestore immediately
+    idsToDelete.forEach(id => {
+      if (window.CloudSync && typeof window.CloudSync.deleteInventoryItem === 'function') {
+        window.CloudSync.deleteInventoryItem(id);
+      }
+      if (window.parent && window.parent !== window && window.parent.CloudSync && typeof window.parent.CloudSync.deleteInventoryItem === 'function') {
+        window.parent.CloudSync.deleteInventoryItem(id);
+      }
+    });
   }
 };
 
@@ -1400,6 +1421,14 @@ window.deleteItem = function(id) {
     saveInventoryData();
     populateLocationFilterOptions();
     renderApp();
+
+    // Directly delete document in Cloud Firestore immediately
+    if (window.CloudSync && typeof window.CloudSync.deleteInventoryItem === 'function') {
+      window.CloudSync.deleteInventoryItem(id);
+    }
+    if (window.parent && window.parent !== window && window.parent.CloudSync && typeof window.parent.CloudSync.deleteInventoryItem === 'function') {
+      window.parent.CloudSync.deleteInventoryItem(id);
+    }
   }
 };
 

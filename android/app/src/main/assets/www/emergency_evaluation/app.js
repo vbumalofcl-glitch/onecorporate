@@ -3902,8 +3902,12 @@ function saveActiveOrgStructure(list) {
     // Real-time Cloud Sync trigger
     if (window.CloudSync && typeof window.CloudSync.queueSync === 'function') {
       window.CloudSync.queueSync();
-    } else if (window.opener && window.opener.CloudSync && typeof window.opener.CloudSync.queueSync === 'function') {
+    }
+    if (window.opener && window.opener.CloudSync && typeof window.opener.CloudSync.queueSync === 'function') {
       window.opener.CloudSync.queueSync();
+    }
+    if (window.parent && window.parent !== window && window.parent.CloudSync && typeof window.parent.CloudSync.queueSync === 'function') {
+      window.parent.CloudSync.queueSync();
     }
   } catch (e) {
     console.error('Error saving org structure to localStorage:', e);
@@ -4618,6 +4622,17 @@ window.resetEmergencyOrgStructure = function() {
   if (!confirm('Reset organizational structure back to default committee roster? Any custom rearrangements will be reset.')) return;
   localStorage.removeItem('onecorp_emergency_org_structure');
   renderEmergencyOrgStructure();
+
+  // Real-time Cloud Sync trigger
+  if (window.CloudSync && typeof window.CloudSync.queueSync === 'function') {
+    window.CloudSync.queueSync();
+  }
+  if (window.opener && window.opener.CloudSync && typeof window.opener.CloudSync.queueSync === 'function') {
+    window.opener.CloudSync.queueSync();
+  }
+  if (window.parent && window.parent !== window && window.parent.CloudSync && typeof window.parent.CloudSync.queueSync === 'function') {
+    window.parent.CloudSync.queueSync();
+  }
 };
 
 // Render Guidelines Static / Dynamic Sections

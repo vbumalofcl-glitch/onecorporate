@@ -1292,7 +1292,10 @@ window.switchTab = function(tabName) {
   }
   if (tabName === 'registry') renderRegistry();
   if (tabName === 'procedures') renderProceduresList();
-  if (tabName === 'emergency') renderEmergencyContacts();
+  if (tabName === 'emergency') {
+    renderEmergencyContacts();
+    if (typeof renderMainEmergencyOrgStructure === 'function') renderMainEmergencyOrgStructure();
+  }
   if (tabName === 'inventory') renderInventoryList();
   if (tabName === 'reports') renderReportsView();
   if (tabName === 'analytics') renderAnalyticsView();
@@ -9207,7 +9210,9 @@ function getMainActiveOrgStructure() {
         }
       });
 
-      return list;
+      if (list && list.length > 0) {
+        return list;
+      }
     }
   } catch (e) {
     console.error('Error loading org structure:', e);
@@ -9218,10 +9223,19 @@ function getMainActiveOrgStructure() {
 function saveMainActiveOrgStructure(list) {
   try {
     localStorage.setItem('onecorp_emergency_org_structure', JSON.stringify(list));
+    // Real-time Cloud Sync trigger
+    if (window.CloudSync && typeof window.CloudSync.queueSync === 'function') {
+      window.CloudSync.queueSync();
+    }
   } catch (e) {
     console.error('Error saving org structure:', e);
   }
 }
+
+// Global exports for CloudSync
+window.getMainActiveOrgStructure = getMainActiveOrgStructure;
+window.saveMainActiveOrgStructure = saveMainActiveOrgStructure;
+window.MAIN_DEFAULT_ORG_STRUCTURE = MAIN_DEFAULT_ORG_STRUCTURE;
 
 window.switchMainGuidelineTab = function(tabKey) {
   document.querySelectorAll('#card-main-preparedness-erp .guideline-pill').forEach(btn => {
@@ -9769,6 +9783,9 @@ window.resetEmergencyOrgStructure = function() {
     localStorage.removeItem('onecorp_emergency_org_structure');
     if (typeof renderMainEmergencyOrgStructure === 'function') renderMainEmergencyOrgStructure();
     if (typeof renderEmergencyOrgStructure === 'function') renderEmergencyOrgStructure();
+    if (window.CloudSync && typeof window.CloudSync.queueSync === 'function') {
+      window.CloudSync.queueSync();
+    }
     alert('Organizational structure reset to default.');
   }
 };
