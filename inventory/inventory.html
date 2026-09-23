@@ -45,6 +45,12 @@
           <span id="theme-toggle-label">Light Mode</span>
         </button>
 
+        <!-- Cloud Sync Status Indicator -->
+        <button type="button" class="btn btn-secondary cloud-sync-btn" id="cloud-sync-btn" onclick="if(window.CloudSync && window.CloudSync.openSettingsModal) { window.CloudSync.openSettingsModal(); } else if(window.parent && window.parent.CloudSync) { window.parent.CloudSync.openSettingsModal(); }" title="Real-time Cloud Firestore Sync is Active" style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; font-size: 12px; font-weight: 600;">
+          <span class="sync-dot" id="cloud-sync-dot" style="width: 8px; height: 8px; border-radius: 50%; background: #22c55e; display: inline-block;"></span>
+          <span id="cloud-sync-text">Cloud Sync: Live</span>
+        </button>
+
         <button class="btn btn-primary" onclick="openAddItemModal()">
           <svg viewBox="0 0 24 24" width="15" height="15" stroke="currentColor" stroke-width="2.5" fill="none"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
           <span>+ Add Inventory Item</span>
@@ -587,6 +593,10 @@
     </div>
   </div>
 
+  <!-- Firebase SDKs & Real-Time Sync Engine -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+  <script src="../firebase-sync.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

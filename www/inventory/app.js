@@ -734,15 +734,29 @@ function loadInventoryData() {
     console.error('Error loading inventory data:', err);
     inventoryItems = JSON.parse(JSON.stringify(DEFAULT_INVENTORY_ITEMS));
   }
+  window.inventoryItems = inventoryItems;
 }
 
 function saveInventoryData() {
   try {
+    window.inventoryItems = inventoryItems;
     localStorage.setItem('onecorporate_inventory_data', JSON.stringify(inventoryItems));
+
+    // Real-time Cloud Sync trigger
+    if (window.CloudSync && typeof window.CloudSync.queueSync === 'function') {
+      window.CloudSync.queueSync();
+    } else if (window.parent && window.parent.CloudSync && typeof window.parent.CloudSync.queueSync === 'function') {
+      window.parent.CloudSync.queueSync();
+    }
   } catch (err) {
     console.warn('LocalStorage save error:', err);
   }
 }
+
+// Expose functions globally for CloudSync listener updates
+window.loadInventoryData = loadInventoryData;
+window.renderApp = renderApp;
+window.populateLocationFilterOptions = populateLocationFilterOptions;
 
 // Reset to standard initial catalog
 window.resetToDefaultCatalog = function() {

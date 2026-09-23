@@ -12,6 +12,8 @@
   const COLLECTION_COMPLAINTS = 'onecorporate_complaints';
   const COLLECTION_JOB_ORDERS = 'onecorporate_job_orders';
   const COLLECTION_REGISTRY = 'onecorporate_registry';
+  const COLLECTION_INVENTORY = 'onecorporate_inventory';
+  const COLLECTION_CRITICAL_LEAKS = 'onecorporate_critical_leaks';
   const COLLECTION_META = 'onecorporate_meta';
 
   // Default embedded Firebase configuration (Enables automatic sync across all computers and Android builds)
@@ -40,6 +42,9 @@
     lastSyncedJobOrders: {},
     lastSyncedRegistry: {},
     lastSyncedOperationalStr: '',
+    lastSyncedInventory: {},
+    lastSyncedCriticalLeaks: {},
+    lastSyncedEmergencyStr: '',
     syncDebounceTimer: null,
     initialLoadComplete: false,
 
@@ -87,6 +92,67 @@
       return window.appState || (typeof appState !== 'undefined' ? appState : {});
     },
 
+    getInventoryItems: function() {
+      if (window.inventoryItems && Array.isArray(window.inventoryItems) && window.inventoryItems.length > 0) {
+        return window.inventoryItems;
+      }
+      try {
+        const raw = localStorage.getItem('onecorporate_inventory_data');
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            window.inventoryItems = parsed;
+            return parsed;
+          }
+        }
+      } catch (e) {
+        console.warn('getInventoryItems error:', e);
+      }
+      return Array.isArray(window.inventoryItems) ? window.inventoryItems : [];
+    },
+
+    getEmergencyState: function() {
+      const state = CloudSync.getState() || {};
+      let pastSafetyEvaluations = Array.isArray(state.pastSafetyEvaluations) ? state.pastSafetyEvaluations : [];
+      let currentSafetyEvaluation = state.currentSafetyEvaluation || null;
+      let criticalSignatories = [];
+      let emergencyOrgStructure = [];
+
+      try {
+        const rawSig = localStorage.getItem('onecorp_critical_signatories');
+        if (rawSig) criticalSignatories = JSON.parse(rawSig);
+      } catch (e) {}
+
+      try {
+        const rawOrg = localStorage.getItem('onecorp_emergency_org_structure');
+        if (rawOrg) emergencyOrgStructure = JSON.parse(rawOrg);
+      } catch (e) {}
+
+      return {
+        pastSafetyEvaluations: pastSafetyEvaluations,
+        currentSafetyEvaluation: currentSafetyEvaluation,
+        criticalSignatories: criticalSignatories,
+        emergencyOrgStructure: emergencyOrgStructure
+      };
+    },
+
+    getCriticalLeaks: function() {
+      if (window.criticalState && Array.isArray(window.criticalState.items) && window.criticalState.items.length > 0) {
+        return window.criticalState.items;
+      }
+      try {
+        const raw = localStorage.getItem('onecorp_critical_evaluation_state');
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        }
+      } catch (e) {}
+      if (window.DEFAULT_CRITICAL_LEAKS && Array.isArray(window.DEFAULT_CRITICAL_LEAKS)) {
+        return window.DEFAULT_CRITICAL_LEAKS;
+      }
+      return [];
+    },
+
     initializeCacheFromLocal: function() {
       try {
         const state = CloudSync.getState();
@@ -117,6 +183,23 @@
             employeeSchedules: state.employeeSchedules || []
           });
         }
+
+        const inv = CloudSync.getInventoryItems();
+        if (Array.isArray(inv)) {
+          inv.forEach(i => {
+            if (i && i.id) CloudSync.lastSyncedInventory[String(i.id)] = JSON.stringify(i);
+          });
+        }
+
+        const leaks = CloudSync.getCriticalLeaks();
+        if (Array.isArray(leaks)) {
+          leaks.forEach(l => {
+            if (l && l.id) CloudSync.lastSyncedCriticalLeaks[String(l.id)] = JSON.stringify(l);
+          });
+        }
+
+        const emState = CloudSync.getEmergencyState();
+        CloudSync.lastSyncedEmergencyStr = JSON.stringify(emState);
       } catch (e) {
         console.warn('Cache init error:', e);
       }
@@ -349,6 +432,48 @@
         CloudSync.unsubscribers.push(unsubOperational);
       } catch (e) {
         console.error('Failed to attach operational state listener:', e);
+      }
+
+      // 6. Inventory Listener (Asset & Materials Catalog)
+      try {
+        const unsubInventory = CloudSync.db.collection(COLLECTION_INVENTORY).onSnapshot(
+          snapshot => CloudSync.handleInventorySnapshot(snapshot),
+          err => {
+            console.error('Inventory listener error:', err);
+            CloudSync.setStatus('error', err.message || 'Firestore error');
+          }
+        );
+        CloudSync.unsubscribers.push(unsubInventory);
+      } catch (e) {
+        console.error('Failed to attach inventory listener:', e);
+      }
+
+      // 7. Emergency State Listener (Inspection Logs, Placards, Signatories, BERT Org Structure)
+      try {
+        const unsubEmergency = CloudSync.db.collection(COLLECTION_META).doc('emergency_state').onSnapshot(
+          doc => CloudSync.handleEmergencySnapshot(doc),
+          err => {
+            console.error('Emergency state listener error:', err);
+            CloudSync.setStatus('error', err.message || 'Firestore error');
+          }
+        );
+        CloudSync.unsubscribers.push(unsubEmergency);
+      } catch (e) {
+        console.error('Failed to attach emergency state listener:', e);
+      }
+
+      // 8. Critical Leaks Listener (Leak & Crack Tracing Logs)
+      try {
+        const unsubCriticalLeaks = CloudSync.db.collection(COLLECTION_CRITICAL_LEAKS).onSnapshot(
+          snapshot => CloudSync.handleCriticalLeaksSnapshot(snapshot),
+          err => {
+            console.error('Critical leaks listener error:', err);
+            CloudSync.setStatus('error', err.message || 'Firestore error');
+          }
+        );
+        CloudSync.unsubscribers.push(unsubCriticalLeaks);
+      } catch (e) {
+        console.error('Failed to attach critical leaks listener:', e);
       }
     },
 
@@ -599,6 +724,227 @@
       }
     },
 
+    handleInventorySnapshot: function(snapshot) {
+      if (snapshot.empty && (!window.inventoryItems || window.inventoryItems.length === 0)) {
+        const localRaw = localStorage.getItem('onecorporate_inventory_data');
+        if (!localRaw) return;
+      }
+
+      let changed = false;
+      CloudSync.isRemoteUpdating = true;
+
+      try {
+        let items = CloudSync.getInventoryItems();
+        if (!Array.isArray(items)) items = [];
+
+        snapshot.docChanges().forEach(change => {
+          const docData = change.doc.data();
+          const docId = change.doc.id;
+          const item = { ...docData, id: docId };
+          const serialized = JSON.stringify(item);
+
+          const index = items.findIndex(i => String(i.id) === String(docId));
+
+          if (change.type === 'added' || change.type === 'modified') {
+            CloudSync.lastSyncedInventory[docId] = serialized;
+            if (index >= 0) {
+              if (JSON.stringify(items[index]) !== serialized) {
+                items[index] = item;
+                changed = true;
+              }
+            } else {
+              items.unshift(item);
+              changed = true;
+            }
+          } else if (change.type === 'removed') {
+            delete CloudSync.lastSyncedInventory[docId];
+            if (index >= 0) {
+              items.splice(index, 1);
+              changed = true;
+            }
+          }
+        });
+
+        if (changed) {
+          window.inventoryItems = items;
+          try {
+            localStorage.setItem('onecorporate_inventory_data', JSON.stringify(items));
+          } catch (e) {}
+
+          // Refresh if running on the inventory page
+          if (typeof window.renderApp === 'function') {
+            window.renderApp();
+          }
+          if (typeof window.populateLocationFilterOptions === 'function') {
+            window.populateLocationFilterOptions();
+          }
+
+          // If in parent window, notify embedded inventory iframe
+          const iframe = document.querySelector('iframe[src*="inventory"]');
+          if (iframe && iframe.contentWindow) {
+            try {
+              if (typeof iframe.contentWindow.loadInventoryData === 'function') {
+                iframe.contentWindow.loadInventoryData();
+              }
+              if (typeof iframe.contentWindow.renderApp === 'function') {
+                iframe.contentWindow.renderApp();
+              }
+              if (typeof iframe.contentWindow.populateLocationFilterOptions === 'function') {
+                iframe.contentWindow.populateLocationFilterOptions();
+              }
+            } catch (err) {}
+          }
+        }
+      } catch (e) {
+        console.error('Error handling inventory snapshot:', e);
+      } finally {
+        setTimeout(() => { CloudSync.isRemoteUpdating = false; }, 100);
+      }
+    },
+
+    handleEmergencySnapshot: function(doc) {
+      if (!doc || !doc.exists) return;
+      const data = doc.data();
+      if (!data) return;
+
+      let changed = false;
+      CloudSync.isRemoteUpdating = true;
+
+      try {
+        if (!window.appState) window.appState = {};
+        if (!window.parentState) window.parentState = window.appState;
+
+        // 1. Past Safety Evaluations
+        if (Array.isArray(data.pastSafetyEvaluations)) {
+          const serialized = JSON.stringify(data.pastSafetyEvaluations);
+          const currentLocal = JSON.stringify(window.parentState.pastSafetyEvaluations || window.appState.pastSafetyEvaluations || []);
+          if (currentLocal !== serialized) {
+            window.appState.pastSafetyEvaluations = [...data.pastSafetyEvaluations];
+            window.parentState.pastSafetyEvaluations = [...data.pastSafetyEvaluations];
+            changed = true;
+          }
+        }
+
+        // 2. Current Safety Evaluation (active wizard evaluation)
+        if (data.currentSafetyEvaluation !== undefined) {
+          const serializedCurr = JSON.stringify(data.currentSafetyEvaluation);
+          const localCurr = JSON.stringify(window.parentState.currentSafetyEvaluation || window.appState.currentSafetyEvaluation || null);
+          if (localCurr !== serializedCurr) {
+            window.appState.currentSafetyEvaluation = data.currentSafetyEvaluation;
+            window.parentState.currentSafetyEvaluation = data.currentSafetyEvaluation;
+            changed = true;
+          }
+        }
+
+        // 3. Critical Signatories
+        if (Array.isArray(data.criticalSignatories)) {
+          const serializedSig = JSON.stringify(data.criticalSignatories);
+          const rawSig = localStorage.getItem('onecorp_critical_signatories');
+          if (rawSig !== serializedSig) {
+            localStorage.setItem('onecorp_critical_signatories', serializedSig);
+            if (window.criticalState) {
+              window.criticalState.signatories = [...data.criticalSignatories];
+            }
+            changed = true;
+          }
+        }
+
+        // 4. BERT Emergency Org Structure
+        if (Array.isArray(data.emergencyOrgStructure)) {
+          const serializedOrg = JSON.stringify(data.emergencyOrgStructure);
+          const rawOrg = localStorage.getItem('onecorp_emergency_org_structure');
+          if (rawOrg !== serializedOrg) {
+            localStorage.setItem('onecorp_emergency_org_structure', serializedOrg);
+            changed = true;
+          }
+        }
+
+        if (changed) {
+          CloudSync.lastSyncedEmergencyStr = JSON.stringify({
+            pastSafetyEvaluations: window.parentState.pastSafetyEvaluations || [],
+            currentSafetyEvaluation: window.parentState.currentSafetyEvaluation || null,
+            criticalSignatories: (window.criticalState && window.criticalState.signatories) || [],
+            emergencyOrgStructure: data.emergencyOrgStructure || []
+          });
+
+          CloudSync.persistLocalBackup();
+
+          // Refresh emergency UI functions if currently active
+          if (typeof window.renderInspectionLogsTable === 'function') window.renderInspectionLogsTable();
+          if (typeof window.renderLogsTable === 'function') window.renderLogsTable();
+          if (typeof window.populateReassuranceLogsDropdown === 'function') window.populateReassuranceLogsDropdown();
+          if (typeof window.populateReassuranceSelect === 'function') window.populateReassuranceSelect();
+          if (typeof window.generateComprehensiveReport === 'function') window.generateComprehensiveReport();
+          if (typeof window.renderReassuranceReport === 'function') window.renderReassuranceReport();
+          if (typeof window.renderEmergencyOrgStructure === 'function') window.renderEmergencyOrgStructure();
+          if (typeof window.renderActiveOrgStructure === 'function') window.renderActiveOrgStructure();
+        }
+      } catch (e) {
+        console.error('Error handling emergency state snapshot:', e);
+      } finally {
+        setTimeout(() => { CloudSync.isRemoteUpdating = false; }, 100);
+      }
+    },
+
+    handleCriticalLeaksSnapshot: function(snapshot) {
+      if (snapshot.empty && (!window.criticalState || !window.criticalState.items || window.criticalState.items.length === 0)) return;
+
+      let changed = false;
+      CloudSync.isRemoteUpdating = true;
+
+      try {
+        let items = CloudSync.getCriticalLeaks();
+        if (!Array.isArray(items)) items = [];
+
+        snapshot.docChanges().forEach(change => {
+          const docData = change.doc.data();
+          const docId = change.doc.id;
+          const item = { ...docData, id: docId };
+          const serialized = JSON.stringify(item);
+
+          const index = items.findIndex(l => String(l.id) === String(docId));
+
+          if (change.type === 'added' || change.type === 'modified') {
+            CloudSync.lastSyncedCriticalLeaks[docId] = serialized;
+            if (index >= 0) {
+              if (JSON.stringify(items[index]) !== serialized) {
+                items[index] = item;
+                changed = true;
+              }
+            } else {
+              items.push(item);
+              changed = true;
+            }
+          } else if (change.type === 'removed') {
+            delete CloudSync.lastSyncedCriticalLeaks[docId];
+            if (index >= 0) {
+              items.splice(index, 1);
+              changed = true;
+            }
+          }
+        });
+
+        if (changed) {
+          if (window.criticalState) window.criticalState.items = items;
+          try {
+            localStorage.setItem('onecorp_critical_evaluation_state', JSON.stringify(items));
+            if (window.parentState) window.parentState.criticalEvaluation = items;
+          } catch (e) {}
+
+          if (typeof window.renderCriticalEvaluationTable === 'function') {
+            window.renderCriticalEvaluationTable();
+          }
+          if (typeof window.renderCriticalEvaluationKPIs === 'function') {
+            window.renderCriticalEvaluationKPIs();
+          }
+        }
+      } catch (e) {
+        console.error('Error handling critical leaks snapshot:', e);
+      } finally {
+        setTimeout(() => { CloudSync.isRemoteUpdating = false; }, 100);
+      }
+    },
+
     safeRefreshUI: function(area) {
       try {
         if (typeof window.renderApp === 'function') {
@@ -749,6 +1095,62 @@
         CloudSync.syncOperationalState(currentOps);
         CloudSync.lastSyncedOperationalStr = serializedOps;
       }
+
+      // 6. Inventory Items Delta
+      const inventory = CloudSync.getInventoryItems();
+      if (Array.isArray(inventory) && inventory.length > 0) {
+        const currentInvIds = new Set();
+        inventory.forEach(item => {
+          if (!item || !item.id) return;
+          const id = String(item.id);
+          currentInvIds.add(id);
+          const serialized = JSON.stringify(item);
+          if (CloudSync.lastSyncedInventory[id] !== serialized) {
+            CloudSync.syncInventoryItem(item);
+            CloudSync.lastSyncedInventory[id] = serialized;
+          }
+        });
+
+        // Detect deleted inventory items
+        Object.keys(CloudSync.lastSyncedInventory).forEach(id => {
+          if (!currentInvIds.has(id)) {
+            CloudSync.deleteInventoryItem(id);
+            delete CloudSync.lastSyncedInventory[id];
+          }
+        });
+      }
+
+      // 7. Emergency State Delta (Past Evaluations, Current In-Progress Wizard, Signatories, BERT Org Structure)
+      const currentEm = CloudSync.getEmergencyState();
+      const serializedEm = JSON.stringify(currentEm);
+      if (CloudSync.lastSyncedEmergencyStr !== serializedEm) {
+        CloudSync.syncEmergencyState(currentEm);
+        CloudSync.lastSyncedEmergencyStr = serializedEm;
+      }
+
+      // 8. Critical Leaks Delta (Leak & Crack Tracing Logs)
+      const leaks = CloudSync.getCriticalLeaks();
+      if (Array.isArray(leaks) && leaks.length > 0) {
+        const currentLeakIds = new Set();
+        leaks.forEach(leak => {
+          if (!leak || !leak.id) return;
+          const id = String(leak.id);
+          currentLeakIds.add(id);
+          const serialized = JSON.stringify(leak);
+          if (CloudSync.lastSyncedCriticalLeaks[id] !== serialized) {
+            CloudSync.syncCriticalLeak(leak);
+            CloudSync.lastSyncedCriticalLeaks[id] = serialized;
+          }
+        });
+
+        // Detect deleted critical leak records
+        Object.keys(CloudSync.lastSyncedCriticalLeaks).forEach(id => {
+          if (!currentLeakIds.has(id)) {
+            CloudSync.deleteCriticalLeak(id);
+            delete CloudSync.lastSyncedCriticalLeaks[id];
+          }
+        });
+      }
     },
 
     // -------------------------------------------------------------
@@ -832,6 +1234,55 @@
         .catch(err => console.error('CloudSync.deleteRegistryItem error:', err));
     },
 
+    syncInventoryItem: function(item) {
+      if (!CloudSync.isInitialized || !CloudSync.db || CloudSync.isRemoteUpdating) return Promise.resolve();
+      if (!item || !item.id) return Promise.reject(new Error('Invalid inventory item: missing ID'));
+
+      const cleanDoc = { ...item };
+      const docId = String(cleanDoc.id);
+      delete cleanDoc.id;
+
+      return CloudSync.db.collection(COLLECTION_INVENTORY).doc(docId).set(cleanDoc, { merge: true })
+        .catch(err => console.error('CloudSync.syncInventoryItem error:', err));
+    },
+
+    deleteInventoryItem: function(itemId) {
+      if (!CloudSync.isInitialized || !CloudSync.db || CloudSync.isRemoteUpdating) return Promise.resolve();
+      return CloudSync.db.collection(COLLECTION_INVENTORY).doc(String(itemId)).delete()
+        .catch(err => console.error('CloudSync.deleteInventoryItem error:', err));
+    },
+
+    syncEmergencyState: function(emergencyData) {
+      if (!CloudSync.isInitialized || !CloudSync.db || CloudSync.isRemoteUpdating) return Promise.resolve();
+      const payload = {
+        pastSafetyEvaluations: emergencyData.pastSafetyEvaluations || [],
+        currentSafetyEvaluation: emergencyData.currentSafetyEvaluation || null,
+        criticalSignatories: emergencyData.criticalSignatories || [],
+        emergencyOrgStructure: emergencyData.emergencyOrgStructure || [],
+        updatedAt: new Date().toISOString()
+      };
+      return CloudSync.db.collection(COLLECTION_META).doc('emergency_state').set(payload, { merge: true })
+        .catch(err => console.error('CloudSync.syncEmergencyState error:', err));
+    },
+
+    syncCriticalLeak: function(leak) {
+      if (!CloudSync.isInitialized || !CloudSync.db || CloudSync.isRemoteUpdating) return Promise.resolve();
+      if (!leak || !leak.id) return Promise.reject(new Error('Invalid critical leak: missing ID'));
+
+      const cleanDoc = { ...leak };
+      const docId = String(cleanDoc.id);
+      delete cleanDoc.id;
+
+      return CloudSync.db.collection(COLLECTION_CRITICAL_LEAKS).doc(docId).set(cleanDoc, { merge: true })
+        .catch(err => console.error('CloudSync.syncCriticalLeak error:', err));
+    },
+
+    deleteCriticalLeak: function(leakId) {
+      if (!CloudSync.isInitialized || !CloudSync.db || CloudSync.isRemoteUpdating) return Promise.resolve();
+      return CloudSync.db.collection(COLLECTION_CRITICAL_LEAKS).doc(String(leakId)).delete()
+        .catch(err => console.error('CloudSync.deleteCriticalLeak error:', err));
+    },
+
     updateDeviceMeta: function() {
       if (!CloudSync.isInitialized || !CloudSync.db) return;
       const deviceId = localStorage.getItem('onecorporate_device_id') || ('dev_' + Math.random().toString(36).substring(2, 9));
@@ -865,14 +1316,18 @@
       const complaints = Array.isArray(state.complaints) ? state.complaints : [];
       const jobOrders = Array.isArray(state.jobOrders) ? state.jobOrders : [];
       const registry = Array.isArray(state.registry) ? state.registry : [];
+      const inventory = CloudSync.getInventoryItems() || [];
+      const emergency = CloudSync.getEmergencyState() || {};
+      const criticalLeaks = CloudSync.getCriticalLeaks() || [];
 
-      const totalItems = tasks.length + complaints.length + jobOrders.length + registry.length;
+      const pastEvals = Array.isArray(emergency.pastSafetyEvaluations) ? emergency.pastSafetyEvaluations : [];
+      const totalItems = tasks.length + complaints.length + jobOrders.length + registry.length + inventory.length + criticalLeaks.length + pastEvals.length;
       if (totalItems === 0) {
-        alert('No local tasks or records found to upload. If you just opened the app, please add or refresh your tasks.');
+        alert('No local tasks, inventory items, or emergency records found to upload. If you just opened the app, please add or refresh your data.');
         return Promise.resolve();
       }
 
-      if (!confirm(`Upload all current local data (${totalItems} items: ${tasks.length} tasks, ${complaints.length} complaints, ${jobOrders.length} job orders, ${registry.length} equipment) to Cloud Firestore?`)) {
+      if (!confirm(`Upload all current local data (${totalItems} items: ${tasks.length} tasks, ${complaints.length} complaints, ${jobOrders.length} job orders, ${registry.length} equipment, ${inventory.length} inventory assets, ${criticalLeaks.length} leak tracing records, ${pastEvals.length} safety evaluations) to Cloud Firestore?`)) {
         return Promise.resolve();
       }
 
@@ -922,11 +1377,36 @@
         addToBatch(CloudSync.db.collection(COLLECTION_REGISTRY).doc(String(r.id)), copy);
       });
 
+      // Inventory Assets
+      inventory.forEach(inv => {
+        if (!inv || !inv.id) return;
+        const copy = { ...inv };
+        delete copy.id;
+        addToBatch(CloudSync.db.collection(COLLECTION_INVENTORY).doc(String(inv.id)), copy);
+      });
+
       // Operational State (Manager Oversight Schedule Checklists, Absence, Schedules)
       addToBatch(CloudSync.db.collection(COLLECTION_META).doc('operational_state'), {
         managerCheckedActivities: state.managerCheckedActivities || {},
         isManagerAbsent: state.isManagerAbsent || false,
         employeeSchedules: state.employeeSchedules || []
+      });
+
+      // Emergency State (Past Safety Evaluations, Current Wizard, Signatories, BERT Org Structure)
+      addToBatch(CloudSync.db.collection(COLLECTION_META).doc('emergency_state'), {
+        pastSafetyEvaluations: emergency.pastSafetyEvaluations || [],
+        currentSafetyEvaluation: emergency.currentSafetyEvaluation || null,
+        criticalSignatories: emergency.criticalSignatories || [],
+        emergencyOrgStructure: emergency.emergencyOrgStructure || [],
+        updatedAt: new Date().toISOString()
+      });
+
+      // Critical Leak & Crack Tracing Logs
+      criticalLeaks.forEach(leak => {
+        if (!leak || !leak.id) return;
+        const copy = { ...leak };
+        delete copy.id;
+        addToBatch(CloudSync.db.collection(COLLECTION_CRITICAL_LEAKS).doc(String(leak.id)), copy);
       });
 
       if (count > 0) {

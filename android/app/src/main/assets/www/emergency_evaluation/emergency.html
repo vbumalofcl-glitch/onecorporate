@@ -84,6 +84,12 @@
             <span id="theme-toggle-label">Light Mode</span>
           </button>
 
+          <!-- Cloud Sync Status Indicator -->
+          <button type="button" class="btn btn-secondary cloud-sync-btn" id="cloud-sync-btn" onclick="if(window.CloudSync && window.CloudSync.openSettingsModal) { window.CloudSync.openSettingsModal(); } else if(window.opener && window.opener.CloudSync) { window.opener.CloudSync.openSettingsModal(); }" title="Real-time Cloud Firestore Sync is Active" style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; font-size: 12px; font-weight: 600; border-radius: 6px; background: rgba(255,255,255,0.06); border: 1px solid var(--border-color); color: var(--text-main); cursor: pointer;">
+            <span class="sync-dot" id="cloud-sync-dot" style="width: 8px; height: 8px; border-radius: 50%; background: #22c55e; display: inline-block;"></span>
+            <span id="cloud-sync-text">Cloud Sync: Live</span>
+          </button>
+
           <!-- Manager Presence Selector -->
           <div class="role-selector-container">
             <label style="font-size: 11px; font-weight: 600; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; gap: 8px; user-select: none;">
@@ -1382,7 +1388,10 @@
     </div>
   </div>
 
-  <!-- Baseline Reference Data & Main Application Script -->
+  <!-- Firebase App & Firestore SDKs (Compat v9.22.0) -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+  <script src="../firebase-sync.js"></script>
   <script src="assets/default_critical_leaks.js"></script>
   <script src="assets/default_signatures.js"></script>
   <script src="app.js"></script>

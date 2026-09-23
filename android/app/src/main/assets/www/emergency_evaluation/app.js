@@ -325,6 +325,7 @@ function loadSharedState() {
       console.error("Error reading shared state:", e);
     }
   }
+  window.parentState = parentState;
 
   // Update profile
   const roleText = parentState.currentUserRole.includes('Manager') ? parentState.currentUserRole : parentState.currentUserRole + " User";
@@ -344,7 +345,15 @@ function loadSharedState() {
 }
 
 function saveSharedState() {
+  window.parentState = parentState;
   localStorage.setItem('onecorporate_maintenance_state', JSON.stringify(parentState));
+
+  // Real-time Cloud Sync trigger
+  if (window.CloudSync && typeof window.CloudSync.queueSync === 'function') {
+    window.CloudSync.queueSync();
+  } else if (window.opener && window.opener.CloudSync && typeof window.opener.CloudSync.queueSync === 'function') {
+    window.opener.CloudSync.queueSync();
+  }
 }
 
 function renderEmergencyApp() {
@@ -1726,6 +1735,14 @@ function loadCriticalSignatories() {
 function saveCriticalSignatories() {
   try {
     localStorage.setItem('onecorp_critical_signatories', JSON.stringify(criticalState.signatories));
+    if (window.criticalState) window.criticalState.signatories = criticalState.signatories;
+
+    // Real-time Cloud Sync trigger
+    if (window.CloudSync && typeof window.CloudSync.queueSync === 'function') {
+      window.CloudSync.queueSync();
+    } else if (window.opener && window.opener.CloudSync && typeof window.opener.CloudSync.queueSync === 'function') {
+      window.opener.CloudSync.queueSync();
+    }
   } catch (e) {
     console.error("Failed to save critical signatories:", e);
   }
@@ -1771,10 +1788,12 @@ function loadCriticalEvaluationState() {
   if (!parentState.criticalEvaluation) {
     parentState.criticalEvaluation = criticalState.items;
   }
+  window.criticalState = criticalState;
 }
 
 function saveCriticalEvaluationState() {
   try {
+    window.criticalState = criticalState;
     localStorage.setItem('onecorp_critical_evaluation_state', JSON.stringify(criticalState.items));
     parentState.criticalEvaluation = criticalState.items;
     saveSharedState();
@@ -3879,6 +3898,13 @@ function getActiveOrgStructure() {
 function saveActiveOrgStructure(list) {
   try {
     localStorage.setItem('onecorp_emergency_org_structure', JSON.stringify(list));
+
+    // Real-time Cloud Sync trigger
+    if (window.CloudSync && typeof window.CloudSync.queueSync === 'function') {
+      window.CloudSync.queueSync();
+    } else if (window.opener && window.opener.CloudSync && typeof window.opener.CloudSync.queueSync === 'function') {
+      window.opener.CloudSync.queueSync();
+    }
   } catch (e) {
     console.error('Error saving org structure to localStorage:', e);
   }
@@ -5696,6 +5722,17 @@ window.exitToMainDashboard = function(event) {
   window.top.location.href = '../index.html';
   return false;
 };
+
+// Global exports for Real-time CloudSync listener updates
+window.renderInspectionLogsTable = renderInspectionLogsTable;
+window.populateReassuranceLogsDropdown = populateReassuranceLogsDropdown;
+window.generateComprehensiveReport = generateComprehensiveReport;
+window.renderCriticalEvaluationTable = renderCriticalEvaluationTable;
+window.renderCriticalEvaluationKPIs = renderCriticalEvaluationKPIs;
+window.loadSharedState = loadSharedState;
+window.loadCriticalEvaluationState = loadCriticalEvaluationState;
+window.parentState = parentState;
+window.criticalState = criticalState;
 
 
 
