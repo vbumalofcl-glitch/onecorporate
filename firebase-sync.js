@@ -39,6 +39,7 @@
     lastSyncedComplaints: {},
     lastSyncedJobOrders: {},
     lastSyncedRegistry: {},
+    lastSyncedOperationalStr: '',
     syncDebounceTimer: null,
     initialLoadComplete: false,
 
@@ -83,6 +84,11 @@
               if (r && r.id) CloudSync.lastSyncedRegistry[String(r.id)] = JSON.stringify(r);
             });
           }
+          CloudSync.lastSyncedOperationalStr = JSON.stringify({
+            managerCheckedActivities: window.appState.managerCheckedActivities || {},
+            isManagerAbsent: window.appState.isManagerAbsent || false,
+            employeeSchedules: window.appState.employeeSchedules || []
+          });
         }
       } catch (e) {
         console.warn('Cache init error:', e);
@@ -291,6 +297,17 @@
       } catch (e) {
         console.error('Failed to attach registry listener:', e);
       }
+
+      // 5. Operational State Listener (Manager Oversight Schedule Checklists, Absence, Schedules)
+      try {
+        const unsubOperational = CloudSync.db.collection(COLLECTION_META).doc('operational_state').onSnapshot(
+          doc => CloudSync.handleOperationalSnapshot(doc),
+          err => console.error('Operational state listener error:', err)
+        );
+        CloudSync.unsubscribers.push(unsubOperational);
+      } catch (e) {
+        console.error('Failed to attach operational state listener:', e);
+      }
     },
 
     handleTasksSnapshot: function(snapshot) {
@@ -485,6 +502,61 @@
       }
     },
 
+    handleOperationalSnapshot: function(doc) {
+      if (!doc || !doc.exists) return;
+      const data = doc.data();
+      if (!data) return;
+
+      let changed = false;
+      CloudSync.isRemoteUpdating = true;
+
+      try {
+        if (!window.appState) window.appState = {};
+
+        // 1. Manager Oversight Checked Activities
+        if (data.managerCheckedActivities && typeof data.managerCheckedActivities === 'object') {
+          const serialized = JSON.stringify(data.managerCheckedActivities);
+          if (JSON.stringify(window.appState.managerCheckedActivities || {}) !== serialized) {
+            window.appState.managerCheckedActivities = { ...data.managerCheckedActivities };
+            changed = true;
+          }
+        }
+
+        // 2. Manager Absence Status
+        if (typeof data.isManagerAbsent === 'boolean' && window.appState.isManagerAbsent !== data.isManagerAbsent) {
+          window.appState.isManagerAbsent = data.isManagerAbsent;
+          const toggleCheckbox = document.getElementById('manager-absence-toggle');
+          if (toggleCheckbox) toggleCheckbox.checked = data.isManagerAbsent;
+          if (typeof window.updateManagerAbsenceBanner === 'function') window.updateManagerAbsenceBanner();
+          changed = true;
+        }
+
+        // 3. Employee Schedules
+        if (Array.isArray(data.employeeSchedules)) {
+          const serialized = JSON.stringify(data.employeeSchedules);
+          if (JSON.stringify(window.appState.employeeSchedules || []) !== serialized) {
+            window.appState.employeeSchedules = [...data.employeeSchedules];
+            changed = true;
+          }
+        }
+
+        if (changed) {
+          CloudSync.lastSyncedOperationalStr = JSON.stringify({
+            managerCheckedActivities: window.appState.managerCheckedActivities || {},
+            isManagerAbsent: window.appState.isManagerAbsent || false,
+            employeeSchedules: window.appState.employeeSchedules || []
+          });
+          CloudSync.persistLocalBackup();
+          if (typeof window.renderTimeline === 'function') window.renderTimeline();
+          if (typeof window.renderEmployeeSchedule === 'function') window.renderEmployeeSchedule();
+        }
+      } catch (e) {
+        console.error('Error handling operational snapshot:', e);
+      } finally {
+        setTimeout(() => { CloudSync.isRemoteUpdating = false; }, 100);
+      }
+    },
+
     safeRefreshUI: function(area) {
       try {
         if (typeof window.renderApp === 'function') {
@@ -622,11 +694,29 @@
           }
         });
       }
+
+      // 5. Operational State Delta (Manager Oversight Schedule Checklists, Absence, Schedules)
+      const currentOps = {
+        managerCheckedActivities: (window.appState && window.appState.managerCheckedActivities) || {},
+        isManagerAbsent: (window.appState && window.appState.isManagerAbsent) || false,
+        employeeSchedules: (window.appState && window.appState.employeeSchedules) || []
+      };
+      const serializedOps = JSON.stringify(currentOps);
+      if (CloudSync.lastSyncedOperationalStr !== serializedOps) {
+        CloudSync.syncOperationalState(currentOps);
+        CloudSync.lastSyncedOperationalStr = serializedOps;
+      }
     },
 
     // -------------------------------------------------------------
     // OUTBOUND SYNC METHODS
     // -------------------------------------------------------------
+    syncOperationalState: function(ops) {
+      if (!CloudSync.isInitialized || !CloudSync.db || CloudSync.isRemoteUpdating) return Promise.resolve();
+      return CloudSync.db.collection(COLLECTION_META).doc('operational_state').set(ops, { merge: true })
+        .catch(err => console.error('CloudSync.syncOperationalState error:', err));
+    },
+
     syncTask: function(task) {
       if (!CloudSync.isInitialized || !CloudSync.db || CloudSync.isRemoteUpdating) return Promise.resolve();
       if (!task || !task.id) return Promise.reject(new Error('Invalid task: missing ID'));
@@ -787,6 +877,13 @@
         const copy = { ...r };
         delete copy.id;
         addToBatch(CloudSync.db.collection(COLLECTION_REGISTRY).doc(String(r.id)), copy);
+      });
+
+      // Operational State (Manager Oversight Schedule Checklists, Absence, Schedules)
+      addToBatch(CloudSync.db.collection(COLLECTION_META).doc('operational_state'), {
+        managerCheckedActivities: state.managerCheckedActivities || {},
+        isManagerAbsent: state.isManagerAbsent || false,
+        employeeSchedules: state.employeeSchedules || []
       });
 
       if (count > 0) {
