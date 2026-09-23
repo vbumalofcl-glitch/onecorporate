@@ -258,7 +258,10 @@
       try {
         const unsubTasks = CloudSync.db.collection(COLLECTION_TASKS).onSnapshot(
           snapshot => CloudSync.handleTasksSnapshot(snapshot),
-          err => console.error('Tasks listener error:', err)
+          err => {
+            console.error('Tasks listener error:', err);
+            CloudSync.setStatus('error', err.message || 'Firestore error');
+          }
         );
         CloudSync.unsubscribers.push(unsubTasks);
       } catch (e) {
@@ -269,7 +272,10 @@
       try {
         const unsubComplaints = CloudSync.db.collection(COLLECTION_COMPLAINTS).onSnapshot(
           snapshot => CloudSync.handleComplaintsSnapshot(snapshot),
-          err => console.error('Complaints listener error:', err)
+          err => {
+            console.error('Complaints listener error:', err);
+            CloudSync.setStatus('error', err.message || 'Firestore error');
+          }
         );
         CloudSync.unsubscribers.push(unsubComplaints);
       } catch (e) {
@@ -280,7 +286,10 @@
       try {
         const unsubJobOrders = CloudSync.db.collection(COLLECTION_JOB_ORDERS).onSnapshot(
           snapshot => CloudSync.handleJobOrdersSnapshot(snapshot),
-          err => console.error('Job Orders listener error:', err)
+          err => {
+            console.error('Job Orders listener error:', err);
+            CloudSync.setStatus('error', err.message || 'Firestore error');
+          }
         );
         CloudSync.unsubscribers.push(unsubJobOrders);
       } catch (e) {
@@ -291,7 +300,10 @@
       try {
         const unsubRegistry = CloudSync.db.collection(COLLECTION_REGISTRY).onSnapshot(
           snapshot => CloudSync.handleRegistrySnapshot(snapshot),
-          err => console.error('Registry listener error:', err)
+          err => {
+            console.error('Registry listener error:', err);
+            CloudSync.setStatus('error', err.message || 'Firestore error');
+          }
         );
         CloudSync.unsubscribers.push(unsubRegistry);
       } catch (e) {
@@ -302,7 +314,10 @@
       try {
         const unsubOperational = CloudSync.db.collection(COLLECTION_META).doc('operational_state').onSnapshot(
           doc => CloudSync.handleOperationalSnapshot(doc),
-          err => console.error('Operational state listener error:', err)
+          err => {
+            console.error('Operational state listener error:', err);
+            CloudSync.setStatus('error', err.message || 'Firestore error');
+          }
         );
         CloudSync.unsubscribers.push(unsubOperational);
       } catch (e) {
