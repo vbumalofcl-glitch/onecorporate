@@ -40,6 +40,7 @@ copy /y "%SCRIPT_DIR%style.css" "%WWW_TARGET%\" >nul
 copy /y "%SCRIPT_DIR%sw.js" "%WWW_TARGET%\" >nul
 copy /y "%SCRIPT_DIR%manifest.json" "%WWW_TARGET%\" >nul
 copy /y "%SCRIPT_DIR%security.js" "%WWW_TARGET%\" >nul
+copy /y "%SCRIPT_DIR%firebase-sync.js" "%WWW_TARGET%\" >nul
 copy /y "%SCRIPT_DIR%logo.png" "%WWW_TARGET%\" >nul
 copy /y "%SCRIPT_DIR%building maintenance.png" "%WWW_TARGET%\" >nul
 copy /y "%SCRIPT_DIR%building_maintenance_icon.ico" "%WWW_TARGET%\" >nul

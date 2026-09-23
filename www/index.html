@@ -195,6 +195,14 @@
             </button>
           </div>
 
+          <!-- Cloud Firestore Real-Time Sync Indicator & Settings -->
+          <div style="display: flex; align-items: center; margin-right: 8px;">
+            <button type="button" class="btn btn-secondary" id="cloud-sync-btn" onclick="CloudSync.openSettingsModal()" style="padding: 6px 12px; font-size: 11.5px; display: inline-flex; align-items: center; gap: 7px; border: 1px solid rgba(56, 189, 248, 0.3); background: rgba(15, 23, 42, 0.6); cursor: pointer;" title="Firebase Cloud Firestore Sync Status">
+              <span id="cloud-sync-dot" style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #94a3b8; transition: all 0.3s ease;"></span>
+              <span id="cloud-sync-text" style="font-weight: 600;">Cloud: Setup</span>
+            </button>
+          </div>
+
           <!-- Save & Load File Controls -->
           <div style="display: flex; gap: 8px; align-items: center; margin-right: 12px;">
             <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px; display: inline-flex; align-items: center; gap: 6px;" onclick="saveAppStateToFile()" title="Save current application state to save_files folder">
@@ -2289,8 +2297,146 @@
   <!-- Print-only container for tenant complaint report -->
   <div id="complaint-print-report" class="complaint-print-report-container" style="display: none;"></div>
 
+  <!-- Firebase Cloud Firestore SDK (Compat Mode for Offline & Web Direct) -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+  <script src="firebase-sync.js"></script>
   <script src="security.js"></script>
   <script src="app.js"></script>
+
+  <!-- ==================== CLOUD SYNC SETTINGS MODAL ==================== -->
+  <div class="modal-backdrop" id="modal-cloud-sync-settings" style="display: none; z-index: 10000;">
+    <div class="modal-card" style="max-width: 640px; width: 92%; background: #0f172a; border: 1px solid #334155; border-radius: 12px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.6);">
+      <div class="modal-header" style="padding: 16px 20px; border-bottom: 1px solid #1e293b; display: flex; justify-content: space-between; align-items: center;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <svg viewBox="0 0 24 24" width="22" height="22" stroke="#38bdf8" stroke-width="2" fill="none"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"></path></svg>
+          <h3 style="margin: 0; font-size: 16px; color: #fff; font-weight: 700;">Cloud Firestore Real-Time Sync Settings</h3>
+        </div>
+        <button class="modal-close-btn" onclick="CloudSync.closeSettingsModal()">&times;</button>
+      </div>
+      <div class="modal-body" style="padding: 20px; max-height: 75vh; overflow-y: auto;">
+        
+        <!-- Live Status Card -->
+        <div style="background: rgba(15, 23, 42, 0.8); border: 1px solid #334155; border-radius: 8px; padding: 14px 16px; margin-bottom: 16px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <span style="font-size: 12px; color: #94a3b8; font-weight: 600; text-transform: uppercase;">Connection Status</span>
+            <span id="cloud-modal-status-text" style="font-size: 12px; font-weight: 700; color: #38bdf8;">Checking...</span>
+          </div>
+          <div style="font-size: 12.5px; color: #cbd5e1; display: flex; gap: 8px;">
+            <span style="color: #64748b;">Active Firebase Project:</span>
+            <strong id="cloud-modal-active-project" style="color: #38bdf8;">None (Not Connected)</strong>
+          </div>
+          <div id="cloud-test-status" style="margin-top: 8px; font-size: 12px;"></div>
+        </div>
+
+        <!-- How to Get Free Firebase Config Info -->
+        <div style="background: rgba(56, 189, 248, 0.05); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 8px; padding: 14px 16px; margin-bottom: 16px;">
+          <div style="font-size: 13px; font-weight: 700; color: #38bdf8; display: flex; align-items: center; gap: 6px; margin-bottom: 10px;">
+            <span>🚀</span>
+            <span>Free Firebase Setup Step-by-Step Guide (100% Free - Spark Plan, No Credit Card Required)</span>
+          </div>
+          
+          <div style="display: flex; flex-direction: column; gap: 10px; font-size: 11.5px; color: #cbd5e1; line-height: 1.55;">
+            
+            <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid #334155; border-radius: 6px; padding: 10px 12px;">
+              <strong style="color: #38bdf8;">Step 1: Create a Free Project on Firebase</strong>
+              <div style="color: #94a3b8; margin-top: 4px;">
+                • Go to <a href="https://console.firebase.google.com" target="_blank" style="color: #38bdf8; text-decoration: underline; font-weight: 600;">console.firebase.google.com</a> and sign in with your Google account.<br>
+                • Click <strong>"Add project"</strong> &gt; Name it (e.g. <code>one-corporate-maintenance</code>) &gt; Click Continue.<br>
+                • Disable Google Analytics (optional) &gt; Click <strong>"Create project"</strong>.
+              </div>
+            </div>
+
+            <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid #334155; border-radius: 6px; padding: 10px 12px;">
+              <strong style="color: #38bdf8;">Step 2: Create Cloud Firestore Database</strong>
+              <div style="color: #94a3b8; margin-top: 4px;">
+                • In left sidebar, click <strong>Build &gt; Firestore Database</strong> &gt; Click <strong>"Create database"</strong>.<br>
+                • Database edition: Select <strong style="color: #34d399;">Standard Edition</strong> (covered by the free Spark tier).<br>
+                • Location: Choose a regional location (e.g. <code>asia-southeast1</code>) &gt; Click Next.<br>
+                • Security Rules: Select <strong style="color: #fbbf24;">"Start in test mode"</strong> &gt; Click <strong>Create / Enable</strong>.
+              </div>
+            </div>
+
+            <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid #334155; border-radius: 6px; padding: 10px 12px;">
+              <strong style="color: #38bdf8;">Step 3: Register Web App &amp; Copy firebaseConfig</strong>
+              <div style="color: #94a3b8; margin-top: 4px;">
+                • Click the <strong>Gear Icon ⚙️ (Project settings)</strong> at top-left &gt; Scroll down to <strong>"Your apps"</strong>.<br>
+                • Click the <strong>Web icon (&lt;/&gt;)</strong> &gt; App nickname: <code>OneCorporate Web</code> &gt; Click <strong>"Register app"</strong>.<br>
+                • When asked <em>"Use npm"</em> or <em>"Use a &lt;script&gt; tag"</em>, click <strong style="color: #38bdf8;">"Use a &lt;script&gt; tag"</strong>.<br>
+                • Copy <strong>ONLY</strong> the <code>const firebaseConfig = { ... };</code> snippet inside the box.<br>
+                • Click <strong>"Continue to console"</strong> at the bottom.
+              </div>
+            </div>
+
+            <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid #334155; border-radius: 6px; padding: 10px 12px;">
+              <strong style="color: #38bdf8;">Step 4: Connect in One Corporate Pro</strong>
+              <div style="color: #94a3b8; margin-top: 4px;">
+                • Paste your copied <code>firebaseConfig</code> snippet into the configuration box below.<br>
+                • Click <strong style="color: #38bdf8;">"Save &amp; Connect"</strong>. The header badge turns <strong style="color: #22c55e;">🟢 Cloud Sync: Live</strong>!
+              </div>
+            </div>
+
+            <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid #334155; border-radius: 6px; padding: 10px 12px;">
+              <strong style="color: #38bdf8;">Step 5: Migrate Existing Local Data (1-Click)</strong>
+              <div style="color: #94a3b8; margin-top: 4px;">
+                • Click the button <strong style="color: #34d399;">"Push Local Data to Cloud"</strong> below.<br>
+                • All existing tasks, complaints, job orders, and equipment registry will upload to Cloud Firestore so all users see them.
+              </div>
+            </div>
+
+            <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid #334155; border-radius: 6px; padding: 10px 12px;">
+              <strong style="color: #38bdf8;">Step 6: Live Synchronization Across Devices</strong>
+              <div style="color: #94a3b8; margin-top: 4px;">
+                • Open this web app on another computer, mobile device, or browser tab.<br>
+                • Any task entered, status toggled, or complaint submitted on one device syncs instantly across all connected screens in real time!
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Config Input Form -->
+        <div style="margin-bottom: 16px;">
+          <label style="display: block; font-size: 12px; font-weight: 700; color: #cbd5e1; margin-bottom: 6px;">
+            Firebase Web App Configuration (JSON or JavaScript Object):
+          </label>
+          <textarea id="cloud-config-json-input" rows="8" placeholder='{
+  "apiKey": "AIzaSy...",
+  "authDomain": "your-app.firebaseapp.com",
+  "projectId": "your-app",
+  "storageBucket": "your-app.appspot.com",
+  "messagingSenderId": "123456789",
+  "appId": "1:123456789:web:abcdef"
+}' style="width: 100%; box-sizing: border-box; background: #020617; border: 1px solid #334155; border-radius: 6px; color: #38bdf8; font-family: monospace; font-size: 11.5px; padding: 10px; resize: vertical;"></textarea>
+        </div>
+
+        <!-- Action Buttons -->
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+          <button type="button" class="btn btn-secondary" onclick="CloudSync.testConnection()" style="font-size: 12px; padding: 6px 12px; display: inline-flex; align-items: center; gap: 5px;">
+            <svg viewBox="0 0 24 24" width="14" height="14" stroke="#38bdf8" stroke-width="2" fill="none"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+            <span>Test Connection</span>
+          </button>
+          <button type="button" class="btn btn-secondary" onclick="CloudSync.uploadAllCurrentData()" style="font-size: 12px; padding: 6px 12px; display: inline-flex; align-items: center; gap: 5px;" title="Push all existing local tasks, complaints, and equipment to Cloud Firestore">
+            <svg viewBox="0 0 24 24" width="14" height="14" stroke="#34d399" stroke-width="2" fill="none"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+            <span>Push Local Data to Cloud</span>
+          </button>
+          <button type="button" class="btn btn-secondary" onclick="CloudSync.clearAndReset()" style="font-size: 12px; padding: 6px 12px; color: #f87171; border-color: rgba(239, 68, 68, 0.4);">
+            Disconnect Cloud
+          </button>
+        </div>
+
+      </div>
+      <div class="modal-footer" style="padding: 14px 20px; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #1e293b;">
+        <span style="font-size: 11px; color: #64748b;">Credentials are stored securely in your browser's local profile</span>
+        <div style="display: flex; gap: 8px;">
+          <button type="button" class="btn btn-secondary" onclick="CloudSync.closeSettingsModal()">Cancel</button>
+          <button type="button" class="btn btn-primary" onclick="CloudSync.saveFromModal()" style="font-weight: 700; background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);">
+            Save & Connect
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- LOAD SAVE FILE MODAL -->
   <div class="modal-backdrop" id="load-save-modal" style="display: none;">

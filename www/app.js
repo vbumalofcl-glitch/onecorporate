@@ -1035,6 +1035,11 @@ function loadState() {
 
   // Auto check for overdue tasks
   checkOverdueTasks();
+
+  // Initialize Cloud Sync local cache state
+  if (window.CloudSync && typeof window.CloudSync.initializeCacheFromLocal === 'function') {
+    window.CloudSync.initializeCacheFromLocal();
+  }
 }
 
 function resetStateToDefault() {
@@ -1183,6 +1188,11 @@ function saveState() {
     } catch (innerErr) {
       console.error("Storage full, operating in active memory session:", innerErr);
     }
+  }
+
+  // Trigger Cloud Firestore real-time delta synchronization across devices
+  if (window.CloudSync && typeof window.CloudSync.queueSync === 'function') {
+    window.CloudSync.queueSync();
   }
 }
 
@@ -4795,9 +4805,13 @@ window.handleTenantPhotoUpload = function(event) {
 
   const reader = new FileReader();
   reader.onload = function(e) {
-    appState.currentTenantPhotoBase64 = e.target.result;
-    document.getElementById('tenant-photo-preview').src = e.target.result;
-    document.getElementById('tenant-photo-preview-box').style.display = 'block';
+    compressImageBase64(e.target.result, 800, 0.75, function(compressedUrl) {
+      appState.currentTenantPhotoBase64 = compressedUrl;
+      const preview = document.getElementById('tenant-photo-preview');
+      const box = document.getElementById('tenant-photo-preview-box');
+      if (preview) preview.src = compressedUrl;
+      if (box) box.style.display = 'block';
+    });
   };
   reader.readAsDataURL(file);
 };
@@ -4816,9 +4830,13 @@ window.handleJobOrderPhotoUpload = function(event) {
 
   const reader = new FileReader();
   reader.onload = function(e) {
-    appState.currentJobOrderPhotoBase64 = e.target.result;
-    document.getElementById('jo-photo-preview').src = e.target.result;
-    document.getElementById('jo-photo-preview-box').style.display = 'block';
+    compressImageBase64(e.target.result, 800, 0.75, function(compressedUrl) {
+      appState.currentJobOrderPhotoBase64 = compressedUrl;
+      const preview = document.getElementById('jo-photo-preview');
+      const box = document.getElementById('jo-photo-preview-box');
+      if (preview) preview.src = compressedUrl;
+      if (box) box.style.display = 'block';
+    });
   };
   reader.readAsDataURL(file);
 };
@@ -4837,11 +4855,13 @@ window.handleEditTenantPhotoUpload = function(event) {
 
   const reader = new FileReader();
   reader.onload = function(e) {
-    appState.currentEditTenantPhotoBase64 = e.target.result;
-    const preview = document.getElementById('edit-complaint-photo-preview');
-    const box = document.getElementById('edit-complaint-photo-preview-box');
-    if (preview) preview.src = e.target.result;
-    if (box) box.style.display = 'block';
+    compressImageBase64(e.target.result, 800, 0.75, function(compressedUrl) {
+      appState.currentEditTenantPhotoBase64 = compressedUrl;
+      const preview = document.getElementById('edit-complaint-photo-preview');
+      const box = document.getElementById('edit-complaint-photo-preview-box');
+      if (preview) preview.src = compressedUrl;
+      if (box) box.style.display = 'block';
+    });
   };
   reader.readAsDataURL(file);
 };
@@ -4863,11 +4883,13 @@ window.handleEditJobOrderPhotoUpload = function(event) {
 
   const reader = new FileReader();
   reader.onload = function(e) {
-    appState.currentEditJobOrderPhotoBase64 = e.target.result;
-    const preview = document.getElementById('edit-jo-photo-preview');
-    const box = document.getElementById('edit-jo-photo-preview-box');
-    if (preview) preview.src = e.target.result;
-    if (box) box.style.display = 'block';
+    compressImageBase64(e.target.result, 800, 0.75, function(compressedUrl) {
+      appState.currentEditJobOrderPhotoBase64 = compressedUrl;
+      const preview = document.getElementById('edit-jo-photo-preview');
+      const box = document.getElementById('edit-jo-photo-preview-box');
+      if (preview) preview.src = compressedUrl;
+      if (box) box.style.display = 'block';
+    });
   };
   reader.readAsDataURL(file);
 };
