@@ -61,33 +61,60 @@
       return CloudSync.connect(config);
     },
 
+    getState: function() {
+      // 1. Try window.appState if it has tasks
+      if (window.appState && Array.isArray(window.appState.tasks) && window.appState.tasks.length > 0) {
+        return window.appState;
+      }
+      // 2. Try global appState if defined in scope
+      if (typeof appState !== 'undefined' && appState && Array.isArray(appState.tasks) && appState.tasks.length > 0) {
+        window.appState = appState;
+        return appState;
+      }
+      // 3. Fallback: read directly from localStorage (always up to date)
+      try {
+        const raw = localStorage.getItem('onecorporate_maintenance_state');
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed && typeof parsed === 'object') {
+            window.appState = parsed;
+            return parsed;
+          }
+        }
+      } catch (e) {
+        console.warn('getState localStorage error:', e);
+      }
+      return window.appState || (typeof appState !== 'undefined' ? appState : {});
+    },
+
     initializeCacheFromLocal: function() {
       try {
-        if (window.appState) {
-          if (Array.isArray(window.appState.tasks)) {
-            window.appState.tasks.forEach(t => {
+        const state = CloudSync.getState();
+        if (state) {
+          if (Array.isArray(state.tasks)) {
+            state.tasks.forEach(t => {
               if (t && t.id) CloudSync.lastSyncedTasks[String(t.id)] = JSON.stringify(t);
             });
           }
-          if (Array.isArray(window.appState.complaints)) {
-            window.appState.complaints.forEach(c => {
+          if (Array.isArray(state.complaints)) {
+            state.complaints.forEach(c => {
               if (c && c.id) CloudSync.lastSyncedComplaints[String(c.id)] = JSON.stringify(c);
             });
           }
-          if (Array.isArray(window.appState.jobOrders)) {
-            window.appState.jobOrders.forEach(j => {
+          if (Array.isArray(state.jobOrders)) {
+            state.jobOrders.forEach(j => {
               if (j && j.id) CloudSync.lastSyncedJobOrders[String(j.id)] = JSON.stringify(j);
             });
           }
-          if (Array.isArray(window.appState.registry)) {
-            window.appState.registry.forEach(r => {
+          if (Array.isArray(state.registry)) {
+            state.registry.forEach(r => {
               if (r && r.id) CloudSync.lastSyncedRegistry[String(r.id)] = JSON.stringify(r);
             });
           }
           CloudSync.lastSyncedOperationalStr = JSON.stringify({
-            managerCheckedActivities: window.appState.managerCheckedActivities || {},
-            isManagerAbsent: window.appState.isManagerAbsent || false,
-            employeeSchedules: window.appState.employeeSchedules || []
+            managerCheckedActivities: state.managerCheckedActivities || {},
+            isManagerAbsent: state.isManagerAbsent || false,
+            employeeSchedules: state.employeeSchedules || []
           });
         }
       } catch (e) {
@@ -619,12 +646,13 @@
 
     performDeltaSync: function() {
       if (!CloudSync.isInitialized || !CloudSync.db || CloudSync.isRemoteUpdating) return;
-      if (!window.appState) return;
+      const state = CloudSync.getState();
+      if (!state) return;
 
       // 1. Tasks Delta
-      if (Array.isArray(window.appState.tasks)) {
+      if (Array.isArray(state.tasks)) {
         const currentTaskIds = new Set();
-        window.appState.tasks.forEach(t => {
+        state.tasks.forEach(t => {
           if (!t || !t.id) return;
           const id = String(t.id);
           currentTaskIds.add(id);
@@ -645,9 +673,9 @@
       }
 
       // 2. Complaints Delta
-      if (Array.isArray(window.appState.complaints)) {
+      if (Array.isArray(state.complaints)) {
         const currentComplaintIds = new Set();
-        window.appState.complaints.forEach(c => {
+        state.complaints.forEach(c => {
           if (!c || !c.id) return;
           const id = String(c.id);
           currentComplaintIds.add(id);
@@ -667,9 +695,9 @@
       }
 
       // 3. Job Orders Delta
-      if (Array.isArray(window.appState.jobOrders)) {
+      if (Array.isArray(state.jobOrders)) {
         const currentJoIds = new Set();
-        window.appState.jobOrders.forEach(jo => {
+        state.jobOrders.forEach(jo => {
           if (!jo || !jo.id) return;
           const id = String(jo.id);
           currentJoIds.add(id);
@@ -689,9 +717,9 @@
       }
 
       // 4. Registry Delta
-      if (Array.isArray(window.appState.registry)) {
+      if (Array.isArray(state.registry)) {
         const currentRegIds = new Set();
-        window.appState.registry.forEach(r => {
+        state.registry.forEach(r => {
           if (!r || !r.id) return;
           const id = String(r.id);
           currentRegIds.add(id);
@@ -712,9 +740,9 @@
 
       // 5. Operational State Delta (Manager Oversight Schedule Checklists, Absence, Schedules)
       const currentOps = {
-        managerCheckedActivities: (window.appState && window.appState.managerCheckedActivities) || {},
-        isManagerAbsent: (window.appState && window.appState.isManagerAbsent) || false,
-        employeeSchedules: (window.appState && window.appState.employeeSchedules) || []
+        managerCheckedActivities: state.managerCheckedActivities || {},
+        isManagerAbsent: state.isManagerAbsent || false,
+        employeeSchedules: state.employeeSchedules || []
       };
       const serializedOps = JSON.stringify(currentOps);
       if (CloudSync.lastSyncedOperationalStr !== serializedOps) {
@@ -827,12 +855,12 @@
         return Promise.reject(new Error('Not connected'));
       }
 
-      if (!window.appState) {
+      const state = CloudSync.getState();
+      if (!state) {
         alert('No local state data available to upload.');
         return Promise.resolve();
       }
 
-      const state = window.appState;
       const tasks = Array.isArray(state.tasks) ? state.tasks : [];
       const complaints = Array.isArray(state.complaints) ? state.complaints : [];
       const jobOrders = Array.isArray(state.jobOrders) ? state.jobOrders : [];
@@ -840,7 +868,7 @@
 
       const totalItems = tasks.length + complaints.length + jobOrders.length + registry.length;
       if (totalItems === 0) {
-        alert('No local tasks or records found to upload.');
+        alert('No local tasks or records found to upload. If you just opened the app, please add or refresh your tasks.');
         return Promise.resolve();
       }
 

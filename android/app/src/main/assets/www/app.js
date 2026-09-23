@@ -911,6 +911,7 @@ function loadState() {
   if (savedState) {
     try {
       appState = JSON.parse(savedState);
+      window.appState = appState;
       // Ensure defaults exist
       if (!appState.tasks) appState.tasks = [];
       if (!appState.registry || appState.registry.length === 0) appState.registry = [...DEFAULT_MANUAL_TASKS];
@@ -1036,6 +1037,8 @@ function loadState() {
   // Auto check for overdue tasks
   checkOverdueTasks();
 
+  window.appState = appState;
+
   // Initialize Cloud Sync local cache state
   if (window.CloudSync && typeof window.CloudSync.initializeCacheFromLocal === 'function') {
     window.CloudSync.initializeCacheFromLocal();
@@ -1046,6 +1049,7 @@ function resetStateToDefault() {
   appState.registry = [...DEFAULT_MANUAL_TASKS];
   appState.tasks = [];
   appState.complaints = [];
+  window.appState = appState;
   appState.jobOrders = [
     {
       id: 'jo_101',
@@ -1169,6 +1173,7 @@ function resetStateToDefault() {
 }
 
 function saveState() {
+  window.appState = appState;
   try {
     localStorage.setItem('onecorporate_maintenance_state', JSON.stringify(appState));
   } catch (err) {
